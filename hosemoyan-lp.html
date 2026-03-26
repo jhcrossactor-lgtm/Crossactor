@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crossactor | 建築設計20年の知見が活きる3DVRパース</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+JP:wght@300;400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a1814;
+      --ink-mid: #3d3a34;
+      --ink-muted: #7a7570;
+      --paper: #f5f2ec;
+      --paper-warm: #ede9e0;
+      --accent: #8b6914;
+      --accent-light: #c4a44a;
+      --rule: #c8c3b8;
+      --white: #faf9f6;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.9;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.4rem 3rem;
+      background: rgba(245, 242, 236, 0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--rule);
+    }
+    .nav-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.88rem;
+      letter-spacing: 0.18em;
+      color: var(--ink-mid);
+      text-transform: uppercase;
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ─── HERO ─── */
+    .hero {
+      padding-top: 5.5rem;
+      background: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero-copy {
+      padding: 4rem 3rem 3rem;
+      position: relative;
+    }
+    .hero-copy::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255,255,255,0.025) 59px, rgba(255,255,255,0.025) 60px),
+        repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(255,255,255,0.025) 59px, rgba(255,255,255,0.025) 60px);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.63rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      margin-bottom: 1.6rem;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 2rem;
+      height: 1px;
+      background: var(--accent-light);
+      vertical-align: middle;
+      margin-right: 1rem;
+    }
+    .hero-h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.6rem, 4.5vw, 5rem);
+      font-weight: 300;
+      line-height: 1.1;
+      color: var(--white);
+      position: relative;
+      z-index: 1;
+      letter-spacing: -0.01em;
+    }
+    .hero-h1 em { font-style: italic; color: var(--accent-light); }
+    .hero-sub {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: rgba(250,249,246,0.5);
+      max-width: 40rem;
+      line-height: 1.9;
+      position: relative;
+      z-index: 1;
+      font-weight: 300;
+    }
+
+    /* ─── 2カラム体験エリア ─── */
+    .hero-embeds {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .embed-col {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+    .embed-col:last-child { border-right: none; }
+
+    .embed-label {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .embed-label-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      color: var(--accent-light);
+    }
+    .embed-label-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(250,249,246,0.4);
+    }
+    .embed-wrap {
+      position: relative;
+      width: 100%;
+      padding-top: 62%;
+    }
+    .embed-wrap iframe,
+    .embed-wrap video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      border: none;
+      object-fit: cover;
+    }
+    .embed-hint {
+      padding: 0.75rem 2rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.56rem;
+      letter-spacing: 0.1em;
+      color: rgba(250,249,246,0.28);
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* ─── SECTIONS ─── */
+    section { position: relative; z-index: 1; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 3rem; }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+    .section-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.63rem;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 300;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    /* ─── USE CASES ─── */
+    .section-usecases {
+      padding: 7rem 0;
+      background: var(--paper-warm);
+      border-top: 1px solid var(--rule);
+    }
+    .usecases-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--rule);
+    }
+    .usecase-item {
+      padding: 3.5rem 2.8rem;
+      border-right: 1px solid var(--rule);
+      transition: background 0.3s;
+      position: relative;
+    }
+    .usecase-item:last-child { border-right: none; }
+    .usecase-item:hover { background: var(--white); }
+
+    .usecase-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.5rem;
+      font-weight: 300;
+      color: rgba(139,105,20,0.1);
+      line-height: 1;
+      position: absolute;
+      top: 2rem; right: 2rem;
+      letter-spacing: -0.03em;
+    }
+    .usecase-title {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+    .usecase-body {
+      font-size: 0.8rem;
+      color: var(--ink-muted);
+      line-height: 2;
+    }
+    .usecase-tag {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.56rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(139,105,20,0.3);
+      padding: 0.28rem 0.7rem;
+    }
+
+    /* ─── STRENGTHS ─── */
+    .section-strengths {
+      padding: 7rem 0;
+      background: var(--paper);
+      border-top: 1px solid var(--rule);
+    }
+    .strengths-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--rule);
+    }
+    .strength-item {
+      padding: 3.5rem 3rem;
+      border-right: 1px solid var(--rule);
+      transition: background 0.3s;
+    }
+    .strength-item:last-child { border-right: none; }
+    .strength-item:hover { background: var(--paper-warm); }
+    .strength-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 4rem;
+      font-weight: 300;
+      color: rgba(139,105,20,0.1);
+      line-height: 1;
+      margin-bottom: 1.5rem;
+    }
+    .strength-title {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+    .strength-body { font-size: 0.8rem; color: var(--ink-muted); line-height: 2; }
+
+    /* ─── PROFILE ─── */
+    .section-profile {
+      padding: 7rem 0;
+      background: var(--paper-warm);
+      border-top: 1px solid var(--rule);
+    }
+    .profile-inner {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      border: 1px solid var(--rule);
+    }
+    .profile-left {
+      background: var(--ink);
+      padding: 4rem 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px);
+    }
+    .profile-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    .profile-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.3;
+      position: relative;
+      z-index: 1;
+    }
+    .profile-name small {
+      font-size: 1rem;
+      opacity: 0.55;
+      display: block;
+      margin-top: 0.3rem;
+    }
+    .profile-right { padding: 4rem; background: var(--white); }
+    .profile-text { font-size: 0.85rem; color: var(--ink-mid); line-height: 2.1; font-weight: 300; }
+    .profile-tags { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 2.5rem; }
+    .tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.56rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      border: 1px solid var(--rule);
+      padding: 0.28rem 0.75rem;
+    }
+
+    /* ─── CTA ─── */
+    .section-cta {
+      padding: 8rem 0;
+      background: var(--ink);
+      text-align: center;
+    }
+    .cta-kicker {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.63rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      margin-bottom: 2rem;
+    }
+    .cta-headline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.01em;
+    }
+    .cta-sub {
+      font-size: 0.82rem;
+      color: rgba(250,249,246,0.48);
+      line-height: 2;
+      max-width: 34rem;
+      margin: 0 auto 3rem;
+      font-weight: 300;
+    }
+    .btn-primary {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: var(--accent-light);
+      padding: 1.1rem 3rem;
+      text-decoration: none;
+      transition: background 0.25s, transform 0.25s;
+    }
+    .btn-primary:hover { background: var(--white); transform: translateY(-2px); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--ink);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding: 2.5rem 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(250,249,246,0.3);
+    }
+    .footer-copy {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      color: rgba(250,249,246,0.18);
+    }
+
+    /* ─── ANIMATION ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero-eyebrow { animation: fadeUp 0.8s ease both; }
+    .hero-h1      { animation: fadeUp 0.8s 0.12s ease both; }
+    .hero-sub     { animation: fadeUp 0.8s 0.25s ease both; }
+    .hero-embeds  { animation: fadeUp 0.9s 0.35s ease both; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 960px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero-copy { padding: 3rem 1.5rem 2.5rem; }
+      .hero-embeds { grid-template-columns: 1fr; }
+      .embed-col { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
+      .embed-col:last-child { border-bottom: none; }
+      .embed-wrap { padding-top: 56.25%; }
+      .container { padding: 0 1.5rem; }
+      .usecases-grid, .strengths-grid { grid-template-columns: 1fr; }
+      .usecase-item, .strength-item { border-right: none; border-bottom: 1px solid var(--rule); }
+      .usecase-item:last-child, .strength-item:last-child { border-bottom: none; }
+      .profile-inner { grid-template-columns: 1fr; }
+      .profile-left { padding: 3rem 2rem; }
+      .profile-right { padding: 2.5rem 2rem; }
+      .section-header { flex-direction: column; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">Crossactor</span>
+  <ul class="nav-links">
+    <li><a href="#usecases">利用例</a></li>
+    <li><a href="#strengths">強み</a></li>
+    <li><a href="#about">制作者</a></li>
+    <li><a href="#contact">相談する</a></li>
+  </ul>
+</nav>
+
+<!-- HERO：キャッチ + 2カラム体験 -->
+<section class="hero">
+  <div class="hero-copy">
+    <span class="hero-eyebrow">3D VR Architectural Visualization</span>
+    <h1 class="hero-h1">設計意図を、<br><em>体験</em>に変える。</h1>
+    <p class="hero-sub">図面では伝わらない空間の本質を、施主様が歩き回れる3DVRパースとして具現化。一からのパース制作も、現在お住まいの状態からのVR化も対応します。</p>
+  </div>
+
+  <div class="hero-embeds">
+    <div class="embed-col">
+      <div class="embed-label">
+        <span class="embed-label-num">01</span>
+        <span class="embed-label-text">360° VR — 全方位体験</span>
+      </div>
+      <div class="embed-wrap">
+        <iframe src="https://kuula.co/share/collection/79K9l?logo=1&info=1&fs=1&vr=0&sd=1&thumbs=1"
+          allowfullscreen allow="xr-spatial-tracking"></iframe>
+      </div>
+      <div class="embed-hint">画面をドラッグ（スマホはスワイプ）して操作できます</div>
+    </div>
+
+    <div class="embed-col">
+      <div class="embed-label">
+        <span class="embed-label-num">02</span>
+        <span class="embed-label-text">Walkthrough — ウォークスルー動画</span>
+      </div>
+      <div class="embed-wrap">
+        <video controls autoplay loop muted playsinline>
+          <source src="hosomeyan-sample-video.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="embed-hint">実際の制作事例</div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section class="section-usecases" id="usecases">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">01 — Use Cases</span>
+      <h2 class="section-title">こんな場面で使えます</h2>
+    </div>
+    <div class="usecases-grid">
+
+      <div class="usecase-item">
+        <span class="usecase-num">01</span>
+        <h3 class="usecase-title">モデルハウスが完成するまでに</h3>
+        <p class="usecase-body">建物が建つ前でも、3DVRパースがあればモデルハウス代わりに活用できます。完成を待たずに集客・商談をスタートできます。</p>
+        <span class="usecase-tag">新築・モデルハウス</span>
+      </div>
+
+      <div class="usecase-item">
+        <span class="usecase-num">02</span>
+        <h3 class="usecase-title">注文住宅や設計のプレゼンに</h3>
+        <p class="usecase-body">図面だけでは伝わらない空間の広がり・採光・動線を、施主様にVRで実体験してもらえます。合意形成が早まり、成約率の向上につながります。</p>
+        <span class="usecase-tag">注文住宅・設計プレゼン</span>
+      </div>
+
+      <div class="usecase-item">
+        <span class="usecase-num">03</span>
+        <h3 class="usecase-title">リフォームの提案に</h3>
+        <p class="usecase-body">現在お住まいの状態から3DVRを制作できます。部屋が散らかっていても大丈夫。ビフォーアフターを体感で伝え、リフォームの魅力をリアルに届けます。</p>
+        <span class="usecase-tag">リフォーム・リノベーション</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- STRENGTHS -->
+<section class="section-strengths" id="strengths">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">02 — Why Choose Us</span>
+      <h2 class="section-title">選ばれる理由</h2>
+    </div>
+    <div class="strengths-grid">
+      <div class="strength-item">
+        <div class="strength-num">01</div>
+        <h3 class="strength-title">設計20年の確かな再現性</h3>
+        <p class="strength-body">図面の意図を正確に読み取り、構造・生活動線を踏まえたリアルなモデリングを行います。設計者として培った読図力が、仕上がりの精度を支えます。</p>
+      </div>
+      <div class="strength-item">
+        <div class="strength-num">02</div>
+        <h3 class="strength-title">現状住居からでもVR化できる</h3>
+        <p class="strength-body">一からのパース制作はもちろん、現在お住まいの状態からでも3DVR制作に対応。部屋の状態を問わず、完成後のイメージを体験できます。</p>
+      </div>
+      <div class="strength-item">
+        <div class="strength-num">03</div>
+        <h3 class="strength-title">スマホ・PCだけで即共有</h3>
+        <p class="strength-body">特別なアプリ・ソフトは不要。WebブラウザのURLひとつで施主様へ高品質なVR体験を届けられます。VRゴーグルにも対応しています。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROFILE -->
+<section class="section-profile" id="about">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">03 — About</span>
+      <h2 class="section-title">制作担当</h2>
+    </div>
+    <div class="profile-inner">
+      <div class="profile-left">
+        <span class="profile-label">3D VR Specialist</span>
+        <div class="profile-name">
+          Hosemoyan
+          <small>Crossactor</small>
+        </div>
+      </div>
+      <div class="profile-right">
+        <p class="profile-text">建築設計の現場で20年以上培ったキャリアを活かし、設計者の視点からプレゼンテーションを強力にサポートする3DVRパースを制作します。<br><br>一からのパース制作も、現在お住まいの状態からのVR化も対応可能。丁寧なヒアリングと迅速な対応をモットーに、AI技術も積極的に活用。高品質かつ効率的な制作で、工務店・設計事務所様の受注率向上に貢献します。</p>
+        <div class="profile-tags">
+          <span class="tag">3D Modeling</span>
+          <span class="tag">360° VR</span>
+          <span class="tag">Walkthrough</span>
+          <span class="tag">AI-assisted</span>
+          <span class="tag">住宅設計 20年+</span>
+          <span class="tag">リフォーム対応</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section-cta" id="contact">
+  <div class="container">
+    <p class="cta-kicker">Free Consultation</p>
+    <h2 class="cta-headline">まずはお気軽に<br>ご相談ください</h2>
+    <p class="cta-sub">「この図面をVR化したい」「現在の部屋からリフォームのプレゼン用にVR化したい」「概算見積もりが欲しい」など、どんな段階のご相談でも歓迎します。</p>
+    <a href="【ここにHosemoyanのランサーズプロフィールのURLを入れるばい】" class="btn-primary">
+      ランサーズで相談する（無料）
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Crossactor — 3D VR Architectural Visualization</span>
+  <span class="footer-copy">&copy; 2025 Crossactor</span>
+</footer>
+
+</body>
+</html>
