@@ -74,17 +74,6 @@ class ChatResponse(BaseModel):
 
 # ---- API エンドポイント ----
 
-@app.get("/")
-async def root():
-    """ダッシュボードを返す"""
-    dashboard_path = os.path.join(
-        os.path.dirname(__file__), "../dashboard/index.html"
-    )
-    if os.path.exists(dashboard_path):
-        return FileResponse(dashboard_path)
-    return {"message": "Crossactor AI CEO System is running", "agents": ["Cro", "BONE"]}
-
-
 @app.get("/health")
 async def health():
     return {"status": "ok", "system": "Crossactor AI CEO", "agents": ["Cro（CEO）", "BONE（参謀）"]}
@@ -179,9 +168,9 @@ async def reset_session():
 
 
 # ダッシュボード静的ファイルのサーブ
-dashboard_dir = os.path.join(os.path.dirname(__file__), "../dashboard")
+dashboard_dir = os.path.join(os.path.dirname(__file__), "dashboard")
 if os.path.exists(dashboard_dir):
-    app.mount("/dashboard", StaticFiles(directory=dashboard_dir, html=True), name="dashboard")
+    app.mount("/", StaticFiles(directory=dashboard_dir, html=True), name="dashboard")
 
 
 if __name__ == "__main__":
