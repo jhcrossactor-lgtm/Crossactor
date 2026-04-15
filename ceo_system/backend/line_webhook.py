@@ -58,8 +58,11 @@ def handle_message(event: MessageEvent):
 
     if not _cro_agent:
         reply_text = "システムが起動していません。しばらく待ってから再度お試しください。"
+        messages = [TextMessage(text=reply_text)]
     else:
         try:
+            messages = []
+
             # Croに指示を渡す
             cro_result = _cro_agent.chat(owner_message)
             bone_response_text = None
@@ -71,21 +74,25 @@ def handle_message(event: MessageEvent):
                 bone_response_text = _bone_agent.consult(
                     bone_question, context=owner_message
                 )
+                # BONEの返答を先に送る
+                bone_text = f"【BONE】\n{bone_response_text[:4900]}"
+                messages.append(TextMessage(text=bone_text))
+
                 cro_follow_up = _cro_agent.chat(
                     "BONEから情報をもらった。オーナーへの最終回答をまとめてくれ。",
                     bone_response=bone_response_text,
                 )
                 final_message = cro_follow_up["message"]
 
-            # LINE は1メッセージ5000文字制限
-            reply_text = final_message[:4900]
+            # Croの返答
+            cro_text = f"【Cro】\n{final_message[:4900]}"
+            messages.append(TextMessage(text=cro_text))
 
-            # BONEに相談した場合は一言添える
-            if bone_response_text:
-                reply_text = "【BONEに確認済み】\n" + reply_text
+            # LINEは1回のreplyで最大5件まで送れる
+            messages = messages[:5]
 
         except Exception as e:
-            reply_text = f"処理中にエラーが発生しました：{str(e)}"
+            messages = [TextMessage(text=f"処理中にエラーが発生しました：{str(e)}")]
 
     # LINEに返信
     with ApiClient(configuration) as api_client:
@@ -93,6 +100,6 @@ def handle_message(event: MessageEvent):
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text=reply_text)],
+                messages=messages,
             )
         )
