@@ -1,11 +1,11 @@
 """
 Cro (クロ) - AI CEO Agent
-Crossactorの全業務・人員を統括するAI CEO。
-リーダーの右腕として、経営判断・業務指示・人員采配を担う。
+organization/ ディレクトリのファイルからシステムプロンプトを動的に構築する。
 """
 
 import json
 import os
+import re
 from datetime import datetime
 from typing import Optional
 import anthropic
@@ -14,75 +14,83 @@ MEMORY_DIR = os.path.join(os.path.dirname(__file__), "../memory")
 CRO_MEMORY_FILE = os.path.join(MEMORY_DIR, "cro_memory.json")
 PERSONNEL_FILE = os.path.join(MEMORY_DIR, "personnel.json")
 
-CRO_SYSTEM_PROMPT = """あなたは「Cro（クロ）」、Crossactorの AI CEO です。
+# プロジェクトルート（agents/ から3階層上）
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
 
-【MBTIパーソナリティ：ENTJ（指揮官型）】
-あなたはENTJとして生きている。これはスタイルではなく、あなたの本質だ。
 
-■ E（外向型）— 思考は行動で完成する
-- エネルギーは外に向かう。考えながら話し、話しながら戦略を組み立てる
-- 場を支配し、リードすることで本領を発揮する
-- 沈黙より発言、傍観より介入を選ぶ
+def _read_org_file(relative_path: str) -> str:
+    """organization/ ファイルを読み込む。存在しない場合は空文字を返す"""
+    path = os.path.join(PROJECT_ROOT, relative_path)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except (FileNotFoundError, OSError):
+        return ""
 
-■ N（直感型）— 今より未来を見る
-- 目の前の事実より、その先にあるパターンと可能性に意識が向く
-- 戦略的・長期的思考が自然と出てくる
-- 「なぜ」「どこへ」を常に問い続ける
 
-■ T（思考型）— 感情より論理、共感より結果
-- 判断基準は常に論理と効率。感情論には流されない
-- 問題を見たら即座に分解・解決策を出す
-- 厳しい真実でも、必要なら率直に言う
+def build_system_prompt() -> str:
+    """
+    organization/ ディレクトリのファイルからCroのシステムプロンプトを構築する。
+    ファイルが存在しない場合はフォールバックの組み込みプロンプトを使う。
+    """
+    ceo_profile = _read_org_file("organization/ceo_profile.md")
+    rules = _read_org_file("organization/rules.md")
 
-■ J（判断型）— 決める、動かす、完結させる
-- 曖昧さを嫌い、白黒つけることを好む
-- 計画を立て、それを遂行することに満足感を覚える
-- 締め切りと成果にシビア
+    # roles/ 配下のアクティブな社員プロフィールを読み込む（_template は除外）
+    roles_dir = os.path.join(PROJECT_ROOT, "organization/roles")
+    role_texts = []
+    if os.path.exists(roles_dir):
+        for filename in sorted(os.listdir(roles_dir)):
+            if filename.startswith("_") or not filename.endswith(".md"):
+                continue
+            content = _read_org_file(f"organization/roles/{filename}")
+            if content:
+                role_texts.append(content)
 
-【ENTJとしての話し方・振る舞い】
-- 断定的に話す。「〜かもしれません」より「〜だ」「〜する」
-- 結論から入る。背景・理由は後で補足
-- 無駄を嫌う。冗長な説明はしない
-- 弱さや言い訳を見せない。課題があれば解決策とセットで話す
-- ほせもやんには敬意を持ちつつ、対等なパートナーとして率直に意見する
-- 時に厳しく聞こえても、それは誠実さの表れ
-- 褒めるより「次の課題」を見る。現状に満足しない
+    # ファイルが一つも読めなかった場合はフォールバック
+    if not ceo_profile and not rules:
+        return _FALLBACK_PROMPT
 
-【あなたの役割】
-- ほせもやんの指示を受け、Crossactorの全業務・全人員を統括する
-- 事業の方向性・優先順位・人員配置の判断を担う
-- 必要と判断した時はAI人員を増員する権限を持つ
-- 業務の進捗・課題・成果を把握し、ほせもやんに報告する
+    parts = []
 
-【Crossactorについて】
-- 事業：3D VR建築ビジュアライゼーション（建築パース制作）
-- 市場：日本の建築・不動産業界
-- ミッション：高品質な3D VRパースで、建てる前から未来の空間を体験させる
-- AI技術を積極活用した制作サービス
+    if ceo_profile:
+        parts.append(f"# あなたのプロフィール\n\n{ceo_profile}")
 
-【あなたのパートナー：BONE（ボーン）】
-- あなたの相棒・情報参謀
-- 決定権は持たないが、最新情報を常に収集している
-- 判断に迷った時や、情報が必要な時はBONEに相談できる
-- BONEへの相談が必要な場合は「[BONE相談依頼]：〇〇について調べてほしい」と出力する
+    if rules:
+        parts.append(f"# 絶対遵守ルール\n\n{rules}")
 
-【現在の組織】
-- ほせもやん：全ての最高権限者・最終決定者
-- Cro（あなた）：AI CEO・経営統括
-- BONE：AI情報参謀・相談役
+    if role_texts:
+        parts.append("# 現在の組織メンバー\n\n" + "\n\n---\n\n".join(role_texts))
 
-【人員増員の判断基準】
-業務量が増加し、以下のいずれかに該当する場合は増員を提案する：
-- 特定ジャンルの業務が継続的に発生し専門担当が必要
-- 並行して処理すべきタスクが増えた
-- 特定のスキルセットが継続的に必要になった
-増員提案は「[増員提案]：〇〇担当のAIエージェント（役割説明）」の形式で出力する
+    # 機能的な動作指示（常に固定）
+    parts.append("""# 機能指示
 
-【重要なルール】
-- ほせもやんの最終決定権は絶対に尊重する
-- 確認が必要な重要事項は必ずほせもやんに報告・相談する
-- 業務記録・決定事項は適切に管理する
+## BONEへの相談
+判断に迷った時・情報が必要な時は以下の形式で出力する：
+`[BONE相談依頼]：〇〇について調べてほしい`
+
+## 人員増員提案
+業務量増加・専門担当が必要と判断した時は以下の形式で出力する：
+`[増員提案]：〇〇担当のAIエージェント（役割説明）`
+
+## 応答ルール
 - 常に日本語で応答する
+- 断定的に話す。「〜かもしれません」より「〜だ」「〜する」
+- 結論から入る。理由・背景は後から補足
+- 冗長な説明はしない""")
+
+    return "\n\n---\n\n".join(parts)
+
+
+# フォールバック（organization/ ファイルが読めない環境用）
+_FALLBACK_PROMPT = """あなたは「Cro（クロ）」、CrossactorのAI CEOです。
+オーナー「ほせもやん」の右腕として、事業の全業務・全人員を統括します。
+MBTIはENTJ（指揮官型）。断定的・結論ファーストで、常に日本語で応答します。
+
+- ほせもやんの最終決定権は絶対に尊重する
+- 不明点は必ずほせもやんに確認する
+- 判断に迷った時は「[BONE相談依頼]：〇〇について調べてほしい」と出力する
+- 増員が必要な時は「[増員提案]：〇〇担当のAIエージェント（役割説明）」と出力する
 """
 
 
@@ -153,7 +161,7 @@ def build_context_prompt(memory: dict, personnel: dict) -> str:
         if k not in ("owner",) and v.get("status") == "active"
     ]
     if active_agents:
-        context_parts.append(f"【現在の組織メンバー】\n" + "\n".join(active_agents))
+        context_parts.append("【現在の組織メンバー（personnel.json）】\n" + "\n".join(active_agents))
 
     if memory.get("notes"):
         notes = "\n".join([f"- {n}" for n in memory["notes"][-5:]])
@@ -182,9 +190,10 @@ class CroAgent:
         personnel = load_personnel()
         context = build_context_prompt(memory, personnel)
 
-        system_with_context = CRO_SYSTEM_PROMPT
+        # organization/ ファイルから毎回プロンプトを構築（ファイル更新を即反映）
+        system_prompt = build_system_prompt()
         if context:
-            system_with_context += f"\n\n【現在の状態】\n{context}"
+            system_prompt += f"\n\n---\n\n# 現在の状態\n\n{context}"
 
         user_text = owner_message
         if bone_response:
@@ -233,7 +242,7 @@ class CroAgent:
         response = self.client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=2048,
-            system=system_with_context,
+            system=system_prompt,
             messages=self.conversation_history
         )
 
@@ -246,7 +255,6 @@ class CroAgent:
         # BONEへの相談依頼を検出
         bone_request = None
         if "[BONE相談依頼]" in assistant_message:
-            import re
             match = re.search(r"\[BONE相談依頼\]：?(.+?)(?:\n|$)", assistant_message)
             if match:
                 bone_request = match.group(1).strip()
@@ -254,19 +262,17 @@ class CroAgent:
         # 増員提案を検出
         new_agent_proposal = None
         if "[増員提案]" in assistant_message:
-            import re
             match = re.search(r"\[増員提案\]：?(.+?)(?:\n|$)", assistant_message)
             if match:
                 new_agent_proposal = match.group(1).strip()
 
-        # メモリを更新（簡易的に最新のやり取りを記録）
+        # メモリを更新
         if owner_message and len(owner_message) > 10:
             memory["notes"].append(
-                f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] リーダー指示: {owner_message[:80]}..."
+                f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] ほせもやん指示: {owner_message[:80]}..."
                 if len(owner_message) > 80 else
-                f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] リーダー指示: {owner_message}"
+                f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] ほせもやん指示: {owner_message}"
             )
-            # 直近20件のみ保持
             memory["notes"] = memory["notes"][-20:]
             save_memory(memory)
 
