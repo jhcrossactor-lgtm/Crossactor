@@ -73,6 +73,24 @@ class ChatResponse(BaseModel):
     new_agent_proposal: Optional[str] = None
 
 
+# ---- エラーメッセージ生成 ----
+
+def _cro_error_message(e: Exception) -> str:
+    """エラーをCroの口調で返す"""
+    detail = str(e).lower()
+    if "overloaded" in detail or "529" in detail:
+        return "システムが過負荷状態だ。少し時間を置いてから再送してくれ。"
+    if "rate" in detail and "limit" in detail:
+        return "APIのレート制限に引っかかった。数秒待ってから再度送ってくれ。"
+    if "authentication" in detail or "api_key" in detail or "401" in detail:
+        return "API認証エラーが発生した。APIキーの設定を確認する必要がある。ほせもやん、管理者に知らせてくれ。"
+    if "timeout" in detail:
+        return "応答タイムアウトが発生した。もう一度送ってくれ。"
+    if "connection" in detail or "network" in detail:
+        return "ネットワーク接続エラーが発生した。しばらく待ってから再試行してくれ。"
+    return f"システムエラーが発生した。もう一度試してくれ。（{str(e)[:120]}）"
+
+
 # ---- API エンドポイント ----
 
 @app.get("/health")
@@ -119,7 +137,10 @@ async def chat_with_cro(req: OwnerMessage):
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"エラーが発生しました: {str(e)}")
+        return ChatResponse(
+            speaker="Cro",
+            message=_cro_error_message(e),
+        )
 
 
 @app.post("/api/chat/file", response_model=ChatResponse)
@@ -163,7 +184,10 @@ async def chat_with_file(
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"エラーが発生しました: {str(e)}")
+        return ChatResponse(
+            speaker="Cro",
+            message=_cro_error_message(e),
+        )
 
 
 @app.post("/api/bone/consult")

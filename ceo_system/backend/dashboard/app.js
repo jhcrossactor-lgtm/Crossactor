@@ -20,6 +20,8 @@ const fileInput = document.getElementById('fileInput');
 // --- 状態管理 ---
 let isProcessing = false;
 let selectedFile = null;
+let lastMessage = null;   // 最後に送ったテキスト
+let lastFile = null;      // 最後に送ったファイル
 
 // --- 初期化 ---
 window.addEventListener('load', () => {
@@ -77,6 +79,10 @@ async function sendMessage() {
 
   const textToSend = text;
   const fileToSend = selectedFile;
+
+  // 再送用に保存
+  lastMessage = textToSend;
+  lastFile = fileToSend;
 
   messageInput.value = '';
   autoResize(messageInput);
@@ -140,7 +146,9 @@ async function sendMessage() {
     }
 
   } catch (err) {
-    appendSystemMessage(`エラー: ${err.message}`);
+    // ネットワーク到達不能などの場合のみリトライUIを表示
+    // (サーバーエラーはCroのメッセージとして返ってくるため、ここに来るのは接続失敗時のみ)
+    appendRetryMessage(err.message);
   } finally {
     setProcessing(false);
     messageInput.focus();
@@ -236,6 +244,56 @@ function appendSystemMessage(text) {
   `;
   chatMessages.appendChild(msg);
   scrollToBottom();
+}
+
+function appendRetryMessage(errorText) {
+  const msg = document.createElement('div');
+  msg.className = 'message-group';
+  msg.innerHTML = `
+    <div class="retry-error-block">
+      <span class="retry-error-text">接続エラー: ${escapeHtml(errorText)}</span>
+      <button class="retry-btn" onclick="retryLastMessage(this)">再送する</button>
+    </div>
+  `;
+  chatMessages.appendChild(msg);
+  scrollToBottom();
+}
+
+async function retryLastMessage(btn) {
+  if (!lastMessage && !lastFile) return;
+  // リトライブロックを削除
+  btn.closest('.message-group').remove();
+  // 前回のオーナーメッセージ表示は既に追加済みなので送信のみ
+  setProcessing(true);
+  try {
+    let response;
+    if (lastFile) {
+      const formData = new FormData();
+      formData.append('message', lastMessage || '');
+      formData.append('file', lastFile);
+      response = await fetch(`${API_BASE}/api/chat/file`, { method: 'POST', body: formData });
+    } else {
+      response = await fetch(`${API_BASE}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: lastMessage })
+      });
+    }
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.detail || 'サーバーエラー');
+    }
+    const data = await response.json();
+    if (data.bone_request) appendBoneConsultTag(data.bone_request);
+    if (data.bone_response) appendMessage('bone', 'BONE（参謀）', data.bone_response);
+    appendMessage('cro', 'Cro（CEO）', data.message);
+    if (data.new_agent_proposal) { appendHireProposal(data.new_agent_proposal); await refreshAgentCount(); }
+  } catch (err) {
+    appendRetryMessage(err.message);
+  } finally {
+    setProcessing(false);
+    messageInput.focus();
+  }
 }
 
 
