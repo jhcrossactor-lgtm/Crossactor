@@ -17,6 +17,7 @@ load_dotenv()
 from agents.cro import CroAgent
 from agents.bone import BoneAgent
 from agents.agent_manager import hire_agent, get_active_agents, get_org_chart
+from line_webhook import router as line_router, init_agents
 
 app = FastAPI(
     title="Crossactor AI CEO System",
@@ -35,6 +36,12 @@ app.add_middleware(
 # セッション管理（シンプルな単一セッション）
 cro = CroAgent()
 bone = BoneAgent()
+
+# LINE Webhook にエージェントを注入
+init_agents(cro, bone)
+
+# LINE Webhook ルーターを登録
+app.include_router(line_router)
 
 
 # ---- リクエスト/レスポンスモデル ----
