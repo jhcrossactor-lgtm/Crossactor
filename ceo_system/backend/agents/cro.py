@@ -171,10 +171,12 @@ class CroAgent:
         )
         self.conversation_history = []
 
-    def chat(self, owner_message: str, bone_response: Optional[str] = None) -> dict:
+    def chat(self, owner_message: str, bone_response: Optional[str] = None,
+             file_data: Optional[dict] = None) -> dict:
         """
-        リーダーからのメッセージを受け取り、CEOとして応答する。
+        ほせもやんからのメッセージを受け取り、CEOとして応答する。
         bone_response: BONEからの情報提供がある場合に含める
+        file_data: 添付ファイルがある場合 {"media_type": "image/jpeg", "data": "<base64>"}
         """
         memory = load_memory()
         personnel = load_personnel()
@@ -184,9 +186,44 @@ class CroAgent:
         if context:
             system_with_context += f"\n\n【現在の状態】\n{context}"
 
-        user_content = owner_message
+        user_text = owner_message
         if bone_response:
-            user_content += f"\n\n[BONEからの情報]\n{bone_response}"
+            user_text += f"\n\n[BONEからの情報]\n{bone_response}"
+
+        # ファイル添付がある場合はマルチモーダルコンテンツを構築
+        if file_data:
+            media_type = file_data.get("media_type", "image/jpeg")
+            if media_type.startswith("image/"):
+                file_block = {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": media_type,
+                        "data": file_data["data"]
+                    }
+                }
+            elif media_type == "application/pdf":
+                file_block = {
+                    "type": "document",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "application/pdf",
+                        "data": file_data["data"]
+                    }
+                }
+            else:
+                file_block = None
+
+            if file_block:
+                user_content = [
+                    file_block,
+                    {"type": "text", "text": user_text or "添付ファイルを確認してください。"}
+                ]
+            else:
+                filename = file_data.get("filename", "不明なファイル")
+                user_content = f"{user_text}\n[添付ファイル: {filename}（このファイル形式は直接解析できません）]"
+        else:
+            user_content = user_text
 
         self.conversation_history.append({
             "role": "user",

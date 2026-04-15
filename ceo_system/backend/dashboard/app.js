@@ -12,9 +12,14 @@ const orgOverlay = document.getElementById('orgOverlay');
 const orgBody = document.getElementById('orgBody');
 const extraAgentsCount = document.getElementById('extra-agents-count');
 const extraCount = document.getElementById('extra-count');
+const attachPreview = document.getElementById('attachPreview');
+const attachThumb = document.getElementById('attachThumb');
+const attachFilename = document.getElementById('attachFilename');
+const fileInput = document.getElementById('fileInput');
 
 // --- 状態管理 ---
 let isProcessing = false;
+let selectedFile = null;
 
 // --- 初期化 ---
 window.addEventListener('load', () => {
@@ -23,25 +28,90 @@ window.addEventListener('load', () => {
 });
 
 
+// === ファイル添付 ===
+
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+  if (file.size > MAX_SIZE) {
+    appendSystemMessage('ファイルサイズは10MB以下にしてください。');
+    fileInput.value = '';
+    return;
+  }
+
+  selectedFile = file;
+  attachFilename.textContent = file.name;
+  attachPreview.style.display = 'flex';
+
+  // 画像の場合はサムネイル表示
+  if (file.type.startsWith('image/')) {
+    const url = URL.createObjectURL(file);
+    attachThumb.src = url;
+    attachThumb.style.display = 'block';
+  } else {
+    attachThumb.style.display = 'none';
+  }
+
+  messageInput.focus();
+}
+
+function clearAttachment() {
+  selectedFile = null;
+  fileInput.value = '';
+  attachPreview.style.display = 'none';
+  attachThumb.src = '';
+  attachThumb.style.display = 'none';
+  attachFilename.textContent = '';
+}
+
+
 // === メッセージ送信 ===
 
 async function sendMessage() {
   const text = messageInput.value.trim();
-  if (!text || isProcessing) return;
+  if ((!text && !selectedFile) || isProcessing) return;
 
   setProcessing(true);
+
+  const textToSend = text;
+  const fileToSend = selectedFile;
+
   messageInput.value = '';
   autoResize(messageInput);
 
-  // オーナーメッセージを表示
-  appendMessage('owner', 'オーナー', text);
+  // オーナーメッセージをチャットに表示
+  const filePreviewInfo = fileToSend ? {
+    name: fileToSend.name,
+    type: fileToSend.type,
+    url: fileToSend.type.startsWith('image/') ? URL.createObjectURL(fileToSend) : null
+  } : null;
+  appendMessage('owner', 'オーナー', textToSend, filePreviewInfo);
+
+  // 添付プレビューをクリア
+  clearAttachment();
 
   try {
-    const response = await fetch(`${API_BASE}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text })
-    });
+    let response;
+
+    if (fileToSend) {
+      // ファイルあり → multipart/form-data
+      const formData = new FormData();
+      formData.append('message', textToSend);
+      formData.append('file', fileToSend);
+      response = await fetch(`${API_BASE}/api/chat/file`, {
+        method: 'POST',
+        body: formData
+      });
+    } else {
+      // テキストのみ → JSON
+      response = await fetch(`${API_BASE}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: textToSend })
+      });
+    }
 
     if (!response.ok) {
       const err = await response.json();
@@ -50,7 +120,7 @@ async function sendMessage() {
 
     const data = await response.json();
 
-    // BONEへの相談があった場合、そのプロセスを表示
+    // BONEへの相談プロセスを表示
     if (data.bone_request) {
       appendBoneConsultTag(data.bone_request);
     }
@@ -80,7 +150,7 @@ async function sendMessage() {
 
 // === メッセージ表示 ===
 
-function appendMessage(type, speakerName, text) {
+function appendMessage(type, speakerName, text, fileInfo = null) {
   const group = document.createElement('div');
   group.className = 'message-group';
 
@@ -90,11 +160,23 @@ function appendMessage(type, speakerName, text) {
   const iconMap = { cro: 'C', bone: 'B', owner: 'O' };
   const iconClassMap = { cro: 'icon-cro', bone: 'icon-bone', owner: 'icon-owner' };
 
+  let fileHtml = '';
+  if (fileInfo) {
+    if (fileInfo.url) {
+      // 画像プレビュー
+      fileHtml = `<div class="msg-file-preview"><img src="${escapeAttr(fileInfo.url)}" alt="${escapeHtml(fileInfo.name)}" class="msg-img-preview" onload="scrollToBottom()"></div>`;
+    } else {
+      // ファイルアイコン
+      fileHtml = `<div class="msg-file-preview"><div class="msg-file-icon">📄 ${escapeHtml(fileInfo.name)}</div></div>`;
+    }
+  }
+
   bubble.innerHTML = `
     <div class="speaker-icon ${iconClassMap[type]}">${iconMap[type]}</div>
     <div class="message-content">
       <div class="speaker-name">${speakerName}</div>
-      <div class="message-text">${escapeHtml(text)}</div>
+      ${fileHtml}
+      ${text ? `<div class="message-text">${escapeHtml(text)}</div>` : ''}
     </div>
   `;
 
@@ -188,7 +270,6 @@ async function loadOrgChart() {
 function renderOrgChart(data) {
   let html = '';
 
-  // オーナー
   if (data.owner) {
     html += `
       <div class="org-section">
@@ -206,7 +287,6 @@ function renderOrgChart(data) {
     `;
   }
 
-  // Cro
   if (data.cro) {
     html += `
       <div class="org-section">
@@ -226,7 +306,6 @@ function renderOrgChart(data) {
     `;
   }
 
-  // BONE
   if (data.core_staff && data.core_staff.bone) {
     const bone = data.core_staff.bone;
     html += `
@@ -247,7 +326,6 @@ function renderOrgChart(data) {
     `;
   }
 
-  // 各部門のエージェント
   if (data.departments && Object.keys(data.departments).length > 0) {
     for (const [dept, agents] of Object.entries(data.departments)) {
       if (!agents || agents.length === 0) continue;
@@ -297,7 +375,6 @@ async function refreshAgentCount() {
     const response = await fetch(`${API_BASE}/api/org/agents`);
     const data = await response.json();
     const agents = data.agents || [];
-    // cro, bone を除いた追加エージェント数
     const extras = agents.filter(a => !['cro', 'bone'].includes(a.id));
     if (extras.length > 0) {
       extraAgentsCount.style.display = 'flex';
@@ -322,9 +399,15 @@ function scrollToBottom() {
 }
 
 function escapeHtml(text) {
+  if (!text) return '';
   const div = document.createElement('div');
   div.appendChild(document.createTextNode(text));
   return div.innerHTML;
+}
+
+function escapeAttr(text) {
+  if (!text) return '';
+  return text.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function autoResize(el) {

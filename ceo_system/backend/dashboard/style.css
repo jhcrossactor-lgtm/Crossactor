@@ -679,10 +679,111 @@ body {
   font-family: var(--font-mono);
 }
 
+/* === FILE ATTACHMENT === */
+
+.input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+.attach-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  color: #888899;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.attach-btn:hover {
+  color: var(--cro-light);
+  border-color: var(--cro-color);
+  background: var(--cro-glow);
+}
+
+.attach-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(124, 92, 252, 0.08);
+  border: 1px solid rgba(124, 92, 252, 0.25);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.attach-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.attach-filename {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.attach-remove-btn {
+  background: none;
+  border: none;
+  color: #888899;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.attach-remove-btn:hover {
+  color: #ff6b6b;
+}
+
+/* チャット内のファイルプレビュー */
+.msg-file-preview {
+  margin-bottom: 6px;
+}
+
+.msg-img-preview {
+  max-width: 260px;
+  max-height: 200px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.msg-file-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+
 /* === RESPONSIVE === */
 
 @media (max-width: 600px) {
   .header-center { display: none; }
   .chat-container { padding: 0 16px; }
   .org-panel { width: 100%; right: -100%; }
+  .msg-img-preview { max-width: 180px; }
 }

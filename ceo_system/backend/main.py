@@ -4,8 +4,9 @@ FastAPI backend for the Cro & BONE AI executive system.
 """
 
 import os
+import base64
 from typing import Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -115,6 +116,50 @@ async def chat_with_cro(req: OwnerMessage):
             bone_request=cro_result.get("bone_request"),
             bone_response=bone_response_text,
             new_agent_proposal=new_agent_info
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"エラーが発生しました: {str(e)}")
+
+
+@app.post("/api/chat/file", response_model=ChatResponse)
+async def chat_with_file(
+    message: str = Form(""),
+    file: UploadFile = File(...)
+):
+    """
+    ファイル添付付きでCroに話しかけるエンドポイント。
+    画像（JPEG/PNG/GIF/WebP）とPDFに対応。
+    """
+    try:
+        file_bytes = await file.read()
+        media_type = file.content_type or "application/octet-stream"
+        file_data = {
+            "media_type": media_type,
+            "data": base64.b64encode(file_bytes).decode("utf-8"),
+            "filename": file.filename or "添付ファイル"
+        }
+
+        cro_result = cro.chat(message, file_data=file_data)
+
+        bone_response_text = None
+        final_message = cro_result["message"]
+
+        if cro_result.get("bone_request"):
+            bone_question = cro_result["bone_request"]
+            bone_response_text = bone.consult(bone_question, context=message)
+            cro_follow_up = cro.chat(
+                "BONEから情報をもらった。オーナーへの最終回答をまとめてくれ。",
+                bone_response=bone_response_text
+            )
+            final_message = cro_follow_up["message"]
+
+        return ChatResponse(
+            speaker="Cro",
+            message=final_message,
+            bone_request=cro_result.get("bone_request"),
+            bone_response=bone_response_text,
+            new_agent_proposal=cro_result.get("new_agent_proposal")
         )
 
     except Exception as e:
