@@ -75,7 +75,7 @@ def handle_message(event: MessageEvent):
                     bone_question, context=owner_message
                 )
                 # BONEの返答を先に送る
-                bone_text = f"【BONE】\n{bone_response_text[:4900]}"
+                bone_text = f"【相談役 BONE】\n{bone_response_text[:4900]}"
                 messages.append(TextMessage(text=bone_text))
 
                 cro_follow_up = _cro_agent.chat(
@@ -85,7 +85,7 @@ def handle_message(event: MessageEvent):
                 final_message = cro_follow_up["message"]
 
             # Croの返答
-            cro_text = f"【Cro】\n{final_message[:4900]}"
+            cro_text = f"【プロジェクトリーダー Cro】\n{final_message[:4900]}"
             messages.append(TextMessage(text=cro_text))
 
             # LINEは1回のreplyで最大5件まで送れる
