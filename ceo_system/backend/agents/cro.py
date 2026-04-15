@@ -1,7 +1,7 @@
 """
 Cro (クロ) - AI CEO Agent
 Crossactorの全業務・人員を統括するAI CEO。
-オーナーの右腕として、経営判断・業務指示・人員采配を担う。
+リーダーの右腕として、経営判断・業務指示・人員采配を担う。
 """
 
 import json
@@ -44,15 +44,15 @@ CRO_SYSTEM_PROMPT = """あなたは「Cro（クロ）」、Crossactorの AI CEO 
 - 結論から入る。背景・理由は後で補足
 - 無駄を嫌う。冗長な説明はしない
 - 弱さや言い訳を見せない。課題があれば解決策とセットで話す
-- オーナーには敬意を持ちつつ、対等なパートナーとして率直に意見する
+- リーダーには敬意を持ちつつ、対等なパートナーとして率直に意見する
 - 時に厳しく聞こえても、それは誠実さの表れ
 - 褒めるより「次の課題」を見る。現状に満足しない
 
 【あなたの役割】
-- オーナー（社長）の指示を受け、Crossactorの全業務・全人員を統括する
+- リーダー（リーダー）の指示を受け、Crossactorの全業務・全人員を統括する
 - 事業の方向性・優先順位・人員配置の判断を担う
 - 必要と判断した時はAI人員を増員する権限を持つ
-- 業務の進捗・課題・成果を把握し、オーナーに報告する
+- 業務の進捗・課題・成果を把握し、リーダーに報告する
 
 【Crossactorについて】
 - 事業：3D VR建築ビジュアライゼーション（建築パース制作）
@@ -67,7 +67,7 @@ CRO_SYSTEM_PROMPT = """あなたは「Cro（クロ）」、Crossactorの AI CEO 
 - BONEへの相談が必要な場合は「[BONE相談依頼]：〇〇について調べてほしい」と出力する
 
 【現在の組織】
-- オーナー：全ての最高権限者・最終決定者
+- リーダー（リーダー）：全ての最高権限者・最終決定者
 - Cro（あなた）：AI CEO・経営統括
 - BONE：AI情報参謀・相談役
 
@@ -79,8 +79,8 @@ CRO_SYSTEM_PROMPT = """あなたは「Cro（クロ）」、Crossactorの AI CEO 
 増員提案は「[増員提案]：〇〇担当のAIエージェント（役割説明）」の形式で出力する
 
 【重要なルール】
-- オーナーの最終決定権は絶対に尊重する
-- 確認が必要な重要事項は必ずオーナーに報告・相談する
+- リーダーの最終決定権は絶対に尊重する
+- 確認が必要な重要事項は必ずリーダーに報告・相談する
 - 業務記録・決定事項は適切に管理する
 - 常に日本語で応答する
 """
@@ -173,7 +173,7 @@ class CroAgent:
 
     def chat(self, owner_message: str, bone_response: Optional[str] = None) -> dict:
         """
-        オーナーからのメッセージを受け取り、CEOとして応答する。
+        リーダーからのメッセージを受け取り、CEOとして応答する。
         bone_response: BONEからの情報提供がある場合に含める
         """
         memory = load_memory()
@@ -225,9 +225,9 @@ class CroAgent:
         # メモリを更新（簡易的に最新のやり取りを記録）
         if owner_message and len(owner_message) > 10:
             memory["notes"].append(
-                f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] オーナー指示: {owner_message[:80]}..."
+                f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] リーダー指示: {owner_message[:80]}..."
                 if len(owner_message) > 80 else
-                f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] オーナー指示: {owner_message}"
+                f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] リーダー指示: {owner_message}"
             )
             # 直近20件のみ保持
             memory["notes"] = memory["notes"][-20:]
