@@ -1,0 +1,24 @@
+{
+  "owner": {
+    "title": "オーナー",
+    "authority": "最高権限",
+    "description": "全ての最終決定者"
+  },
+  "cro": {
+    "name": "Cro（クロ）",
+    "title": "AI CEO",
+    "authority": "経営全般・人員采配・業務統括",
+    "status": "active",
+    "hired_at": "2026-04-15",
+    "description": "オーナーの指示を受け、全業務と人員を統括するAI CEO。必要に応じてAI人員を増員する権限を持つ。"
+  },
+  "bone": {
+    "name": "BONE（ボーン）",
+    "title": "AI 情報参謀",
+    "authority": "情報収集・相談役（決定権なし）",
+    "status": "active",
+    "hired_at": "2026-04-15",
+    "description": "Croの相棒。決定権は持たないが、最新情報を常に収集し、膨大な知識でCroからの相談に応える参謀。"
+  },
+  "departments": {}
+}

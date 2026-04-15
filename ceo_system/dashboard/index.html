@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crossactor AI CEO System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- ヘッダー -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo-mark">CX</div>
+        <div class="header-title">
+          <span class="company-name">Crossactor</span>
+          <span class="system-name">AI CEO System</span>
+        </div>
+      </div>
+      <div class="header-center">
+        <div class="agent-badges">
+          <div class="agent-badge cro-badge">
+            <div class="badge-dot active"></div>
+            <span>Cro</span>
+            <span class="badge-role">CEO</span>
+          </div>
+          <div class="agent-badge bone-badge">
+            <div class="badge-dot active"></div>
+            <span>BONE</span>
+            <span class="badge-role">参謀</span>
+          </div>
+          <div id="extra-agents-count" class="agent-badge extra-badge" style="display:none;">
+            <div class="badge-dot active"></div>
+            <span id="extra-count">+0</span>
+            <span class="badge-role">他</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn-org" onclick="toggleOrgPanel()">組織図</button>
+        <button class="btn-reset" onclick="resetSession()">セッションリセット</button>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main">
+
+      <!-- チャットエリア -->
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+          <!-- ウェルカムメッセージ -->
+          <div class="message-group system-intro">
+            <div class="intro-card">
+              <div class="intro-header">
+                <div class="intro-icon cro-icon">C</div>
+                <div>
+                  <div class="intro-name">Cro（クロ）</div>
+                  <div class="intro-title">AI CEO / Crossactor</div>
+                </div>
+              </div>
+              <p class="intro-text">
+                お待ちしていました、社長。<br>
+                私、Cro（クロ）がCrossactorの全業務と人員を統括します。<br>
+                BONE（ボーン）も待機中です。どんなご指示でも。
+              </p>
+            </div>
+            <div class="intro-card bone-intro">
+              <div class="intro-header">
+                <div class="intro-icon bone-icon">B</div>
+                <div>
+                  <div class="intro-name">BONE（ボーン）</div>
+                  <div class="intro-title">AI 情報参謀</div>
+                </div>
+              </div>
+              <p class="intro-text">
+                BONE、待機完了。<br>
+                いつでも最新情報と知識でCroをサポートします。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 入力エリア -->
+        <div class="input-area">
+          <div class="input-wrapper">
+            <div class="owner-label">オーナー</div>
+            <textarea
+              id="messageInput"
+              class="message-input"
+              placeholder="Croへの指示・相談を入力..."
+              rows="1"
+              onkeydown="handleKeyDown(event)"
+              oninput="autoResize(this)"
+            ></textarea>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+          <div class="input-hints">
+            <span>Enter で送信 / Shift+Enter で改行</span>
+            <span id="thinking-indicator" class="thinking-indicator" style="display:none;">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              Cro が考えています...
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- 組織図パネル（オーバーレイ） -->
+    <div class="org-overlay" id="orgOverlay" onclick="toggleOrgPanel()"></div>
+    <div class="org-panel" id="orgPanel">
+      <div class="org-panel-header">
+        <h3>組織図</h3>
+        <button class="org-close-btn" onclick="toggleOrgPanel()">×</button>
+      </div>
+      <div class="org-panel-body" id="orgBody">
+        <div class="org-loading">読み込み中...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
