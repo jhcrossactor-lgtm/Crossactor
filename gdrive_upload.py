@@ -18,6 +18,7 @@ CREDENTIALS_FILE = Path(__file__).parent / "credentials.json"
 TOKEN_FILE = Path(__file__).parent / "token.json"
 # 正しいフォルダID: マイドライブ/Crossactor/Crossactor AI Com
 TARGET_FOLDER_ID = "172si3a_aAEYYHWy8nyYDn9R1aCiVZvbx"
+MD_FOLDER_ID = "1fqd0-uZe_UECPQzmmotUmocjDjoHNfAg"  # Crossactor AI Com/md/
 DRIVE_FOLDER_PATH = ["Crossactor", "Crossactor AI Com"]
 
 SCOPES = ["https://www.googleapis.com/auth/drive"]
@@ -165,7 +166,12 @@ def upload_file(file_path: str):
     token = authenticate()
 
     print("アップロード先フォルダを確認中...")
-    folder_id = get_target_folder_id(token)
+    # MDファイルは専用の md/ フォルダへ
+    if file_path.suffix.lower() == ".md":
+        folder_id = MD_FOLDER_ID
+        print("MDファイル → Crossactor AI Com/md/ に保存")
+    else:
+        folder_id = get_target_folder_id(token)
 
     # 既存ファイル確認（同名なら上書き）
     query = f"name='{file_path.name}' and '{folder_id}' in parents and trashed=false"
