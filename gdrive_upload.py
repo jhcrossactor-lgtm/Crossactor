@@ -16,6 +16,8 @@ from requests_oauthlib import OAuth2Session
 
 CREDENTIALS_FILE = Path(__file__).parent / "credentials.json"
 TOKEN_FILE = Path(__file__).parent / "token.json"
+# 正しいフォルダID: マイドライブ/Crossactor/Crossactor AI Com
+TARGET_FOLDER_ID = "172si3a_aAEYYHWy8nyYDn9R1aCiVZvbx"
 DRIVE_FOLDER_PATH = ["Crossactor", "Crossactor AI Com"]
 
 SCOPES = ["https://www.googleapis.com/auth/drive"]
