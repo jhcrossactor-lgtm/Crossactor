@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 330" width="300" height="330">
+
+  <!-- ============================================
+       Aca Bow Logo - SVG Recreation
+       Adobe Illustrator 対応パスデータ
+       ============================================ -->
+
+  <!-- 外側: ブラウン/タンのグロー背景 -->
+  <ellipse cx="150" cy="190" rx="120" ry="124" fill="#c4904a"/>
+  <ellipse cx="150" cy="190" rx="110" ry="114" fill="#b87c38" opacity="0.5"/>
+
+  <!-- ボバパール クラウン (3つの黒い丸) -->
+  <circle cx="108" cy="65" r="21" fill="#111111"/>
+  <circle cx="150" cy="52" r="21" fill="#111111"/>
+  <circle cx="192" cy="65" r="21" fill="#111111"/>
+
+  <!-- パールのハイライト (艶感) -->
+  <circle cx="103" cy="59" r="6" fill="#333333" opacity="0.6"/>
+  <circle cx="145" cy="46" r="6" fill="#333333" opacity="0.6"/>
+  <circle cx="187" cy="59" r="6" fill="#333333" opacity="0.6"/>
+
+  <!-- 葉っぱ (クラウン右上) -->
+  <path d="M 200 42 C 210 28 222 30 220 40 C 218 50 205 50 200 42 Z" fill="#8cc63f"/>
+  <path d="M 200 42 C 214 38 218 44 210 48" stroke="#5a8a28" stroke-width="1.2" fill="none"/>
+  <!-- 茎 -->
+  <line x1="200" y1="42" x2="196" y2="52" stroke="#6a9a32" stroke-width="1.5"/>
+
+  <!-- メインボディ: 黒いモンスター形状 -->
+  <!-- ギザギザした上辺のある、丸みを帯びた台形ベース -->
+  <path d="
+    M 85 108
+    C 80 88, 83 74, 93 68
+    C 98 64, 104 66, 110 64
+    C 116 60, 124 64, 130 62
+    C 136 58, 144 62, 150 60
+    C 156 58, 164 62, 170 64
+    C 176 60, 184 64, 190 68
+    C 200 74, 202 88, 197 108
+    L 200 248
+    C 200 268, 186 280, 166 281
+    L 134 281
+    C 114 280, 100 268, 100 248
+    Z
+  " fill="#111111"/>
+
+  <!-- 左目: 白い大きな円 -->
+  <circle cx="120" cy="152" r="31" fill="white"/>
+  <!-- 右目: 白い大きな円 -->
+  <circle cx="180" cy="152" r="31" fill="white"/>
+
+  <!-- 左目の黒目/瞳 -->
+  <circle cx="125" cy="158" r="17" fill="#111111"/>
+  <!-- 右目の黒目/瞳 -->
+  <circle cx="185" cy="158" r="17" fill="#111111"/>
+
+  <!-- 左目ハイライト -->
+  <circle cx="115" cy="146" r="7" fill="white"/>
+  <!-- 右目ハイライト -->
+  <circle cx="175" cy="146" r="7" fill="white"/>
+
+  <!-- "Aca Bow" テキスト (白・筆記体風) -->
+  <!-- ※Illustratorで開いた後、フォントをアウトライン化することを推奨 -->
+  <text
+    x="150"
+    y="232"
+    text-anchor="middle"
+    fill="white"
+    font-family="'Segoe Script', 'Brush Script MT', 'Comic Sans MS', cursive"
+    font-size="30"
+    font-style="italic"
+    font-weight="normal"
+    letter-spacing="1"
+  >Aca Bow</text>
+
+</svg>
