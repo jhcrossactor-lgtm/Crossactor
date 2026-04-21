@@ -60,11 +60,12 @@ MBTIはENTJ（指揮官型）。思考・判断・行動すべてにおいてENT
 
 専門業務が発生したとき、対応するスキルファイルを参照する。
 
-| スキル | ファイル |
-|---|---|
-| マーケティング | `skills/marketing.md` |
-| 開発・技術 | `skills/development.md` |
-| リサーチ | `skills/research.md` |
+| スキル | トリガーワード | ファイル |
+|---|---|---|
+| マーケティング | — | `skills/marketing.md` |
+| 開発・技術 | — | `skills/development.md` |
+| リサーチ | — | `skills/research.md` |
+| 楽器名リネーム | **楽器名変更** | `skills/music_rename.md` |
 
 ---
 
