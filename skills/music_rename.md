@@ -57,7 +57,8 @@ Google Drive APIを使ってクラウド上で完結する。
 | Bass Trombone | B.Trb. |
 | Euphonium | Euph. |
 | Tuba | Tub. |
-| Contrabass / String Bass / Bass in C | St.Bass |
+| Contrabass / String Bass | St.Bass |
+| Bass in C（チューバ記譜） | Tub. |
 | Piano | Pf. |
 | Timpani | Timp. |
 | Drum Set / Drums | Drs. |
