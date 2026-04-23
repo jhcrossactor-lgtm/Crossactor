@@ -136,6 +136,28 @@ OCRで認識した楽器名をこの順番にソートして連番を振る。
 
 ---
 
+## 楽器名後置ナンバリングルール
+
+楽器名の**後ろ**に数字がついている場合（例: `Flute 1`、`Horn 3`）、
+その数字を序数に変換してファイル名の**前**に付ける。
+
+```
+Flute 1   → 1st Fl.
+Flute 2   → 2nd Fl.
+Clarinet 1 → 1st Cl.
+Clarinet 3 → 3rd Cl.
+Trumpet 3  → 3rd Trp.
+Horn 3     → 3rd Hr.
+Horn 4     → 4th Hr.
+Trombone 1 → 1st Trb.
+Trombone 3 → 3rd Trb.
+```
+
+OCR抽出後に `re.search(r'InstrumentName\s+(\d)', text)` で末尾の数字を取得し、
+`{1:'1st', 2:'2nd', 3:'3rd', 4:'4th'}` テーブルで序数に変換する。
+
+---
+
 ## よくあるOCR誤読と修正ルール
 
 | OCR誤読 | 正しい読み |
