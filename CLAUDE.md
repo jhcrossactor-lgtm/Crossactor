@@ -39,7 +39,8 @@
     ├── FLUT  — リサーチャー（INTJ）
     ├── RINET — レビュワー（ESTJ）
     ├── Fago  — ライター（INFJ）
-    └── NIUM  — LP担当（ISTP）
+    ├── NIUM  — LP担当（ISTP）
+    └── XYLO  — SNS担当（ENFP）
 ```
 
 ## 参照ファイル
