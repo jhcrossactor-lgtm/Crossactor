@@ -37,7 +37,8 @@
     ├── PET   — ブランディング（ISFP）
     ├── SX    — デザイナー（ESFP）
     ├── FLUT  — リサーチャー（INTJ）
-    └── RINET — レビュワー（ESTJ）
+    ├── RINET — レビュワー（ESTJ）
+    └── Fago  — ライター（INFJ）
 ```
 
 ## 参照ファイル
