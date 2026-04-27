@@ -40,7 +40,8 @@
     ├── RINET — レビュワー（ESTJ）
     ├── Fago  — ライター（INFJ）
     ├── NIUM  — LP担当（ISTP）
-    └── XYLO  — SNS担当（ENFP）
+    ├── XYLO  — SNS担当（ENFP）
+    └── TIM   — 動画担当（ESTP）
 ```
 
 ## 参照ファイル
