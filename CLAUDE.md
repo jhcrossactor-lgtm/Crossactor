@@ -38,7 +38,8 @@
     ├── SX    — デザイナー（ESFP）
     ├── FLUT  — リサーチャー（INTJ）
     ├── RINET — レビュワー（ESTJ）
-    └── Fago  — ライター（INFJ）
+    ├── Fago  — ライター（INFJ）
+    └── NIUM  — LP担当（ISTP）
 ```
 
 ## 参照ファイル
