@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>守口市周辺 賃貸家賃相場と5年後予測 — インフォグラフィック</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #FFF4EC;
+    color: #1A1A1A;
+    padding: clamp(12px, 2.5vw, 36px);
+  }
+
+  /* ===== ナビゲーション ===== */
+  .nav {
+    position: sticky;
+    top: 0;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(10px);
+    padding: 10px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(194,65,12,0.10);
+    margin-bottom: clamp(16px, 3vw, 36px);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    z-index: 100;
+  }
+  .nav-title {
+    font-weight: 700;
+    color: #C2410C;
+    margin-right: auto;
+    font-size: clamp(13px, 1.5vw, 17px);
+  }
+  .nav a {
+    font-size: clamp(12px, 1.3vw, 14px);
+    color: #57534E;
+    text-decoration: none;
+    padding: 5px 13px;
+    border-radius: 6px;
+    background: #FFF7ED;
+    transition: background 0.2s, color 0.2s;
+    font-weight: 500;
+  }
+  .nav a:hover { background: #FFEDD5; color: #C2410C; }
+
+  /* ===== シート共通 ===== */
+  .sheet {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto clamp(20px, 3.5vw, 44px);
+    aspect-ratio: 16 / 9;
+    background: #FFFFFF;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(194,65,12,0.13);
+    padding: clamp(24px, 3.5vw, 52px) clamp(28px, 4vw, 60px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sheet-num {
+    position: absolute;
+    top: 18px; right: 24px;
+    font-size: clamp(11px, 1.2vw, 14px);
+    color: #A8A29E;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: clamp(11px, 1.3vw, 15px);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: #EA580C;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h2.sheet-heading {
+    font-size: clamp(22px, 3.2vw, 38px);
+    font-weight: 700;
+    color: #C2410C;
+    line-height: 1.25;
+    margin-bottom: clamp(14px, 2vw, 22px);
+  }
+  h2.sheet-heading span.accent {
+    display: block;
+    width: clamp(36px, 4vw, 56px);
+    height: 5px;
+    background: linear-gradient(90deg, #C2410C 0%, #EA580C 100%);
+    border-radius: 3px;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  .footer-note {
+    position: absolute;
+    bottom: 14px; left: 28px; right: 28px;
+    font-size: clamp(9px, 1vw, 12px);
+    color: #A8A29E;
+    text-align: right;
+  }
+
+  /* ===== Sheet 1: カバー ===== */
+  .sheet.cover {
+    background: linear-gradient(135deg, #EA580C 0%, #7C2D12 100%);
+    justify-content: flex-end;
+    padding-bottom: clamp(32px, 5vw, 60px);
+    overflow: hidden;
+  }
+  .cover-bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .cover-bg-circle.c1 { width: 55%; padding-top: 55%; top: -20%; right: -12%; }
+  .cover-bg-circle.c2 { width: 35%; padding-top: 35%; top: 10%; right: 22%; background: rgba(255,255,255,0.04); }
+  .cover-bg-circle.c3 { width: 25%; padding-top: 25%; bottom: -8%; left: 5%; }
+  .cover-eyebrow {
+    font-size: clamp(12px, 1.5vw, 18px);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.75);
+    text-transform: uppercase;
+    margin-bottom: clamp(10px, 1.5vw, 18px);
+    position: relative;
+    z-index: 1;
+  }
+  .cover-title {
+    font-size: clamp(38px, 6vw, 76px);
+    font-weight: 900;
+    color: #FFFFFF;
+    line-height: 1.1;
+    position: relative;
+    z-index: 1;
+    margin-bottom: clamp(10px, 1.5vw, 20px);
+  }
+  .cover-title em {
+    font-style: normal;
+    color: #FED7AA;
+  }
+  .cover-subtitle {
+    font-size: clamp(14px, 1.8vw, 22px);
+    color: rgba(255,255,255,0.88);
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+    max-width: 72%;
+  }
+  .cover-tags {
+    position: relative;
+    z-index: 1;
+    margin-top: clamp(14px, 2vw, 22px);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .cover-tag {
+    background: rgba(255,255,255,0.15);
+    color: #FFFFFF;
+    font-size: clamp(11px, 1.3vw, 15px);
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .cover-year {
+    position: absolute;
+    top: clamp(20px, 3vw, 40px);
+    right: clamp(28px, 4vw, 56px);
+    font-size: clamp(80px, 13vw, 180px);
+    font-weight: 900;
+    color: rgba(255,255,255,0.07);
+    line-height: 1;
+    z-index: 0;
+    letter-spacing: -0.04em;
+  }
+
+  /* ===== Sheet 2: 間取り別家賃相場 ===== */
+  .rent-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(10px, 1.4vw, 18px);
+    margin-top: clamp(14px, 2vw, 22px);
+  }
+  .rent-card {
+    background: #FFF7ED;
+    border-radius: 14px;
+    padding: clamp(12px, 1.6vw, 20px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .rent-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #C2410C 0%, #EA580C 100%);
+    border-radius: 14px 14px 0 0;
+  }
+  .rent-card-type {
+    font-size: clamp(13px, 1.5vw, 18px);
+    font-weight: 700;
+    color: #9A3412;
+  }
+  .rent-card-range {
+    font-size: clamp(22px, 3vw, 38px);
+    font-weight: 900;
+    color: #C2410C;
+    line-height: 1;
+  }
+  .rent-card-unit {
+    font-size: clamp(12px, 1.3vw, 15px);
+    color: #57534E;
+    font-weight: 500;
+  }
+  .rent-bar-wrap {
+    margin-top: 6px;
+    background: #FFEDD5;
+    border-radius: 4px;
+    height: clamp(10px, 1.2vw, 14px);
+    overflow: hidden;
+  }
+  .rent-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #EA580C 0%, #C2410C 100%);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .rent-card-note {
+    font-size: clamp(10px, 1.1vw, 12px);
+    color: #A8A29E;
+    line-height: 1.4;
+  }
+
+  /* Sheet 2 右側: 参考情報 */
+  .sheet-2-layout {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: clamp(16px, 2.5vw, 32px);
+    align-items: center;
+    flex: 1;
+    margin-top: clamp(12px, 1.8vw, 20px);
+  }
+  .sheet-2-main { min-width: 0; }
+  .sheet-2-side {
+    width: clamp(160px, 20vw, 240px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .side-card {
+    background: linear-gradient(135deg, #EA580C 0%, #9A3412 100%);
+    color: white;
+    border-radius: 12px;
+    padding: clamp(10px, 1.4vw, 16px);
+  }
+  .side-card-label {
+    font-size: clamp(10px, 1.1vw, 13px);
+    opacity: 0.85;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .side-card-value {
+    font-size: clamp(18px, 2.4vw, 30px);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .side-card-sub {
+    font-size: clamp(10px, 1.1vw, 12px);
+    opacity: 0.75;
+    margin-top: 4px;
+  }
+
+  /* ===== Sheet 3: エリア比較 + トレンド ===== */
+  .sheet-3-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(16px, 2.5vw, 32px);
+    flex: 1;
+    margin-top: clamp(12px, 1.8vw, 20px);
+  }
+  .area-compare-col { display: flex; flex-direction: column; gap: 10px; }
+  .area-row {
+    display: grid;
+    grid-template-columns: clamp(80px, 12vw, 130px) 1fr clamp(60px, 7vw, 90px);
+    align-items: center;
+    gap: 12px;
+    font-size: clamp(12px, 1.5vw, 17px);
+  }
+  .area-row .area-name { font-weight: 700; color: #1A1A1A; font-size: clamp(11px, 1.4vw, 16px); }
+  .area-row .bar-track {
+    background: #FFEDD5;
+    border-radius: 4px;
+    height: clamp(14px, 2vw, 22px);
+    overflow: hidden;
+    position: relative;
+  }
+  .area-row .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+  }
+  .area-row .bar-fill.osaka-c   { background: linear-gradient(90deg, #7C2D12 0%, #9A3412 100%); }
+  .area-row .bar-fill.moriguchi { background: linear-gradient(90deg, #C2410C 0%, #EA580C 100%); }
+  .area-row .bar-fill.kadoma    { background: linear-gradient(90deg, #EA580C 0%, #FB923C 100%); }
+  .area-row .bar-fill.neyagawa  { background: linear-gradient(90deg, #FDBA74 0%, #FED7AA 100%); }
+  .area-row .bar-value { font-weight: 700; color: #C2410C; text-align: right; font-size: clamp(12px, 1.5vw, 17px); }
+
+  /* 凡例 */
+  .legend {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: clamp(10px, 1.2vw, 13px);
+    color: #57534E;
+    font-weight: 500;
+  }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* トレンド列 */
+  .trend-col { display: flex; flex-direction: column; gap: clamp(10px, 1.4vw, 16px); }
+  .trend-big-num {
+    background: #FFF7ED;
+    border-radius: 14px;
+    padding: clamp(12px, 1.6vw, 20px);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-left: 5px solid #C2410C;
+  }
+  .trend-big-num .tbn-label { font-size: clamp(11px, 1.3vw, 14px); color: #57534E; font-weight: 500; }
+  .trend-big-num .tbn-val {
+    font-size: clamp(30px, 4.5vw, 56px);
+    font-weight: 900;
+    background: linear-gradient(135deg, #C2410C 0%, #EA580C 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .trend-big-num .tbn-sub { font-size: clamp(10px, 1.2vw, 13px); color: #A8A29E; }
+
+  /* 人口推移ミニグラフ */
+  .pop-chart {
+    background: #FFF7ED;
+    border-radius: 14px;
+    padding: clamp(12px, 1.6vw, 18px);
+    flex: 1;
+  }
+  .pop-chart-title { font-size: clamp(11px, 1.3vw, 14px); font-weight: 700; color: #9A3412; margin-bottom: 10px; }
+  .pop-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: clamp(6px, 1vw, 12px);
+    height: clamp(60px, 9vw, 100px);
+  }
+  .pop-bar-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .pop-bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    position: relative;
+  }
+  .pop-bar-year {
+    font-size: clamp(9px, 1.1vw, 12px);
+    color: #A8A29E;
+    font-weight: 500;
+  }
+  .pop-bar-val {
+    font-size: clamp(9px, 1vw, 11px);
+    color: #57534E;
+    font-weight: 700;
+  }
+  .pop-note { font-size: clamp(9px, 1.1vw, 12px); color: #A8A29E; margin-top: 6px; }
+
+  /* ===== Sheet 4: 5年後予測シナリオ ===== */
+  .scenario-layout {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 0;
+    flex: 1;
+    margin-top: clamp(12px, 1.8vw, 20px);
+    align-items: center;
+  }
+  .scenario-card {
+    border-radius: 16px;
+    padding: clamp(16px, 2.2vw, 28px);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px, 1.4vw, 16px);
+  }
+  .scenario-card.up {
+    background: linear-gradient(160deg, #FFF7ED 0%, #FFEDD5 100%);
+    border: 2px solid #EA580C;
+  }
+  .scenario-card.flat {
+    background: #F5F5F4;
+    border: 2px solid #D6D3D1;
+  }
+  .scenario-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #A8A29E;
+    font-size: clamp(10px, 1.2vw, 13px);
+    font-weight: 500;
+    text-align: center;
+    padding: 0 8px;
+  }
+  .arrow-icon { font-size: clamp(24px, 3vw, 36px); }
+  .scenario-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: clamp(13px, 1.6vw, 18px);
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 100px;
+    width: fit-content;
+  }
+  .scenario-badge.up { background: #C2410C; color: white; }
+  .scenario-badge.flat { background: #78716C; color: white; }
+  .scenario-head {
+    font-size: clamp(16px, 2vw, 24px);
+    font-weight: 700;
+    color: #1A1A1A;
+    line-height: 1.3;
+  }
+  .scenario-head span { color: #C2410C; }
+  .scenario-head.muted span { color: #78716C; }
+  .scenario-bullets { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .scenario-bullets li {
+    font-size: clamp(12px, 1.5vw, 17px);
+    color: #1A1A1A;
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .scenario-bullets li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: #C2410C;
+    font-weight: 700;
+  }
+  .scenario-bullets.muted li::before { color: #78716C; }
+
+  .scenario-pct {
+    font-size: clamp(36px, 5.5vw, 68px);
+    font-weight: 900;
+    background: linear-gradient(135deg, #C2410C 0%, #EA580C 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .scenario-pct.muted {
+    background: #78716C;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* 現在ベースライン帯 */
+  .scenario-baseline {
+    background: white;
+    border-radius: 10px;
+    padding: clamp(8px, 1.2vw, 14px);
+    border: 1px solid #FFEDD5;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: auto;
+  }
+  .scenario-baseline .bl-label { font-size: clamp(10px, 1.2vw, 13px); color: #A8A29E; }
+  .scenario-baseline .bl-val { font-size: clamp(14px, 1.8vw, 20px); font-weight: 700; color: #1A1A1A; }
+
+  /* ===== Sheet 5: まとめ + なにわ筋線 ===== */
+  .sheet-5-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(16px, 2.5vw, 32px);
+    flex: 1;
+    margin-top: clamp(12px, 1.8vw, 20px);
+  }
+  .naniwa-card {
+    background: linear-gradient(135deg, #EA580C 0%, #7C2D12 100%);
+    border-radius: 16px;
+    padding: clamp(16px, 2.2vw, 28px);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px, 1.4vw, 16px);
+  }
+  .naniwa-card .nc-head { font-size: clamp(14px, 1.8vw, 20px); font-weight: 700; opacity: 0.9; }
+  .naniwa-card .nc-year {
+    font-size: clamp(40px, 6vw, 78px);
+    font-weight: 900;
+    line-height: 1;
+    color: #FED7AA;
+    letter-spacing: -0.03em;
+  }
+  .naniwa-card .nc-label { font-size: clamp(16px, 2vw, 24px); font-weight: 700; line-height: 1.3; }
+  .naniwa-card .nc-points { list-style: none; padding: 0; margin-top: 4px; display: flex; flex-direction: column; gap: 8px; }
+  .naniwa-card .nc-points li {
+    font-size: clamp(12px, 1.4vw, 16px);
+    opacity: 0.9;
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .naniwa-card .nc-points li::before {
+    content: ">";
+    position: absolute; left: 0;
+    font-weight: 700;
+    color: #FED7AA;
+  }
+  .naniwa-card .nc-note {
+    font-size: clamp(10px, 1.1vw, 12px);
+    opacity: 0.65;
+    margin-top: auto;
+    line-height: 1.5;
+  }
+
+  .takeaway-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 14px); }
+  .takeaway-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: clamp(10px, 1.4vw, 16px);
+    background: #FFF7ED;
+    border-radius: 12px;
+    border-left: 4px solid #C2410C;
+    font-size: clamp(13px, 1.6vw, 18px);
+    line-height: 1.5;
+  }
+  .takeaway-list li .ico {
+    font-size: clamp(16px, 2vw, 22px);
+    font-weight: 900;
+    color: #C2410C;
+    flex-shrink: 0;
+    min-width: clamp(28px, 3.5vw, 40px);
+  }
+
+  /* ===== ユーティリティ ===== */
+  .divider {
+    width: clamp(32px, 4vw, 50px);
+    height: 4px;
+    background: linear-gradient(90deg, #C2410C 0%, #EA580C 100%);
+    border-radius: 3px;
+    margin-bottom: clamp(12px, 1.8vw, 20px);
+  }
+
+  /* ===== 印刷 ===== */
+  @media print {
+    body { background: white; padding: 0; }
+    .nav { display: none; }
+    .sheet { box-shadow: none; page-break-after: always; margin: 0; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ナビゲーション -->
+<nav class="nav">
+  <span class="nav-title">守口市 賃貸家賃相場 — インフォグラフィック</span>
+  <a href="#sheet-1">01 カバー</a>
+  <a href="#sheet-2">02 間取り別相場</a>
+  <a href="#sheet-3">03 エリア比較</a>
+  <a href="#sheet-4">04 5年後予測</a>
+  <a href="#sheet-5">05 まとめ</a>
+</nav>
+
+<!-- ===== 1枚目: タイトルカバー ===== -->
+<section class="sheet cover" id="sheet-1">
+  <div class="cover-bg-circle c1"></div>
+  <div class="cover-bg-circle c2"></div>
+  <div class="cover-bg-circle c3"></div>
+  <div class="cover-year">2026</div>
+
+  <div class="cover-eyebrow">Real Estate Report</div>
+  <h1 class="cover-title">守口市周辺<br>賃貸<em>家賃相場</em>と<br>5年後予測</h1>
+  <p class="cover-subtitle">大阪府北東部エリアの現状データと、なにわ筋線開業（2031年）を見据えた市場展望を可視化</p>
+  <div class="cover-tags">
+    <span class="cover-tag">守口市・門真市・寝屋川市</span>
+    <span class="cover-tag">2026年調査</span>
+    <span class="cover-tag">2031年予測</span>
+    <span class="cover-tag">SUUMO / ホームズ / PRIMA データ参照</span>
+  </div>
+  <div class="footer-note" style="color: rgba(255,255,255,0.55);">1 / 5　出典: SUUMO・ホームメイト・ホームズ・PRIMA 各掲載データより</div>
+</section>
+
+<!-- ===== 2枚目: 間取り別家賃相場 ===== -->
+<section class="sheet" id="sheet-2">
+  <span class="sheet-num">2 / 5</span>
+  <span class="kicker">Current Market Data</span>
+  <h2 class="sheet-heading">守口市 — 間取り別 家賃相場<span class="accent"></span></h2>
+
+  <div class="sheet-2-layout">
+    <!-- 左: カードグリッド -->
+    <div class="sheet-2-main">
+      <div class="rent-grid">
+
+        <!-- ワンルーム -->
+        <div class="rent-card">
+          <div class="rent-card-type">ワンルーム</div>
+          <div class="rent-card-range">4〜5<span style="font-size:0.5em; font-weight:700; color:#9A3412;">万円</span></div>
+          <div class="rent-card-unit">一般水準 / 月額</div>
+          <div class="rent-bar-wrap"><div class="rent-bar-fill" style="width:55%"></div></div>
+          <div class="rent-card-note">新築・駅近の場合<br>最大 約6.5万円</div>
+        </div>
+
+        <!-- 1K〜1DK -->
+        <div class="rent-card">
+          <div class="rent-card-type">1K〜1DK</div>
+          <div class="rent-card-range">4〜5.5<span style="font-size:0.5em; font-weight:700; color:#9A3412;">万円</span></div>
+          <div class="rent-card-unit">目安 / 月額</div>
+          <div class="rent-bar-wrap"><div class="rent-bar-fill" style="width:62%"></div></div>
+          <div class="rent-card-note">単身向けで<br>最も選択肢が多い</div>
+        </div>
+
+        <!-- 2LDK -->
+        <div class="rent-card">
+          <div class="rent-card-type">2LDK</div>
+          <div class="rent-card-range">7〜8<span style="font-size:0.5em; font-weight:700; color:#9A3412;">万円</span></div>
+          <div class="rent-card-unit">目安 / 月額</div>
+          <div class="rent-bar-wrap"><div class="rent-bar-fill" style="width:82%"></div></div>
+          <div class="rent-card-note">カップル・<br>小ファミリー向け</div>
+        </div>
+
+        <!-- 3LDK -->
+        <div class="rent-card">
+          <div class="rent-card-type">3LDK</div>
+          <div class="rent-card-range">8〜9<span style="font-size:0.5em; font-weight:700; color:#9A3412;">万円</span></div>
+          <div class="rent-card-unit">目安 / 月額</div>
+          <div class="rent-bar-wrap"><div class="rent-bar-fill" style="width:95%"></div></div>
+          <div class="rent-card-note">ファミリー向け<br>4DK超は最大16.6万円</div>
+        </div>
+
+      </div>
+
+      <!-- 横棒グラフ（視覚的補足） -->
+      <div style="margin-top: clamp(12px,1.8vw,20px); display:flex; flex-direction:column; gap:7px;">
+        <div style="font-size:clamp(11px,1.3vw,14px); font-weight:700; color:#57534E; margin-bottom:2px;">相場レンジ（万円/月）</div>
+        <div style="display:grid; grid-template-columns: clamp(70px,10vw,100px) 1fr; gap:8px; align-items:center; font-size:clamp(11px,1.3vw,14px);">
+          <span style="color:#1A1A1A; font-weight:500;">ワンルーム</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div style="background:#FFEDD5; border-radius:4px; height:clamp(12px,1.6vw,18px); flex:1; overflow:hidden;">
+              <div style="background:linear-gradient(90deg,#EA580C,#C2410C); height:100%; width:55%; border-radius:4px;"></div>
+            </div>
+            <span style="color:#C2410C; font-weight:700; width:clamp(40px,5vw,60px); text-align:right;">4〜5万</span>
+          </div>
+          <span style="color:#1A1A1A; font-weight:500;">1K〜1DK</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div style="background:#FFEDD5; border-radius:4px; height:clamp(12px,1.6vw,18px); flex:1; overflow:hidden;">
+              <div style="background:linear-gradient(90deg,#EA580C,#C2410C); height:100%; width:62%; border-radius:4px;"></div>
+            </div>
+            <span style="color:#C2410C; font-weight:700; width:clamp(40px,5vw,60px); text-align:right;">4〜5.5万</span>
+          </div>
+          <span style="color:#1A1A1A; font-weight:500;">2LDK</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div style="background:#FFEDD5; border-radius:4px; height:clamp(12px,1.6vw,18px); flex:1; overflow:hidden;">
+              <div style="background:linear-gradient(90deg,#EA580C,#C2410C); height:100%; width:82%; border-radius:4px;"></div>
+            </div>
+            <span style="color:#C2410C; font-weight:700; width:clamp(40px,5vw,60px); text-align:right;">7〜8万</span>
+          </div>
+          <span style="color:#1A1A1A; font-weight:500;">3LDK</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div style="background:#FFEDD5; border-radius:4px; height:clamp(12px,1.6vw,18px); flex:1; overflow:hidden;">
+              <div style="background:linear-gradient(90deg,#EA580C,#C2410C); height:100%; width:95%; border-radius:4px;"></div>
+            </div>
+            <span style="color:#C2410C; font-weight:700; width:clamp(40px,5vw,60px); text-align:right;">8〜9万</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右: サイドカード -->
+    <div class="sheet-2-side">
+      <div class="side-card">
+        <div class="side-card-label">マンション物件が多数</div>
+        <div class="side-card-value">主流は<br>4〜6万台</div>
+        <div class="side-card-sub">守口市の特徴</div>
+      </div>
+      <div class="side-card" style="background:linear-gradient(135deg,#9A3412 0%,#7C2D12 100%);">
+        <div class="side-card-label">新築・駅徒歩5分以内でも</div>
+        <div class="side-card-value">最大<br>6.5万円</div>
+        <div class="side-card-sub">ワンルーム上限目安</div>
+      </div>
+      <div style="background:#FFF7ED; border-radius:12px; padding:clamp(10px,1.4vw,16px); border: 1px solid #FFEDD5;">
+        <div style="font-size:clamp(10px,1.2vw,13px); color:#57534E; font-weight:700; margin-bottom:4px;">築20年超の場合</div>
+        <div style="font-size:clamp(16px,2.2vw,26px); font-weight:900; color:#C2410C;">15〜25%<span style="font-size:0.55em; font-weight:700;">割安</span></div>
+        <div style="font-size:clamp(10px,1.1vw,12px); color:#A8A29E; margin-top:4px;">同条件の新築比（一般的傾向）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">出典: SUUMO・ホームメイト・ホームズ・アットホーム 各掲載データより（2026年調査）</div>
+</section>
+
+<!-- ===== 3枚目: エリア比較 + 市場トレンド ===== -->
+<section class="sheet" id="sheet-3">
+  <span class="sheet-num">3 / 5</span>
+  <span class="kicker">Area Comparison &amp; Trend</span>
+  <h2 class="sheet-heading">エリア別ポジションと市場トレンド<span class="accent"></span></h2>
+
+  <div class="sheet-3-layout">
+
+    <!-- 左: エリア比較横棒グラフ（1K想定単身向け基準） -->
+    <div class="area-compare-col">
+      <div style="font-size:clamp(12px,1.5vw,16px); font-weight:700; color:#57534E; margin-bottom:4px;">単身向け（1K相当）家賃水準の比較イメージ</div>
+
+      <div class="area-row">
+        <span class="area-name">大阪市中心部</span>
+        <div class="bar-track"><div class="bar-fill osaka-c" style="width:100%"></div></div>
+        <span class="bar-value">7〜10万</span>
+      </div>
+      <div class="area-row">
+        <span class="area-name">守口市</span>
+        <div class="bar-track"><div class="bar-fill moriguchi" style="width:55%"></div></div>
+        <span class="bar-value">4〜5.5万</span>
+      </div>
+      <div class="area-row">
+        <span class="area-name">門真市</span>
+        <div class="bar-track"><div class="bar-fill kadoma" style="width:46%"></div></div>
+        <span class="bar-value">3.5〜5万</span>
+      </div>
+      <div class="area-row">
+        <span class="area-name">寝屋川市</span>
+        <div class="bar-track"><div class="bar-fill neyagawa" style="width:40%"></div></div>
+        <span class="bar-value">3〜4.5万</span>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#7C2D12;"></div>大阪市中心部</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C2410C;"></div>守口市</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#EA580C;"></div>門真市</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FDBA74;"></div>寝屋川市</div>
+      </div>
+
+      <div style="background:#FFF7ED; border-radius:12px; padding:clamp(10px,1.4vw,16px); margin-top:4px; border-left:4px solid #EA580C;">
+        <div style="font-size:clamp(11px,1.4vw,15px); font-weight:700; color:#C2410C; margin-bottom:4px;">守口市の位置づけ</div>
+        <div style="font-size:clamp(11px,1.3vw,15px); color:#1A1A1A; line-height:1.6;">大阪市中心部より割安感がありながら、梅田・本町へ地下鉄で約20〜25分圏内という利便性を持つ。門真市・寝屋川市よりは家賃水準がやや高め。</div>
+      </div>
+    </div>
+
+    <!-- 右: トレンド -->
+    <div class="trend-col">
+      <div class="trend-big-num">
+        <span class="tbn-label">大阪市全体の賃料変化率（2025年Q4 前年同期比）</span>
+        <span class="tbn-val">+2.2%</span>
+        <span class="tbn-sub">大阪市への人口集中と外国人流入による需要増が背景</span>
+      </div>
+
+      <!-- 人口推移ミニグラフ -->
+      <div class="pop-chart">
+        <div class="pop-chart-title">守口市の人口推移イメージ（1980年以降 一貫して減少）</div>
+        <div class="pop-bars">
+          <!-- 1980年を100%として相対的な棒 -->
+          <div class="pop-bar-col">
+            <div class="pop-bar" style="height:100%; background:linear-gradient(180deg,#C2410C,#EA580C); border-radius:4px 4px 0 0;"></div>
+            <div class="pop-bar-year">1980</div>
+            <div class="pop-bar-val">ピーク</div>
+          </div>
+          <div class="pop-bar-col">
+            <div class="pop-bar" style="height:89%; background:linear-gradient(180deg,#EA580C,#FB923C); border-radius:4px 4px 0 0;"></div>
+            <div class="pop-bar-year">1990</div>
+            <div class="pop-bar-val"></div>
+          </div>
+          <div class="pop-bar-col">
+            <div class="pop-bar" style="height:79%; background:linear-gradient(180deg,#EA580C,#FB923C); border-radius:4px 4px 0 0;"></div>
+            <div class="pop-bar-year">2000</div>
+            <div class="pop-bar-val"></div>
+          </div>
+          <div class="pop-bar-col">
+            <div class="pop-bar" style="height:70%; background:linear-gradient(180deg,#EA580C,#FDBA74); border-radius:4px 4px 0 0;"></div>
+            <div class="pop-bar-year">2010</div>
+            <div class="pop-bar-val"></div>
+          </div>
+          <div class="pop-bar-col">
+            <div class="pop-bar" style="height:61%; background:linear-gradient(180deg,#FDBA74,#FED7AA); border-radius:4px 4px 0 0;"></div>
+            <div class="pop-bar-year">2020</div>
+            <div class="pop-bar-val"></div>
+          </div>
+          <div class="pop-bar-col">
+            <div class="pop-bar" style="height:55%; background:linear-gradient(180deg,#FED7AA,#FFF7ED); border-radius:4px 4px 0 0; border:1px dashed #FDBA74;"></div>
+            <div class="pop-bar-year">2026→</div>
+            <div class="pop-bar-val">減少継続</div>
+          </div>
+        </div>
+        <div class="pop-note">出典: 第6次守口市総合基本計画データ集 / 大阪府全体では年間約2〜3万人ペースで減少</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">出典: PRIMA（2025年Q4）・守口市総合基本計画データ集・三菱地所リアルエステートサービス (2024) ／ 門真市・寝屋川市の数値は傾向比較による推測値</div>
+</section>
+
+<!-- ===== 4枚目: 5年後予測シナリオ ===== -->
+<section class="sheet" id="sheet-4">
+  <span class="sheet-num">4 / 5</span>
+  <span class="kicker">2031 Forecast Scenario</span>
+  <h2 class="sheet-heading">5年後（2031年）予測 — 二極化するシナリオ<span class="accent"></span></h2>
+
+  <div class="scenario-layout">
+
+    <!-- 好立地・好設備 -->
+    <div class="scenario-card up">
+      <div class="scenario-badge up">シナリオ A　好立地・好設備物件</div>
+      <div class="scenario-pct">+5〜10%</div>
+      <div class="scenario-head">現状比で<span>緩やかな上昇</span>の可能性</div>
+      <ul class="scenario-bullets">
+        <li>なにわ筋線開業（2031年）で沿線地価に上昇圧力</li>
+        <li>大阪市中心部へのアクセス向上 → 周辺エリアの需要刺激</li>
+        <li>設備・デザインが優れた物件は空室リスクが低い</li>
+        <li>大阪市の賃料上昇トレンド（+2.2%/年水準）の波及効果</li>
+      </ul>
+      <div class="scenario-baseline">
+        <span class="bl-label">現在の家賃（1K基準）</span>
+        <span class="bl-val">4〜5.5万円 → 約5〜6万円台へ</span>
+      </div>
+    </div>
+
+    <!-- 中央矢印 -->
+    <div class="scenario-arrow">
+      <div style="font-size:clamp(18px,2.5vw,30px); color:#C2410C; font-weight:900;">vs</div>
+      <div style="width:2px; flex:1; background:linear-gradient(180deg,#FFEDD5 0%,#D6D3D1 100%); border-radius:2px;"></div>
+      <div style="font-size:clamp(10px,1.2vw,13px); color:#A8A29E; writing-mode:vertical-rl; letter-spacing:0.1em;">二　極　化</div>
+    </div>
+
+    <!-- 築古・設備未改修 -->
+    <div class="scenario-card flat">
+      <div class="scenario-badge flat">シナリオ B　築古・設備未改修物件</div>
+      <div class="scenario-pct muted">横ばい〜下落</div>
+      <div class="scenario-head muted">空室長期化と<span style="color:#78716C;">価格下押し圧力</span></div>
+      <ul class="scenario-bullets muted">
+        <li>守口市の人口は1980年以降一貫して減少、需要の絶対量が縮小</li>
+        <li>築20年超の物件はすでに新築比15〜25%割安でも空室リスク</li>
+        <li>大阪万博後の需要変動（方向性は不確実）</li>
+        <li>設備・デザイン未改修のまま放置すると下落リスクが拡大</li>
+      </ul>
+      <div class="scenario-baseline" style="border-color:#E7E5E4;">
+        <span class="bl-label" style="color:#A8A29E;">現在の家賃（1K基準）</span>
+        <span class="bl-val" style="color:#78716C;">4〜5.5万円 → 横ばい〜4万円未満のリスク</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">※ 2031年の家賃に関する公式予測値は現時点で存在せず、市場トレンド・開発計画・人口動態からの定性的推測。確定的な予測ではありません。</div>
+</section>
+
+<!-- ===== 5枚目: まとめ + なにわ筋線 ===== -->
+<section class="sheet" id="sheet-5">
+  <span class="sheet-num">5 / 5</span>
+  <span class="kicker">Key Takeaways</span>
+  <h2 class="sheet-heading">押さえるべき3つのポイントとなにわ筋線の影響<span class="accent"></span></h2>
+
+  <div class="sheet-5-layout">
+
+    <!-- 左: キーテイクアウェイ -->
+    <ul class="takeaway-list">
+      <li>
+        <span class="ico">01</span>
+        <span><strong style="color:#C2410C;">現在の家賃は大阪市中心部より割安。</strong>単身向け4〜5万円台、ファミリー向け7〜9万円台が中心で、マンション物件が多いのが守口市の特徴。大阪市中心部に比べて2〜5万円程度の割安感がある。</span>
+      </li>
+      <li>
+        <span class="ico">02</span>
+        <span><strong style="color:#C2410C;">人口減少が続き、市場は縮小傾向。</strong>守口市は1980年以降一貫して人口が減少。大阪府全体でも年間2〜3万人ペースで減少しており、賃貸需要の絶対量が縮む構造的リスクを抱えている。</span>
+      </li>
+      <li>
+        <span class="ico">03</span>
+        <span><strong style="color:#C2410C;">物件によって明暗が分かれる二極化の時代へ。</strong>好立地・好設備物件は+5〜10%の上昇可能性、築古・未改修物件は横ばい〜下落リスク。なにわ筋線（2031年開業）が好立地物件の価値をさらに押し上げる可能性がある。</span>
+      </li>
+    </ul>
+
+    <!-- 右: なにわ筋線カード -->
+    <div class="naniwa-card">
+      <div class="nc-head">注目の開発計画</div>
+      <div class="nc-year">2031</div>
+      <div class="nc-label">なにわ筋線<br>開業予定</div>
+      <ul class="nc-points">
+        <li>大阪市周辺エリアの地価に上昇圧力として作用する可能性</li>
+        <li>大阪中心部へのアクセス改善 → 周辺住宅需要の掘り起こし</li>
+        <li>沿線・駅近物件は需要増・賃料上昇の恩恵を受けやすい</li>
+        <li>人口減少との相殺効果に不確実性あり</li>
+      </ul>
+      <div class="nc-note">※ 開業効果の方向性・大きさは現時点では定性的な見通しにとどまります。投資判断の際は最新情報をご確認ください。</div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">出典: SUUMO / ホームメイト / ホームズ / PRIMA / 守口市総合基本計画データ集 / 三菱地所リアルエステートサービス (2024) ／ 本インフォグラフィックは参考情報であり、投資助言ではありません。</div>
+</section>
+
+
+<!-- ===================================================
+     編集モード + 印刷 / PPTX出力ツールバー
+     =================================================== -->
+<div id="edit-toolbar">
+  <span id="edit-label">✏️ 編集モード</span>
+  <label class="edit-switch">
+    <input type="checkbox" id="edit-toggle" onchange="toggleEdit(this.checked)">
+    <span class="edit-slider"></span>
+  </label>
+  <button class="tb-btn print-btn" onclick="printSheets()" title="ブラウザの印刷ダイアログでPDF保存できます">🖨 印刷 / PDF</button>
+  <button class="tb-btn pptx-btn" onclick="exportPptx()" title="編集内容をPPTXに反映して保存">📥 PPTX出力</button>
+  <button class="tb-btn reset-btn" onclick="resetEdits()" title="すべての編集をリセット">↩ リセット</button>
+</div>
+
+<style>
+/* ── ツールバー ── */
+#edit-toolbar {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: rgba(26,26,26,0.92);
+  backdrop-filter: blur(12px);
+  border-radius: 14px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 9999;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+#edit-label {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tb-btn {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  padding: 5px 11px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.tb-btn:hover { background: rgba(194,65,12,0.55); border-color: #C2410C; }
+.pptx-btn { background: rgba(194,65,12,0.35); }
+
+/* トグルスイッチ */
+.edit-switch { position: relative; display: inline-block; width: 42px; height: 22px; flex-shrink:0; }
+.edit-switch input { opacity:0; width:0; height:0; }
+.edit-slider {
+  position: absolute; inset:0;
+  background: #555;
+  border-radius: 22px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.edit-slider:before {
+  content:'';
+  position: absolute;
+  left: 3px; top: 3px;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.edit-switch input:checked + .edit-slider { background: #C2410C; }
+.edit-switch input:checked + .edit-slider:before { transform: translateX(20px); }
+
+/* ── 編集中スタイル ── */
+body.editing [data-editable] {
+  outline: 2px dashed rgba(194,65,12,0.5) !important;
+  border-radius: 3px;
+  cursor: text !important;
+  min-width: 20px;
+  min-height: 1em;
+}
+body.editing [data-editable]:focus {
+  outline: 2px solid #C2410C !important;
+  background: rgba(255,237,213,0.25) !important;
+}
+body.editing [data-editable]:empty:before {
+  content: attr(data-placeholder);
+  color: #A8A29E;
+  font-style: italic;
+  pointer-events: none;
+}
+
+/* ── 印刷スタイル ── */
+@media print {
+  #edit-toolbar, .nav { display: none !important; }
+  body { padding: 0 !important; background: #fff !important; }
+  .sheet {
+    page-break-after: always;
+    break-after: page;
+    max-width: 100% !important;
+    width: 100% !important;
+    aspect-ratio: 16 / 9;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  [data-editable] { outline: none !important; }
+}
+</style>
+
+<script>
+(function () {
+
+  // 編集対象セレクタ
+  const SELECTORS = [
+    'h1','h2','h3',
+    '.kicker',
+    '.stat-num','.stat-label','.stat-desc',
+    '.cover-year',
+    'td','th',
+    'p:not(.footer-note)',
+    'li',
+    '.nc-title','.nc-body',
+    '.nc-note',
+    '.tag',
+    '.scenario-title','.scenario-desc',
+    '.compare-val','.compare-label',
+    '.footer-note',
+  ].join(',');
+
+  const STORAGE_KEY = 'infographic_edits_' + location.pathname;
+  let editing = false;
+
+  /* ── 編集対象にマーク ── */
+  function markEditables() {
+    document.querySelectorAll(SELECTORS).forEach((el) => {
+      if (el.closest('#edit-toolbar')) return;
+      el.setAttribute('data-editable', '1');
+      el.setAttribute('data-original', el.innerHTML);
+    });
+  }
+
+  /* ── 編集モード ON/OFF ── */
+  window.toggleEdit = function (on) {
+    editing = on;
+    document.body.classList.toggle('editing', on);
+    document.querySelectorAll('[data-editable]').forEach((el) => {
+      el.contentEditable = on ? 'true' : 'false';
+    });
+    if (!on) saveEdits();
+  };
+
+  /* ── localStorage 保存 ── */
+  function saveEdits() {
+    const data = {};
+    document.querySelectorAll('[data-editable]').forEach((el, i) => {
+      data[i] = el.innerHTML;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  /* ── localStorage 復元 ── */
+  function loadEdits() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    document.querySelectorAll('[data-editable]').forEach((el, i) => {
+      if (data[i] !== undefined) el.innerHTML = data[i];
+    });
+  }
+
+  /* ── リセット ── */
+  window.resetEdits = function () {
+    if (!confirm('すべての編集内容をリセットしますか？')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    document.querySelectorAll('[data-editable]').forEach((el) => {
+      el.innerHTML = el.getAttribute('data-original') || el.innerHTML;
+    });
+  };
+
+  /* ── 印刷 / PDF ── */
+  window.printSheets = function () {
+    if (editing) {
+      document.getElementById('edit-toggle').checked = false;
+      toggleEdit(false);
+    }
+    window.print();
+  };
+
+  /* ── PPTX出力（サーバー経由） ── */
+  window.exportPptx = async function () {
+    if (editing) {
+      document.getElementById('edit-toggle').checked = false;
+      toggleEdit(false);
+    }
+    // 現在のHTMLをサーバーに送って変換
+    const btn = document.querySelector('.pptx-btn');
+    btn.textContent = '⏳ 生成中...';
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/export-pptx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html: document.documentElement.outerHTML }),
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'infographic.pptx'; a.click();
+        URL.revokeObjectURL(url);
+        btn.textContent = '✅ 完了';
+      } else {
+        // フォールバック: ファイルを直接ダウンロード
+        window.location.href = '/infographic.pptx';
+        btn.textContent = '📥 PPTX出力';
+      }
+    } catch (e) {
+      // サーバーAPIなければ既存ファイルをDL
+      window.location.href = '/infographic.pptx';
+      btn.textContent = '📥 PPTX出力';
+    }
+    btn.disabled = false;
+  };
+
+  /* ── 入力監視（自動保存） ── */
+  document.addEventListener('input', (e) => {
+    if (editing && e.target.hasAttribute('data-editable')) {
+      clearTimeout(window._saveTimer);
+      window._saveTimer = setTimeout(saveEdits, 800);
+    }
+  });
+
+  /* ── 初期化 ── */
+  markEditables();
+  loadEdits();
+
+})();
+</script>
+</body>
+</html>

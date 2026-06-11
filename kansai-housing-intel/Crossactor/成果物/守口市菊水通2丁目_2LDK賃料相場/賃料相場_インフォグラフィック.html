@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>守口市菊水通2丁目 2LDK賃料相場 インフォグラフィック</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-stretch: normal !important;
+  background: #060b18;
+  color: #e8eaf6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ======= PAGE — 横向き固定 1080×780 ======= */
+.page {
+  width: 1080px;
+  height: 780px;          /* 固定高さ — 必ず横向きになる */
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto 32px;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+
+/* ======= DECORATIONS ======= */
+.grid-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.glow-circle {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); pointer-events: none; opacity: .5;
+}
+.section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: #7dd3fc; margin-bottom: 4px;
+}
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+  margin: 8px 0;
+}
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 600;
+}
+.badge-blue   { background: rgba(56,189,248,.2);  color: #38bdf8; border: 1px solid rgba(56,189,248,.4); }
+.badge-gold   { background: rgba(201,168,76,.2);   color: #C9A84C; border: 1px solid rgba(201,168,76,.4); }
+.badge-green  { background: rgba(0,224,150,.2);    color: #00E096; border: 1px solid rgba(0,224,150,.4); }
+.badge-purple { background: rgba(139,92,246,.2);   color: #8B5CF6; border: 1px solid rgba(139,92,246,.4); }
+
+/* FOOTER */
+.footer {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 30px;
+  background: rgba(0,0,0,.45);
+  border-top: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px;
+  font-size: 9.5px; color: rgba(255,255,255,.35); letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+/* INNER CONTENT AREA */
+.page-inner {
+  position: relative; z-index: 2;
+  padding: 24px 36px 38px;
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.page-hd { margin-bottom: 12px; }
+.page-num { font-size: 10px; color: rgba(255,255,255,.3); letter-spacing: 3px; margin-bottom: 3px; }
+.page-title { font-size: 22px; font-weight: 900; color: #fff; }
+.page-title span { color: #38bdf8; }
+
+/* ============================================================ */
+/* PAGE 1: COVER */
+/* ============================================================ */
+#page1 { background: linear-gradient(135deg, #060b18 0%, #0d1832 40%, #0a1929 70%, #060b18 100%); }
+#page1 .glow1 { width:600px;height:600px; background:#1e3a8a; top:-200px; left:-150px; }
+#page1 .glow2 { width:500px;height:500px; background:#1e1b4b; bottom:-200px; right:-100px; }
+#page1 .glow3 { width:280px;height:280px; background:#0e7490; top:40%; right:60px; transform:translateY(-50%); }
+
+.cover-inner {
+  position: relative; z-index: 2;
+  height: 750px; /* 780 - 30 footer */
+  padding: 36px 56px 30px;
+  display: flex; flex-direction: column;
+}
+.cover-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(56,189,248,.15); border: 1px solid rgba(56,189,248,.35);
+  border-radius: 999px; padding: 5px 14px;
+  font-size: 10px; font-weight: 700; color: #7dd3fc; letter-spacing: 2px;
+  width: fit-content; margin-bottom: 20px;
+}
+.cover-main-title { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.5); letter-spacing: 4px; margin-bottom: 8px; }
+.cover-title {
+  font-size: 44px; font-weight: 900; line-height: 1.1;
+  background: linear-gradient(135deg, #fff 0%, #bfdbfe 50%, #C9A84C 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 6px;
+}
+.cover-sub { font-size: 18px; font-weight: 700; color: #7dd3fc; margin-bottom: 18px; letter-spacing: 2px; }
+.cover-badges { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
+
+.cover-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: auto; }
+.spec-card { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 12px 16px; }
+.spec-label { font-size: 9px; color: #7dd3fc; letter-spacing: 2px; margin-bottom: 3px; }
+.spec-value { font-size: 13px; font-weight: 600; color: #fff; }
+
+.cover-kpi-row { display: flex; gap: 0; margin-top: 18px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,.12); }
+.cover-kpi { flex: 1; padding: 16px 18px; background: rgba(255,255,255,.04); border-right: 1px solid rgba(255,255,255,.08); text-align: center; }
+.cover-kpi:last-child { border-right: none; }
+.kpi-label { font-size: 9.5px; color: rgba(255,255,255,.5); letter-spacing: 1px; margin-bottom: 6px; }
+.kpi-value { font-size: 24px; font-weight: 900; color: #fff; }
+.kpi-unit  { font-size: 10px; color: rgba(255,255,255,.5); margin-top: 2px; }
+
+/* ============================================================ */
+/* PAGE 2: AREA COMPARISON */
+/* ============================================================ */
+#page2 { background: linear-gradient(160deg, #060b18 0%, #0f1f3d 50%, #060b18 100%); }
+#page2 .glow1 { width:500px;height:500px; background:#312e81; top:-150px; right:-100px; }
+#page2 .glow2 { width:350px;height:350px; background:#0e7490; bottom:-100px; left:-50px; }
+
+.zone-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.zone-card { border-radius: 12px; padding: 14px 12px; text-align: center; }
+.zone-card.center { background: linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.08)); border: 1px solid rgba(201,168,76,.4); }
+.zone-card.inner  { background: linear-gradient(135deg,rgba(56,189,248,.2),rgba(56,189,248,.06));  border: 1px solid rgba(56,189,248,.35); }
+.zone-card.outer  { background: linear-gradient(135deg,rgba(0,224,150,.18),rgba(0,224,150,.05)); border: 1px solid rgba(0,224,150,.3); }
+.zone-card.target { background: linear-gradient(135deg,rgba(249,115,22,.25),rgba(249,115,22,.08)); border: 2px solid rgba(249,115,22,.6); }
+.zone-name  { font-size: 10px; font-weight: 700; margin-bottom: 5px; color: rgba(255,255,255,.7); }
+.zone-price { font-size: 22px; font-weight: 900; margin-bottom: 3px; }
+.zone-unit  { font-size: 9px; color: rgba(255,255,255,.5); }
+.zone-tag   { font-size: 8.5px; margin-top: 4px; opacity: .8; }
+
+.area-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; }
+.area-table th { font-size: 9.5px; font-weight: 700; color: rgba(255,255,255,.4); letter-spacing: 1.5px; text-align: left; padding: 0 10px 6px; }
+.area-table td { font-size: 12px; padding: 7px 10px; background: rgba(255,255,255,.04); }
+.area-table td:first-child { border-radius: 7px 0 0 7px; }
+.area-table td:last-child  { border-radius: 0 7px 7px 0; }
+.area-table tr.hl td { background: rgba(249,115,22,.12); }
+.area-table .an { font-weight: 600; color: #fff; }
+.area-table .ph { font-weight: 800; color: #C9A84C; }
+.area-table .sq { color: #7dd3fc; font-size: 11px; }
+.area-table .nt { color: rgba(255,255,255,.5); font-size: 10.5px; }
+
+/* ============================================================ */
+/* PAGE 3: REFERENCE PROPERTIES */
+/* ============================================================ */
+#page3 { background: linear-gradient(160deg, #060b18 0%, #0c1a30 50%, #060b18 100%); }
+#page3 .glow1 { width:400px;height:400px; background:#065f46; top:-100px; left:-80px; }
+#page3 .glow2 { width:400px;height:400px; background:#1e3a8a; bottom:-100px; right:-80px; }
+
+.chart-box { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 16px 20px; }
+.chart-title { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.7); margin-bottom: 12px; }
+
+.prop-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.prop-card { border-radius: 10px; padding: 11px 13px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10); }
+.prop-card.hl { background: rgba(249,115,22,.1); border-color: rgba(249,115,22,.35); }
+.prop-name  { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+.prop-info  { font-size: 9.5px; color: rgba(255,255,255,.45); margin-bottom: 6px; }
+.prop-price { font-size: 18px; font-weight: 900; color: #C9A84C; }
+.prop-sqm   { font-size: 10px; color: #7dd3fc; margin-top: 1px; }
+.prop-tags  { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 6px; }
+.prop-tag   { font-size: 8.5px; padding: 1px 6px; border-radius: 3px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.6); }
+
+/* ============================================================ */
+/* PAGE 4: TREND */
+/* ============================================================ */
+#page4 { background: linear-gradient(160deg, #060b18 0%, #0f1a30 50%, #060b18 100%); }
+#page4 .glow1 { width:450px;height:450px; background:#0e7490; top:-120px; right:-80px; }
+#page4 .glow2 { width:350px;height:350px; background:#1e3a8a; bottom:-100px; left:-60px; }
+
+.stat-row { display: flex; gap: 10px; margin-bottom: 12px; }
+.stat-box { flex: 1; border-radius: 12px; padding: 12px 14px; text-align: center; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10); }
+.stat-year { font-size: 9.5px; color: rgba(255,255,255,.4); letter-spacing: 1px; margin-bottom: 4px; }
+.stat-val  { font-size: 20px; font-weight: 900; color: #fff; }
+.stat-sub  { font-size: 9px; color: rgba(255,255,255,.4); margin-top: 2px; }
+.stat-chg  { font-size: 10px; margin-top: 4px; font-weight: 700; color: #00E096; }
+
+.reason-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.reason-item { display: flex; gap: 10px; align-items: flex-start; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 10px; padding: 11px; }
+.reason-icon { font-size: 18px; line-height: 1; flex-shrink: 0; }
+.reason-title { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+.reason-desc  { font-size: 10px; color: rgba(255,255,255,.55); line-height: 1.55; word-break: keep-all; }
+
+/* ============================================================ */
+/* PAGE 5: FORECAST */
+/* ============================================================ */
+#page5 { background: linear-gradient(160deg, #060b18 0%, #101830 50%, #060b18 100%); }
+#page5 .glow1 { width:400px;height:400px; background:#7c3aed; top:-100px; left:-80px; }
+#page5 .glow2 { width:400px;height:400px; background:#0e7490; bottom:-100px; right:-80px; }
+
+.forecast-cards { display: flex; gap: 10px; margin-top: 12px; }
+.fc-card { flex: 1; border-radius: 12px; padding: 14px 16px; }
+.fc-card.aggressive  { background: linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.06));   border: 1px solid rgba(201,168,76,.4); }
+.fc-card.standard    { background: linear-gradient(135deg,rgba(56,189,248,.18),rgba(56,189,248,.05));  border: 1px solid rgba(56,189,248,.35); }
+.fc-card.conservative{ background: linear-gradient(135deg,rgba(100,116,139,.18),rgba(100,116,139,.05)); border: 1px solid rgba(100,116,139,.3); }
+.fc-label { font-size: 9.5px; font-weight: 700; letter-spacing: 2px; margin-bottom: 6px; }
+.fc-price { font-size: 24px; font-weight: 900; margin-bottom: 3px; }
+.fc-desc  { font-size: 9.5px; color: rgba(255,255,255,.5); line-height: 1.5; word-break: keep-all; }
+
+/* ============================================================ */
+/* PAGE 6: EQUIPMENT PREMIUM */
+/* ============================================================ */
+#page6 { background: linear-gradient(160deg, #060b18 0%, #0e1a2e 50%, #060b18 100%); }
+#page6 .glow1 { width:400px;height:400px; background:#065f46; top:-100px; right:-80px; }
+#page6 .glow2 { width:350px;height:350px; background:#312e81; bottom:-100px; left:-60px; }
+
+.equip-stack { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.equip-row {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10);
+  border-radius: 12px; padding: 12px 18px;
+}
+.equip-icon { font-size: 24px; width: 38px; text-align: center; flex-shrink: 0; }
+.equip-info { flex: 1; }
+.equip-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.equip-note { font-size: 10px; color: rgba(255,255,255,.5); word-break: keep-all; }
+.equip-bar-wrap { flex: 2; }
+.equip-bar-label { font-size: 9.5px; color: rgba(255,255,255,.4); margin-bottom: 3px; display: flex; justify-content: space-between; }
+.equip-bar-bg { height: 8px; background: rgba(255,255,255,.08); border-radius: 99px; overflow: hidden; }
+.equip-bar { height: 100%; border-radius: 99px; }
+.equip-amount { font-size: 14px; font-weight: 900; margin-left: 12px; white-space: nowrap; }
+
+.base-box { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 14px 20px; }
+.build-up { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.build-item {
+  display: flex; flex-direction: column; align-items: center;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
+  border-radius: 9px; padding: 8px 13px;
+}
+.build-label { font-size: 8.5px; color: rgba(255,255,255,.45); letter-spacing: 1px; margin-bottom: 3px; }
+.build-val   { font-size: 13px; font-weight: 800; color: #fff; }
+.build-plus  { font-size: 18px; color: rgba(255,255,255,.3); }
+.build-equals { font-size: 18px; color: #C9A84C; font-weight: 700; }
+.build-result { background: linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.1)); border: 1px solid rgba(201,168,76,.5); border-radius: 9px; padding: 8px 16px; }
+.build-result .build-label { color: #C9A84C; }
+.build-result .build-val   { font-size: 16px; color: #C9A84C; }
+
+/* ============================================================ */
+/* PAGE 7: 3-SCENARIO & STRATEGY */
+/* ============================================================ */
+#page7 { background: linear-gradient(160deg, #060b18 0%, #0c1828 50%, #060b18 100%); }
+#page7 .glow1 { width:400px;height:400px; background:#1e3a8a; top:-100px; right:-80px; }
+#page7 .glow2 { width:350px;height:350px; background:#7c3aed; bottom:-100px; left:-60px; }
+
+.scenario-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 11px; margin-bottom: 12px; }
+.sc-card { border-radius: 13px; padding: 16px 16px; display: flex; flex-direction: column; }
+.sc-card.sc-strong { background: linear-gradient(160deg,rgba(201,168,76,.2),rgba(201,168,76,.06));   border: 2px solid rgba(201,168,76,.5); }
+.sc-card.sc-std    { background: linear-gradient(160deg,rgba(56,189,248,.18),rgba(56,189,248,.05));  border: 2px solid rgba(56,189,248,.4); }
+.sc-card.sc-low    { background: linear-gradient(160deg,rgba(100,116,139,.18),rgba(100,116,139,.05)); border: 1px solid rgba(100,116,139,.35); }
+.sc-label  { font-size: 9.5px; font-weight: 700; letter-spacing: 2px; margin-bottom: 7px; }
+.sc-name   { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 10px; word-break: keep-all; line-height: 1.4; }
+.sc-price  { font-size: 28px; font-weight: 900; color: #fff; line-height: 1; margin-bottom: 3px; }
+.sc-unit   { font-size: 10px; color: rgba(255,255,255,.5); margin-bottom: 8px; }
+.sc-annual { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.7); margin-bottom: 6px; }
+.sc-sqm    { font-size: 10px; color: rgba(255,255,255,.45); margin-bottom: 8px; }
+.sc-basis  { font-size: 9.5px; color: rgba(255,255,255,.45); line-height: 1.55; word-break: keep-all; }
+
+.strategy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.str-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.10); border-radius: 10px; padding: 11px 13px; display: flex; gap: 10px; align-items: flex-start; }
+.str-icon  { font-size: 20px; flex-shrink: 0; }
+.str-title { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.str-desc  { font-size: 9.5px; color: rgba(255,255,255,.55); line-height: 1.55; word-break: keep-all; }
+
+@media screen { body { padding: 32px 20px; } }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ PAGE 1 ============================================================ -->
+<div class="page" id="page1">
+  <div class="grid-bg"></div>
+  <div class="glow-circle glow1"></div>
+  <div class="glow-circle glow2"></div>
+  <div class="glow-circle glow3"></div>
+  <div class="cover-inner">
+    <div class="cover-tag">● RENTAL MARKET RESEARCH 2026</div>
+    <div class="cover-main-title">守口市菊水通2丁目 8-17 計画地</div>
+    <div class="cover-title">2LDK 賃料相場<br>調査レポート</div>
+    <div class="cover-sub">住宅用途 賃貸マンション</div>
+    <div class="cover-badges">
+      <span class="badge badge-blue">風呂トイレ別</span>
+      <span class="badge badge-blue">EV（エレベーター）付き</span>
+      <span class="badge badge-blue">オートロック付き</span>
+      <span class="badge badge-gold">新築RC造</span>
+      <span class="badge badge-green">2028年竣工予定</span>
+    </div>
+    <div class="cover-specs">
+      <div class="spec-card"><div class="spec-label">LOCATION</div><div class="spec-value">大阪府守口市菊水通2丁目8-17</div></div>
+      <div class="spec-card"><div class="spec-label">ACCESS</div><div class="spec-value">京阪・西三荘駅 / 地下鉄・守口市駅</div></div>
+      <div class="spec-card"><div class="spec-label">STRUCTURE</div><div class="spec-value">RC造（鉄筋コンクリート造）・新築</div></div>
+      <div class="spec-card"><div class="spec-label">TARGET UNIT</div><div class="spec-value">2LDK（約55〜65㎡想定）</div></div>
+    </div>
+    <div class="cover-kpi-row">
+      <div class="cover-kpi">
+        <div class="kpi-label">既存市場平均</div>
+        <div class="kpi-value" style="color:#7dd3fc;">9.3<span style="font-size:14px;">万円</span></div>
+        <div class="kpi-unit">守口市 2LDK 全体平均</div>
+      </div>
+      <div class="cover-kpi">
+        <div class="kpi-label">新築RC 設備フル</div>
+        <div class="kpi-value" style="color:#C9A84C;">14〜15<span style="font-size:13px;">万円</span></div>
+        <div class="kpi-unit">2028年竣工時 中央値想定</div>
+      </div>
+      <div class="cover-kpi">
+        <div class="kpi-label">㎡単価（中央値）</div>
+        <div class="kpi-value" style="color:#00E096;font-size:20px;">2,300〜2,510</div>
+        <div class="kpi-unit">円/㎡/月</div>
+      </div>
+      <div class="cover-kpi">
+        <div class="kpi-label">調査日</div>
+        <div class="kpi-value" style="font-size:16px;">2026.05.01</div>
+        <div class="kpi-unit">フジヒサハウジング 都市再生企画室</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <span>FUJIHISA HOUSING — 都市再生企画室</span>
+    <span>守口市菊水通2丁目 2LDK賃料相場調査レポート 2026</span>
+    <span>P.1 / 7</span>
+  </div>
+</div>
+
+<!-- ============================================================ PAGE 2 ============================================================ -->
+<div class="page" id="page2">
+  <div class="grid-bg"></div>
+  <div class="glow-circle glow1"></div>
+  <div class="glow-circle glow2"></div>
+  <div class="page-inner">
+    <div class="page-hd">
+      <div class="page-num">PAGE 02 / 07</div>
+      <div class="section-label">AREA PRICE ZONE</div>
+      <div class="page-title">エリア別 <span>2LDK 賃料水準</span> 比較</div>
+    </div>
+
+    <div class="zone-grid">
+      <div class="zone-card center">
+        <div class="zone-name">大阪市 中心部</div>
+        <div class="zone-price" style="color:#C9A84C;">19〜20<small style="font-size:13px;">万円</small></div>
+        <div class="zone-unit">㎡単価 3,330〜3,630円</div>
+        <div class="zone-tag" style="color:#C9A84C;">梅田・心斎橋・天王寺</div>
+      </div>
+      <div class="zone-card inner">
+        <div class="zone-name">大阪市 周縁部</div>
+        <div class="zone-price" style="color:#38bdf8;">14〜17<small style="font-size:13px;">万円</small></div>
+        <div class="zone-unit">㎡単価 2,540〜3,030円</div>
+        <div class="zone-tag" style="color:#38bdf8;">都島区・城東区・旭区</div>
+      </div>
+      <div class="zone-card outer">
+        <div class="zone-name">近郊郊外（守口市）</div>
+        <div class="zone-price" style="color:#00E096;">9〜13<small style="font-size:13px;">万円</small></div>
+        <div class="zone-unit">㎡単価 1,690〜2,210円</div>
+        <div class="zone-tag" style="color:#00E096;">守口市全体 既存平均</div>
+      </div>
+      <div class="zone-card target">
+        <div class="zone-name">🎯 本物件想定（新築RC）</div>
+        <div class="zone-price" style="color:#f97316;">14〜15<small style="font-size:13px;">万円</small></div>
+        <div class="zone-unit">㎡単価 2,300〜2,510円</div>
+        <div class="zone-tag" style="color:#f97316;">2028年竣工時 中央値</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <table class="area-table">
+      <thead>
+        <tr>
+          <th>エリア区分</th>
+          <th>代表エリア</th>
+          <th>月額相場（2LDK）</th>
+          <th>㎡単価（推計）</th>
+          <th>備考</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="an">大阪市 中心部</td><td>梅田（北区）</td><td class="ph">19.7万円</td><td class="sq">約3,510円/㎡</td><td class="nt">都心最高水準</td></tr>
+        <tr><td class="an">大阪市 中心部</td><td>心斎橋（中央区）</td><td class="ph">20.4万円</td><td class="sq">約3,630円/㎡</td><td class="nt">インバウンド・富裕層需要</td></tr>
+        <tr><td class="an">大阪市 周縁部</td><td>都島区</td><td class="ph">17.0万円</td><td class="sq">約3,030円/㎡</td><td class="nt">谷町線・城北公園エリア</td></tr>
+        <tr><td class="an">大阪市 周縁部</td><td>城東区</td><td class="ph">15.6万円</td><td class="sq">約2,780円/㎡</td><td class="nt">長堀鶴見緑地線沿線</td></tr>
+        <tr><td class="an">近郊郊外</td><td>守口市（全体平均）</td><td style="color:#00E096;font-weight:800;">9.3〜9.6万円</td><td class="sq">約1,690〜1,750円/㎡</td><td class="nt">既存物件中心</td></tr>
+        <tr><td class="an">近郊郊外</td><td>守口市（新築駅近）</td><td style="color:#38bdf8;font-weight:800;">13.3万円</td><td class="sq">約2,210〜2,420円/㎡</td><td class="nt">SUUMO新築・駅徒歩5分以内</td></tr>
+        <tr class="hl"><td class="an" style="color:#f97316;">🎯 本物件（計画地）</td><td>西三荘駅周辺</td><td style="color:#f97316;font-weight:900;">13.0〜16.0万円</td><td class="sq" style="color:#f97316;">2,300〜2,510円/㎡</td><td class="nt" style="color:#f97316;">新築RC・設備フル・2028年完成</td></tr>
+        <tr><td class="an">近郊郊外</td><td>門真市</td><td style="font-weight:600;">8.5万円</td><td class="sq">約1,540円/㎡</td><td class="nt">守口市より1〜2万円低め</td></tr>
+        <tr><td class="an">近郊郊外</td><td>寝屋川市</td><td style="font-weight:600;">7.7万円</td><td class="sq">約1,420円/㎡</td><td class="nt">エリア最低水準帯</td></tr>
+      </tbody>
+    </table>
+    <div class="divider"></div>
+    <div style="font-size:9.5px;color:rgba(255,255,255,.35);">出典：CHINTAI 2026年5月1日集計（築20年以内・駅徒歩10分以内）、SUUMO 守口市相場、HOME'S 守口市家賃相場 ／ ㎡単価は専有面積55㎡想定で逆算</div>
+  </div>
+  <div class="footer">
+    <span>FUJIHISA HOUSING — 都市再生企画室</span>
+    <span>守口市菊水通2丁目 2LDK賃料相場調査レポート 2026</span>
+    <span>P.2 / 7</span>
+  </div>
+</div>
+
+<!-- ============================================================ PAGE 3 ============================================================ -->
+<div class="page" id="page3">
+  <div class="grid-bg"></div>
+  <div class="glow-circle glow1"></div>
+  <div class="glow-circle glow2"></div>
+  <div class="page-inner">
+    <div class="page-hd">
+      <div class="page-num">PAGE 03 / 07</div>
+      <div class="section-label">COMPARABLE PROPERTIES</div>
+      <div class="page-title">参考物件 <span>㎡単価</span> 比較</div>
+    </div>
+
+    <div class="chart-box" style="margin-bottom:12px;flex-shrink:0;">
+      <div class="chart-title">▍ 参考物件 ㎡単価比較（円/㎡/月）</div>
+      <canvas id="propChart" height="110"></canvas>
+    </div>
+
+    <div class="prop-grid">
+      <div class="prop-card">
+        <div class="prop-name">ドリーム菊水</div>
+        <div class="prop-info">菊水通2丁目 ／ 築29年・RC7階 ／ 55㎡</div>
+        <div class="prop-price">8.8万円<span style="font-size:11px;color:rgba(255,255,255,.5);">/月</span></div>
+        <div class="prop-sqm">1,600円/㎡ ・ 管理費8,000円別</div>
+        <div class="prop-tags"><span class="prop-tag">BT別</span><span class="prop-tag">オートロック</span><span class="prop-tag">西三荘10分</span></div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-name">シャーメゾン彩 III号館</div>
+        <div class="prop-info">大日町4丁目 ／ 築12年・3階 ／ 59.52㎡</div>
+        <div class="prop-price">9.8万円<span style="font-size:11px;color:rgba(255,255,255,.5);">/月</span></div>
+        <div class="prop-sqm">1,647円/㎡ ・ 管理費5,000円別</div>
+        <div class="prop-tags"><span class="prop-tag">BT別</span><span class="prop-tag">オートロック</span><span class="prop-tag">浴室乾燥機</span></div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-name">シャーメゾン セレジェイラ</div>
+        <div class="prop-info">東光町 ／ 築2年・RC ／ 60.77〜63.63㎡</div>
+        <div class="prop-price">14.2〜14.8万円<span style="font-size:11px;color:rgba(255,255,255,.5);">/月</span></div>
+        <div class="prop-sqm">2,337円/㎡ ・ 管理費12,000円別</div>
+        <div class="prop-tags"><span class="prop-tag">BT別</span><span class="prop-tag">ペット相談可</span><span class="prop-tag">守口市駅9分</span></div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-name">ニード コート（竣工予定）</div>
+        <div class="prop-info">浜町1丁目 ／ 2026年6月竣工 ／ 56.92㎡</div>
+        <div class="prop-price">14.35〜14.55万<span style="font-size:11px;color:rgba(255,255,255,.5);">/月</span></div>
+        <div class="prop-sqm">2,530円/㎡ ・ 管理費4,600円別</div>
+        <div class="prop-tags"><span class="prop-tag">BT別</span><span class="prop-tag">新築</span><span class="prop-tag">守口駅9分</span></div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-name">グランドパレス守口</div>
+        <div class="prop-info">竹町3-3 ／ 築8年 ／ 59.61㎡</div>
+        <div class="prop-price">16.3万円<span style="font-size:11px;color:rgba(255,255,255,.5);">/月</span></div>
+        <div class="prop-sqm">2,734円/㎡ ・ 管理費18,000円別</div>
+        <div class="prop-tags"><span class="prop-tag">オートロック</span><span class="prop-tag">浴室乾燥機</span><span class="prop-tag">守口市駅7分</span></div>
+      </div>
+      <div class="prop-card hl">
+        <div class="prop-name">🎯 本物件 想定（2028年竣工）</div>
+        <div class="prop-info">菊水通2丁目 ／ 新築RC・設備フルセット</div>
+        <div class="prop-price" style="color:#f97316;">14〜15万円<span style="font-size:11px;color:rgba(255,255,255,.5);">/月</span></div>
+        <div class="prop-sqm" style="color:#f97316;">2,300〜2,510円/㎡（中央値）</div>
+        <div class="prop-tags">
+          <span class="prop-tag" style="background:rgba(249,115,22,.2);color:#f97316;">BT別</span>
+          <span class="prop-tag" style="background:rgba(249,115,22,.2);color:#f97316;">EV付き</span>
+          <span class="prop-tag" style="background:rgba(249,115,22,.2);color:#f97316;">オートロック</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <span>FUJIHISA HOUSING — 都市再生企画室</span>
+    <span>守口市菊水通2丁目 2LDK賃料相場調査レポート 2026</span>
+    <span>P.3 / 7</span>
+  </div>
+</div>
+
+<!-- ============================================================ PAGE 4 ============================================================ -->
+<div class="page" id="page4">
+  <div class="grid-bg"></div>
+  <div class="glow-circle glow1"></div>
+  <div class="glow-circle glow2"></div>
+  <div class="page-inner">
+    <div class="page-hd">
+      <div class="page-num">PAGE 04 / 07</div>
+      <div class="section-label">HISTORICAL TREND</div>
+      <div class="page-title">守口市 2LDK 賃料 <span>推移トレンド</span>（2023〜2026）</div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-year">2023年</div><div class="stat-val" style="color:#7dd3fc;">8.8<span style="font-size:13px;">万円</span></div><div class="stat-sub">市場平均（推計）</div><div class="stat-chg">ベースライン</div></div>
+      <div class="stat-box"><div class="stat-year">2024年</div><div class="stat-val" style="color:#38bdf8;">9.1<span style="font-size:13px;">万円</span></div><div class="stat-sub">万博決定・建築費高騰</div><div class="stat-chg">↑ +3.4%</div></div>
+      <div class="stat-box"><div class="stat-year">2025年</div><div class="stat-val" style="color:#00E096;">9.5<span style="font-size:13px;">万円</span></div><div class="stat-sub">大阪・関西万博 開催年</div><div class="stat-chg">↑ +4.4%</div></div>
+      <div class="stat-box"><div class="stat-year">2026年（現在）</div><div class="stat-val" style="color:#C9A84C;font-size:16px;">9.3〜13.3<span style="font-size:11px;">万円</span></div><div class="stat-sub">既存9.3 ／ 新築駅近13.3</div><div class="stat-chg">↑ 二極化進行</div></div>
+    </div>
+
+    <div class="chart-box" style="flex:1;min-height:0;">
+      <div class="chart-title">▍ 守口市 2LDK 賃料推移（既存平均 vs 新築RC）</div>
+      <canvas id="trendChart"></canvas>
+    </div>
+
+    <div class="reason-grid">
+      <div class="reason-item">
+        <div class="reason-icon">🏗️</div>
+        <div><div class="reason-title">建築費高騰による新築供給減</div><div class="reason-desc">RC造新築の建築コストが大幅上昇。守口市の新築賃貸供給が限定的となり新築プレミアムが拡大。</div></div>
+      </div>
+      <div class="reason-item">
+        <div class="reason-icon">🚇</div>
+        <div><div class="reason-title">大阪市中心部の家賃高騰で郊外需要増</div><div class="reason-desc">梅田・心斎橋エリアの賃料が+10〜15%上昇し、コスト意識のファミリー層が守口・門真市へ移住。</div></div>
+      </div>
+      <div class="reason-item">
+        <div class="reason-icon">🎡</div>
+        <div><div class="reason-title">万博・IRによる大阪圏人口流入</div><div class="reason-desc">大阪・関西万博（2025年）・IR整備により大阪圏全体の賃貸需要が活況。守口市地価+6.26%（2026年公示）。</div></div>
+      </div>
+      <div class="reason-item">
+        <div class="reason-icon">📊</div>
+        <div><div class="reason-title">設備格差による市場二極化</div><div class="reason-desc">空室率15.65%の内訳は築古・設備低位物件に集中。新築RC×高設備は需給が引き締まり賃料維持力が高い。</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <span>FUJIHISA HOUSING — 都市再生企画室</span>
+    <span>守口市菊水通2丁目 2LDK賃料相場調査レポート 2026</span>
+    <span>P.4 / 7</span>
+  </div>
+</div>
+
+<!-- ============================================================ PAGE 5 ============================================================ -->
+<div class="page" id="page5">
+  <div class="grid-bg"></div>
+  <div class="glow-circle glow1"></div>
+  <div class="glow-circle glow2"></div>
+  <div class="page-inner">
+    <div class="page-hd" style="margin-bottom:10px;">
+      <div class="page-num">PAGE 05 / 07</div>
+      <div class="section-label">5-YEAR FORECAST</div>
+      <div class="page-title">2028〜2031年 賃料 <span>5年予測</span></div>
+    </div>
+
+    <div class="chart-box" style="flex:1;min-height:0;margin-bottom:12px;">
+      <div class="chart-title">▍ 2LDK 月額家賃 予測（2023〜2031年）　※本物件想定・新築RC・設備フルセット</div>
+      <canvas id="forecastChart"></canvas>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-shrink:0;">
+      <div class="badge badge-gold">● 竣工予定 2028年</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.55);">新築プレミアム最大化フェーズ。フリーレント・礼金設定が収益最大化の鍵。</div>
+    </div>
+
+    <div class="forecast-cards" style="flex-shrink:0;">
+      <div class="fc-card aggressive">
+        <div class="fc-label" style="color:#C9A84C;">■ 強気予測</div>
+        <div class="fc-price" style="color:#C9A84C;">15〜16<span style="font-size:13px;">万円</span></div>
+        <div class="fc-desc">美容・IT・医療系共働き世帯ターゲット。大阪圏の賃料上昇継続（年率+3〜4%）が前提。</div>
+      </div>
+      <div class="fc-card standard">
+        <div class="fc-label" style="color:#38bdf8;">■ 標準予測（推奨）</div>
+        <div class="fc-price" style="color:#38bdf8;">13〜15<span style="font-size:13px;">万円</span></div>
+        <div class="fc-desc">一般ファミリー・共働き世帯層。シャーメゾン セレジェイラ（14.2万〜）・ニードコート（14.4万〜）を基準とした市場標準価格帯。</div>
+      </div>
+      <div class="fc-card conservative">
+        <div class="fc-label" style="color:#94a3b8;">■ 保守予測</div>
+        <div class="fc-price" style="color:#94a3b8;">12〜13<span style="font-size:13px;">万円</span></div>
+        <div class="fc-desc">市場競合増・金利上昇リスクシナリオ。ただし守口市の新築RC供給は限定的でこの水準になる可能性は低い。</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <span>FUJIHISA HOUSING — 都市再生企画室</span>
+    <span>守口市菊水通2丁目 2LDK賃料相場調査レポート 2026</span>
+    <span>P.5 / 7</span>
+  </div>
+</div>
+
+<!-- ============================================================ PAGE 6 ============================================================ -->
+<div class="page" id="page6">
+  <div class="grid-bg"></div>
+  <div class="glow-circle glow1"></div>
+  <div class="glow-circle glow2"></div>
+  <div class="page-inner">
+    <div class="page-hd">
+      <div class="page-num">PAGE 06 / 07</div>
+      <div class="section-label">EQUIPMENT PREMIUM</div>
+      <div class="page-title">設備グレード別 <span>上乗せ効果</span></div>
+    </div>
+
+    <div class="equip-stack">
+      <div class="equip-row" style="border-color:rgba(201,168,76,.3);">
+        <div class="equip-icon">🏗️</div>
+        <div class="equip-info">
+          <div class="equip-name" style="color:#C9A84C;">新築RC造プレミアム</div>
+          <div class="equip-note">既存RC築20年比較。建築費高騰で希少性UP。2028年はさらに新築プレミアムが高い可能性あり</div>
+        </div>
+        <div class="equip-bar-wrap">
+          <div class="equip-bar-label"><span>月額上乗せ効果</span><span>1.5〜3.0万円</span></div>
+          <div class="equip-bar-bg"><div class="equip-bar" style="width:80%;background:linear-gradient(90deg,#C9A84C,#f59e0b);"></div></div>
+        </div>
+        <div class="equip-amount" style="color:#C9A84C;">+1.5〜3.0万</div>
+      </div>
+      <div class="equip-row" style="border-color:rgba(56,189,248,.3);">
+        <div class="equip-icon">🛁</div>
+        <div class="equip-info">
+          <div class="equip-name" style="color:#38bdf8;">風呂トイレ別（BT別）</div>
+          <div class="equip-note">入居者調査で「必須設備トップ3」。BT同室物件との家賃差。女性・ファミリー層の決め手になる設備</div>
+        </div>
+        <div class="equip-bar-wrap">
+          <div class="equip-bar-label"><span>月額上乗せ効果</span><span>5,000〜10,000円</span></div>
+          <div class="equip-bar-bg"><div class="equip-bar" style="width:55%;background:linear-gradient(90deg,#38bdf8,#0ea5e9);"></div></div>
+        </div>
+        <div class="equip-amount" style="color:#38bdf8;">+0.5〜1.0万</div>
+      </div>
+      <div class="equip-row" style="border-color:rgba(0,224,150,.3);">
+        <div class="equip-icon">🛗</div>
+        <div class="equip-info">
+          <div class="equip-name" style="color:#00E096;">EV（エレベーター）付き</div>
+          <div class="equip-note">3階建以上で有効。高層階のある新築RCでは「なし」が致命的なマイナスに。バリアフリー需要にも対応</div>
+        </div>
+        <div class="equip-bar-wrap">
+          <div class="equip-bar-label"><span>月額上乗せ効果</span><span>3,000〜8,000円</span></div>
+          <div class="equip-bar-bg"><div class="equip-bar" style="width:42%;background:linear-gradient(90deg,#00E096,#10b981);"></div></div>
+        </div>
+        <div class="equip-amount" style="color:#00E096;">+0.3〜0.8万</div>
+      </div>
+      <div class="equip-row" style="border-color:rgba(139,92,246,.3);">
+        <div class="equip-icon">🔒</div>
+        <div class="equip-info">
+          <div class="equip-name" style="color:#8B5CF6;">オートロック付き</div>
+          <div class="equip-note">「家賃が高くても決まる設備」上位。単身・共働き・子育て世帯すべての入居意向に影響</div>
+        </div>
+        <div class="equip-bar-wrap">
+          <div class="equip-bar-label"><span>月額上乗せ効果</span><span>3,000〜7,000円</span></div>
+          <div class="equip-bar-bg"><div class="equip-bar" style="width:38%;background:linear-gradient(90deg,#8B5CF6,#7c3aed);"></div></div>
+        </div>
+        <div class="equip-amount" style="color:#8B5CF6;">+0.3〜0.7万</div>
+      </div>
+    </div>
+
+    <div class="base-box">
+      <div class="section-label" style="margin-bottom:10px;">設備フルセット 積み上げ計算（既存平均からの積み上げ）</div>
+      <div class="build-up">
+        <div class="build-item"><div class="build-label">既存平均（守口市2LDK）</div><div class="build-val" style="color:#7dd3fc;">9.3万円</div></div>
+        <div class="build-plus">+</div>
+        <div class="build-item"><div class="build-label">新築RCプレミアム</div><div class="build-val" style="color:#C9A84C;">+1.5〜3.0万</div></div>
+        <div class="build-plus">+</div>
+        <div class="build-item"><div class="build-label">BT別</div><div class="build-val" style="color:#38bdf8;">+0.5〜1.0万</div></div>
+        <div class="build-plus">+</div>
+        <div class="build-item"><div class="build-label">EV付き</div><div class="build-val" style="color:#00E096;">+0.3〜0.8万</div></div>
+        <div class="build-plus">+</div>
+        <div class="build-item"><div class="build-label">オートロック</div><div class="build-val" style="color:#8B5CF6;">+0.3〜0.7万</div></div>
+        <div class="build-equals">=</div>
+        <div class="build-result build-item"><div class="build-label">想定合計（2028年）</div><div class="build-val">11.9〜14.8万円</div></div>
+      </div>
+      <div style="font-size:9.5px;color:rgba(255,255,255,.35);margin-top:8px;">※実際の設定は間取り・専有面積・共用設備・立地条件（駅徒歩分数）によって変動します。</div>
+    </div>
+  </div>
+  <div class="footer">
+    <span>FUJIHISA HOUSING — 都市再生企画室</span>
+    <span>守口市菊水通2丁目 2LDK賃料相場調査レポート 2026</span>
+    <span>P.6 / 7</span>
+  </div>
+</div>
+
+<!-- ============================================================ PAGE 7 ============================================================ -->
+<div class="page" id="page7">
+  <div class="grid-bg"></div>
+  <div class="glow-circle glow1"></div>
+  <div class="glow-circle glow2"></div>
+  <div class="page-inner">
+    <div class="page-hd">
+      <div class="page-num">PAGE 07 / 07</div>
+      <div class="section-label">3-SCENARIO &amp; STRATEGY</div>
+      <div class="page-title">3シナリオ試算 <span>＆ 賃料設定戦略</span></div>
+    </div>
+
+    <div class="scenario-grid">
+      <div class="sc-card sc-strong">
+        <div class="sc-label" style="color:#C9A84C;">■ 強気設定</div>
+        <div class="sc-name">美容・IT・医療系<br>共働きDINKs向け</div>
+        <div class="sc-price" style="color:#C9A84C;">155,000</div>
+        <div class="sc-unit">円/月（税別）</div>
+        <div class="sc-annual">年間収入 約186万円／戸</div>
+        <div class="sc-sqm">㎡単価 約2,540〜2,820円/㎡</div>
+        <div class="divider"></div>
+        <div class="sc-basis">高収益層ターゲット。駅近・デザイン性・ブランド立地を前面に打ち出す。空室リスクは相対的に高め。</div>
+      </div>
+      <div class="sc-card sc-std">
+        <div class="sc-label" style="color:#38bdf8;">◎ 標準設定（推奨）</div>
+        <div class="sc-name">一般ファミリー・<br>共働き子育て世帯</div>
+        <div class="sc-price" style="color:#38bdf8;">140,000</div>
+        <div class="sc-unit">円/月（税別）</div>
+        <div class="sc-annual">年間収入 約168万円／戸</div>
+        <div class="sc-sqm">㎡単価 約2,300〜2,540円/㎡</div>
+        <div class="divider"></div>
+        <div class="sc-basis">周辺新築競合（シャーメゾン14.2万〜・ニードコート14.4万〜）と同水準。入居付けのバランスが最も良い設定。</div>
+      </div>
+      <div class="sc-card sc-low">
+        <div class="sc-label" style="color:#94a3b8;">▽ 抑え設定</div>
+        <div class="sc-name">市場リスクヘッジ・<br>空室最小化優先</div>
+        <div class="sc-price" style="color:#94a3b8;">125,000</div>
+        <div class="sc-unit">円/月（税別）</div>
+        <div class="sc-annual">年間収入 約150万円／戸</div>
+        <div class="sc-sqm">㎡単価 約2,050〜2,270円/㎡</div>
+        <div class="divider"></div>
+        <div class="sc-basis">競合優位を確保し早期満室を目指すシナリオ。新築RC×設備フルで12万台は競争力あり。長期安定収益向き。</div>
+      </div>
+    </div>
+
+    <div class="strategy-grid">
+      <div class="str-card">
+        <div class="str-icon">🆓</div>
+        <div><div class="str-title">フリーレント戦略（1〜2ヶ月）</div><div class="str-desc">入居者の引越し費用・初期コスト負担を軽減することで、高い月額設定との心理的ギャップを埋める。長期入居促進にも効果的。</div></div>
+      </div>
+      <div class="str-card">
+        <div class="str-icon">📋</div>
+        <div><div class="str-title">礼金・敷金の設定方針</div><div class="str-desc">礼金1〜2ヶ月・敷金1〜2ヶ月が守口市エリアの実勢。礼金ゼロで入居者の初期費用を削減し早期満室を実現。敷金は最低1ヶ月を確保推奨。</div></div>
+      </div>
+      <div class="str-card">
+        <div class="str-icon">🅿️</div>
+        <div><div class="str-title">駐車場の有無が集客の命運を分ける</div><div class="str-desc">守口市・門真市はマイカー依存度が高い。駐車場（月額8,000〜15,000円）の付属でファミリー層の入居意向が大幅に向上。</div></div>
+      </div>
+      <div class="str-card">
+        <div class="str-icon">🎯</div>
+        <div><div class="str-title">西三荘 vs 守口市駅エリアの差別化</div><div class="str-desc">西三荘駅エリアは守口市駅より月額1〜3万円低い傾向。「新築RC×閑静な住宅街×子育て環境」として訴求すれば駅力格差を設備で補える。</div></div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin-top:10px;"></div>
+    <div style="font-size:9.5px;color:rgba(255,255,255,.3);line-height:1.7;word-break:keep-all;">
+      本レポートは2026年5月1日時点の公開情報に基づく推計です。実際の成約賃料・市場動向は異なる場合があります。投資判断の最終決定は専門家の意見と合わせてご確認ください。
+    </div>
+  </div>
+  <div class="footer">
+    <span>FUJIHISA HOUSING — 都市再生企画室</span>
+    <span>守口市菊水通2丁目 2LDK賃料相場調査レポート 2026</span>
+    <span>P.7 / 7</span>
+  </div>
+</div>
+
+<script>
+const C = { gold:'#C9A84C', cyan:'#38bdf8', green:'#00E096', orange:'#f97316', purple:'#8B5CF6', slate:'#94a3b8' };
+Chart.defaults.color = 'rgba(255,255,255,0.6)';
+Chart.defaults.font.family = "'Noto Sans JP', sans-serif";
+
+// P3: 参考物件 ㎡単価
+new Chart(document.getElementById('propChart'), {
+  type: 'bar',
+  data: {
+    labels: ['ドリーム菊水\n(築29年RC)', 'シャーメゾン彩III\n(築12年)', 'シャーメゾン セレジェイラ\n(築2年RC)', 'ニードコート\n(2026年新築)', 'グランドパレス守口\n(築8年)', '本物件想定\n(2028年新築RC)'],
+    datasets: [{ label:'㎡単価（円/㎡/月）', data:[1600,1647,2337,2530,2734,2400],
+      backgroundColor:['rgba(100,116,139,.7)','rgba(100,116,139,.7)','rgba(56,189,248,.7)','rgba(56,189,248,.7)','rgba(201,168,76,.7)','rgba(249,115,22,.85)'],
+      borderColor:['rgba(100,116,139,1)','rgba(100,116,139,1)','rgba(56,189,248,1)','rgba(56,189,248,1)','rgba(201,168,76,1)','rgba(249,115,22,1)'],
+      borderWidth:1.5, borderRadius:5 }]
+  },
+  options: {
+    indexAxis:'y', responsive:true, maintainAspectRatio:true,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx=>`㎡単価: ${ctx.parsed.x.toLocaleString()}円/㎡/月` }}},
+    scales:{
+      x:{ min:1000, max:3200, grid:{color:'rgba(255,255,255,.06)'}, ticks:{callback:v=>v.toLocaleString()+'円'} },
+      y:{ grid:{display:false}, ticks:{font:{size:9.5}} }
+    }
+  }
+});
+
+// P4: 推移トレンド
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: ['2023年','2024年','2025年','2026年（現在）'],
+    datasets: [
+      { label:'守口市 既存平均（2LDK）', data:[8.8,9.1,9.5,9.3], borderColor:C.cyan, backgroundColor:'rgba(56,189,248,.12)', fill:true, tension:0.4, pointRadius:5, pointBackgroundColor:C.cyan, borderWidth:2.5 },
+      { label:'守口市 新築RC駅近（実績）', data:[null,null,null,13.3], borderColor:C.orange, fill:false, tension:0.4, pointRadius:8, pointBackgroundColor:C.orange, borderWidth:2.5, spanGaps:false }
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ position:'top', labels:{boxWidth:13,padding:14,font:{size:10.5}} }, tooltip:{ callbacks:{ label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}万円` }}},
+    scales:{
+      y:{ min:7, max:16, grid:{color:'rgba(255,255,255,.06)'}, ticks:{callback:v=>v+'万円'} },
+      x:{ grid:{color:'rgba(255,255,255,.06)'} }
+    }
+  }
+});
+
+// P5: 5年予測
+new Chart(document.getElementById('forecastChart'), {
+  type: 'line',
+  data: {
+    labels: ['2023','2024','2025','2026','2027','2028(竣工)','2029','2030','2031'],
+    datasets: [
+      { label:'既存市場平均（実績）', data:[8.8,9.1,9.5,9.3,null,null,null,null,null], borderColor:C.slate, fill:false, tension:0.4, pointRadius:4, pointBackgroundColor:C.slate, borderWidth:2, borderDash:[6,4], spanGaps:false },
+      { label:'本物件 強気予測',     data:[null,null,null,null,null,15.5,15.8,16.0,16.5], borderColor:C.gold,   backgroundColor:'rgba(201,168,76,.12)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:C.gold,   borderWidth:2.5, spanGaps:false },
+      { label:'本物件 標準予測（推奨）', data:[null,null,null,null,null,14.0,14.3,14.5,15.0], borderColor:C.cyan,   backgroundColor:'rgba(56,189,248,.1)',  fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:C.cyan,   borderWidth:2.5, spanGaps:false },
+      { label:'本物件 保守予測',     data:[null,null,null,null,null,12.5,12.8,13.0,13.5], borderColor:C.slate,  backgroundColor:'rgba(100,116,139,.08)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:C.slate,  borderWidth:2,   spanGaps:false }
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ position:'top', labels:{boxWidth:13,padding:13,font:{size:10}} }, tooltip:{ callbacks:{ label:ctx=>ctx.parsed.y!==null?`${ctx.dataset.label}: ${ctx.parsed.y}万円`:'' }}},
+    scales:{
+      y:{ min:7, max:18, grid:{color:'rgba(255,255,255,.06)'}, ticks:{callback:v=>v+'万円'} },
+      x:{ grid:{color:'rgba(255,255,255,.06)'} }
+    }
+  }
+});
+</script>
+</body>
+</html>

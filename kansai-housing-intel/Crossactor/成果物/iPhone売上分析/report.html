@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iPhoneの売り上げ ― 最新動向・市場シェア・地域別分析・今後の展望 — リサーチレポート</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #FFFBF5;
+    color: #1A1A1A;
+    line-height: 1.75;
+    padding: clamp(16px, 3vw, 32px);
+  }
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(194, 65, 12, 0.08);
+    padding: clamp(32px, 5vw, 72px);
+  }
+
+  /* 表紙ヘッダー */
+  .report-header {
+    background: linear-gradient(135deg, #EA580C 0%, #7C2D12 100%);
+    color: white;
+    padding: clamp(28px, 5vw, 56px);
+    border-radius: 12px;
+    margin-bottom: clamp(32px, 5vw, 56px);
+  }
+  .report-header .kicker {
+    display: inline-block;
+    font-size: clamp(12px, 1.4vw, 14px);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 12px;
+  }
+  .report-header h1 {
+    font-size: clamp(24px, 3.5vw, 42px);
+    font-weight: 900;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+  .report-header .meta {
+    font-size: clamp(13px, 1.4vw, 16px);
+    opacity: 0.88;
+  }
+
+  /* リード */
+  .lead {
+    background: #FFF7ED;
+    border-left: 5px solid #C2410C;
+    padding: clamp(20px, 3vw, 32px);
+    border-radius: 0 12px 12px 0;
+    margin-bottom: clamp(28px, 4vw, 44px);
+    font-size: clamp(15px, 1.7vw, 18px);
+    line-height: 1.85;
+  }
+  .lead strong { color: #C2410C; font-weight: 700; }
+
+  /* 目次 */
+  .toc {
+    background: #FFEDD5;
+    border-radius: 12px;
+    padding: clamp(20px, 3vw, 32px);
+    margin-bottom: clamp(32px, 5vw, 48px);
+  }
+  .toc-title {
+    font-size: clamp(16px, 2vw, 20px);
+    font-weight: 700;
+    color: #9A3412;
+    margin-bottom: 14px;
+    letter-spacing: 0.06em;
+  }
+  .toc ol {
+    padding-left: 24px;
+    font-size: clamp(14px, 1.6vw, 17px);
+  }
+  .toc ol li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+  .toc a { color: #C2410C; text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* 本文見出し */
+  h2 {
+    font-size: clamp(20px, 2.8vw, 30px);
+    font-weight: 800;
+    color: #C2410C;
+    border-bottom: 3px solid #C2410C;
+    padding-bottom: 10px;
+    margin-top: clamp(36px, 5vw, 52px);
+    margin-bottom: clamp(18px, 2.4vw, 24px);
+    line-height: 1.3;
+  }
+  h3 {
+    font-size: clamp(16px, 2vw, 20px);
+    font-weight: 700;
+    color: #9A3412;
+    margin-top: clamp(24px, 3vw, 32px);
+    margin-bottom: 12px;
+    padding-left: 12px;
+    border-left: 4px solid #EA580C;
+  }
+  p {
+    font-size: clamp(15px, 1.6vw, 17px);
+    margin-bottom: clamp(14px, 1.8vw, 18px);
+  }
+  ul, ol {
+    padding-left: clamp(20px, 2.5vw, 28px);
+    margin-bottom: clamp(14px, 1.8vw, 18px);
+    font-size: clamp(15px, 1.6vw, 17px);
+  }
+  ul li, ol li { margin-bottom: 6px; line-height: 1.75; }
+  strong { color: #C2410C; font-weight: 700; }
+
+  /* 表 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: clamp(16px, 2.4vw, 24px) 0;
+    font-size: clamp(13px, 1.45vw, 15px);
+  }
+  th, td {
+    padding: clamp(10px, 1.4vh, 14px) clamp(10px, 1.4vw, 16px);
+    text-align: left;
+    border-bottom: 1px solid #FFEDD5;
+    vertical-align: top;
+  }
+  th { background: #C2410C; color: white; font-weight: 700; }
+  tr:nth-child(even) td { background: #FFF7ED; }
+
+  /* 引用ボックス */
+  blockquote {
+    background: #FFF7ED;
+    border-left: 5px solid #EA580C;
+    padding: clamp(16px, 2.4vw, 24px);
+    margin: clamp(20px, 2.8vw, 28px) 0;
+    border-radius: 0 8px 8px 0;
+    color: #57534E;
+    font-size: clamp(15px, 1.7vw, 17px);
+    font-style: italic;
+  }
+
+  /* インサイトカード */
+  .insight-card {
+    background: #FFF7ED;
+    border: 1px solid #FFEDD5;
+    border-radius: 10px;
+    padding: clamp(16px, 2.4vw, 22px);
+    margin-bottom: clamp(14px, 1.8vw, 18px);
+  }
+  .insight-card .insight-num {
+    display: inline-block;
+    background: linear-gradient(135deg, #C2410C 0%, #EA580C 100%);
+    color: white;
+    font-size: clamp(12px, 1.3vw, 14px);
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  .insight-card p {
+    margin-bottom: 0;
+    font-size: clamp(14px, 1.5vw, 16px);
+    color: #1A1A1A;
+  }
+
+  /* 注釈テキスト */
+  .caption {
+    font-size: clamp(12px, 1.3vw, 14px);
+    color: #57534E;
+    margin-top: -8px;
+    margin-bottom: clamp(14px, 1.8vw, 18px);
+  }
+
+  /* 参考資料 */
+  .references {
+    background: #FFF7ED;
+    border-radius: 12px;
+    padding: clamp(20px, 3vw, 28px);
+    margin-top: clamp(32px, 5vw, 48px);
+    font-size: clamp(13px, 1.5vw, 15px);
+  }
+  .references h2 {
+    font-size: clamp(18px, 2.2vw, 24px);
+    border-bottom: 2px solid #EA580C;
+    margin-top: 0;
+    margin-bottom: 14px;
+    color: #C2410C;
+  }
+  .references ul { list-style: none; padding: 0; }
+  .references li {
+    padding: 6px 0;
+    border-bottom: 1px solid #FFEDD5;
+    word-break: break-all;
+  }
+  .references a { color: #C2410C; text-decoration: underline; }
+
+  /* フッター */
+  .footer-meta {
+    margin-top: clamp(32px, 5vw, 48px);
+    padding-top: clamp(16px, 2vw, 20px);
+    border-top: 1px solid #FFEDD5;
+    color: #57534E;
+    font-size: clamp(12px, 1.3vw, 14px);
+    text-align: right;
+  }
+
+  /* 戻るボタン */
+  .back-to-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: linear-gradient(135deg, #C2410C 0%, #EA580C 100%);
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 22px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(194, 65, 12, 0.25);
+    transition: transform 0.15s ease;
+    z-index: 100;
+  }
+  .back-to-top:hover { transform: translateY(-2px); }
+
+  @media (max-width: 600px) {
+    table { font-size: 12px; }
+    th, td { padding: 8px 8px; }
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .container { box-shadow: none; padding: 20px; }
+    .back-to-top { display: none; }
+    .report-header {
+      background: #C2410C !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    th {
+      background: #C2410C !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .insight-card { break-inside: avoid; }
+    section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="top">
+
+  <!-- 表紙ヘッダー -->
+  <header class="report-header">
+    <span class="kicker">Research Report</span>
+    <h1>iPhoneの売り上げ<br>最新動向・市場シェア・地域別分析・今後の展望</h1>
+    <p class="meta">作成日: 2026-04-26　|　対象読者: 経営層・意思決定者・市場調査担当</p>
+  </header>
+
+  <!-- リード文 -->
+  <div class="lead">
+    <p>iPhoneは2025年に<strong>2億4,780万台</strong>を出荷し過去最高の販売台数を更新しました。グローバルスマートフォン市場では<strong>14年ぶりにSamsungを抜いて首位</strong>に立ち、2025年10〜12月期（Q1 FY2026）には四半期売上高<strong>853億ドル</strong>という空前の記録を達成しています。好調を牽引したのはProシリーズへの需要集中（プレミアム化）と、中国市場における政府補助策を背景とした前年比38%増という急回復です。一方で、米国の追加関税（FY2026通年で推計33億ドルの追加コスト）や市場成熟化に伴う台数減少リスクも顕在化しています。本レポートでは、過去5年の年次推移から最新四半期業績、地域別・製品別の内訳、競合との比較、そして2027年までの展望を網羅的に整理します。</p>
+  </div>
+
+  <!-- 目次 -->
+  <nav class="toc">
+    <div class="toc-title">目次</div>
+    <ol>
+      <li><a href="#ch1">概要</a></li>
+      <li><a href="#ch2">背景・年次売上推移（FY2020〜FY2025）</a></li>
+      <li><a href="#ch3">主要トピック1: 直近業績 ― Q1 FY2026の記録更新</a></li>
+      <li><a href="#ch4">主要トピック2: 地域別・製品別内訳</a></li>
+      <li><a href="#ch5">主要トピック3: 市場シェアと競合比較</a></li>
+      <li><a href="#ch6">示唆・インサイト</a></li>
+      <li><a href="#ch7">まとめ・次のアクション</a></li>
+    </ol>
+  </nav>
+
+  <!-- 章1: 概要 -->
+  <section id="ch1">
+    <h2>1. 概要</h2>
+    <p>iPhoneは2025年において複数の歴史的節目を迎えました。暦年2025年の世界出荷台数は約2億4,780万台（IDC調べ）と、2021年に記録した旧来の最高値（約2億4,200万台）を4年ぶりに更新しています。市場シェアは19.7%に達し、19.1%のSamsungを僅差で上回って<strong>グローバルスマートフォン市場14年ぶりの首位</strong>を獲得しました。</p>
+    <p>財務面でも同様に好調が続いています。Apple社のFY2025（2024年10月〜2025年9月）通期売上高に占めるiPhoneの比率は約48%に上り、iPhone単体で約2,097億ドルを売り上げました。さらにiPhone 17シリーズ発売後の四半期（Q1 FY2026、2025年10〜12月期）では、四半期ベースで過去最高となる853億ドルを達成し、米州・欧州・中国・日本・アジア太平洋のすべての地域で同時に最高値を更新しています。</p>
+    <p>注目すべき発見は主に以下の5点です。第一に、iPhone 17 ProシリーズがiPhone全販売の過半を占め、プレミアム化が加速していること。第二に、中国市場が政府補助策を背景に前年比38%増という急回復を遂げたこと。第三に、2026年Q1にはSamsungが僅差で首位を奪還しており、競合との優位性は流動的であること。第四に、フォルダブルiPhoneやApple IntelligenceがASP（平均販売単価）と買い替えサイクルの両方を押し上げる可能性を秘めていること。第五に、米国関税リスクがFY2026通年で推計33億ドルの追加コストとなり、収益性への影響を無視できないことです。</p>
+  </section>
+
+  <!-- 章2: 背景・年次売上推移 -->
+  <section id="ch2">
+    <h2>2. 背景・年次売上推移（FY2020〜FY2025）</h2>
+
+    <h3>2-1. コロナ禍からの急回復と「2,000億ドル時代」の定着</h3>
+    <p>iPhoneの年次売上高はFY2020（2019年10月〜2020年9月）に約1,378億ドルでした。新型コロナウイルス感染拡大による需要抑制の反動や5G（第5世代移動通信）対応機種への買い替え需要を取り込んだFY2021には1,920億ドルまで急増し、販売台数も2億4,200万台に達しました。</p>
+    <p>FY2022〜FY2024は販売台数が2億3,000〜2億3,200万台、売上高は2,000〜2,055億ドルのレンジで推移しました。円安や購買力格差による地域間のバラツキはありましたが、プレミアム機種の価格改定によりASPは上昇傾向を維持し、台数が伸び悩む中でも売上高は横ばいから微増を保ちました。</p>
+
+    <h3>2-2. FY2025の最高記録更新</h3>
+    <p>FY2025は売上高約2,097億ドル、販売台数約2億4,780万台といずれも過去最高を更新しました。Apple Intelligence（同社のAI機能基盤）への対応を訴求したiPhone 17シリーズ発売（2025年9月）後の需要集中が台数・売上の双方を押し上げた形です。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>会計年度</th>
+          <th>売上高（億ドル）</th>
+          <th>販売台数（億台）</th>
+          <th>出典</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>FY2020</td><td>1,378</td><td>1.97</td><td>DemandSage / Business of Apps</td></tr>
+        <tr><td>FY2021</td><td>1,920</td><td>2.42</td><td>DemandSage</td></tr>
+        <tr><td>FY2022</td><td>2,055</td><td>2.33</td><td>DemandSage</td></tr>
+        <tr><td>FY2023</td><td>2,006</td><td>2.32</td><td>DemandSage</td></tr>
+        <tr><td>FY2024</td><td>2,011</td><td>2.321</td><td>DemandSage / IDC</td></tr>
+        <tr><td>FY2025</td><td>2,097</td><td>2.478</td><td>IDC / DemandSage</td></tr>
+      </tbody>
+    </table>
+    <p class="caption">※FY（Fiscal Year）はAppleの会計年度で、前年10月〜当年9月を1年度とします。販売台数は出荷台数ベースです。</p>
+  </section>
+
+  <!-- 章3: 直近業績 -->
+  <section id="ch3">
+    <h2>3. 主要トピック1: 直近業績 ― Q1 FY2026の記録更新</h2>
+
+    <h3>3-1. Apple史上最高の四半期</h3>
+    <p>Q1 FY2026（2025年10月〜12月27日）は、Apple社にとって創業以来最高の四半期となりました。総売上高1,438億ドル（前年比+16%）、純利益421億ドル（希薄化後EPS 2.84ドル、前年比+19%）、営業キャッシュフロー539億ドルとすべての主要指標で過去最高を更新しています（出典: <a href="https://www.apple.com/newsroom/2026/01/apple-reports-first-quarter-results/" target="_blank" rel="noopener">Apple公式プレスリリース</a> / <a href="https://www.macrumors.com/2026/01/29/apple-1q-2026-earnings/" target="_blank" rel="noopener">MacRumors</a>）。</p>
+
+    <blockquote>「今四半期のiPhone販売は驚異的としか言いようがない。積み上がっていた潜在需要（pent-up demand）が一気に解放された。」<br>― 複数アナリストのコメント（<a href="https://www.cnbc.com/2026/01/31/analysts-apples-staggering-iphone-sales-are-from-pent-up-demand.html" target="_blank" rel="noopener">CNBC, 2026年1月</a>）</blockquote>
+
+    <h3>3-2. サービス部門との相乗効果</h3>
+    <p>iPhoneの好調に加え、App StoreやApple Music、iCloudなどを束ねるサービス部門も300億ドル（前年比+14%）と四半期最高を更新しました。ハードウェアとサービスの売上が同時に最高値を記録した点は、Appleのエコシステム戦略――ハードウェアを起点にサービスへの継続課金を促す仕組み――が着実に成熟していることを示しています。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>指標</th>
+          <th>Q1 FY2026</th>
+          <th>前年比</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>総売上高</td><td>1,438億ドル</td><td>+16%</td></tr>
+        <tr><td>iPhone売上高</td><td>853億ドル</td><td>+23%</td></tr>
+        <tr><td>サービス売上高</td><td>300億ドル</td><td>+14%</td></tr>
+        <tr><td>純利益</td><td>421億ドル</td><td>+19%</td></tr>
+        <tr><td>希薄化後EPS</td><td>2.84ドル</td><td>+19%</td></tr>
+        <tr><td>営業キャッシュフロー</td><td>539億ドル</td><td>過去最高</td></tr>
+      </tbody>
+    </table>
+    <p class="caption">出典: Apple公式プレスリリース / MacRumors（2026年1月）</p>
+
+    <h3>3-3. Q2 FY2026の見通し</h3>
+    <p>次四半期（Q2 FY2026、2026年1〜3月期）については、Apple側が前年比+13〜16%のガイダンスを提示しており、市場コンセンサス予想ではiPhone売上高が約565億ドルとされています（出典: <a href="https://seekingalpha.com/article/4893612-apple-earnings-preview-q2-2026" target="_blank" rel="noopener">Seeking Alpha</a> / <a href="https://www.ig.com/en/news-and-trade-ideas/apple-2Q26-earnings-preview-260423" target="_blank" rel="noopener">IG International</a>）。2026年4月30日に決算発表が予定されており、本稿執筆時点では結果は未公開です。また、Tim Cook CEOが9月1日付でJohn Ternusに経営を引き継ぐ方針を表明しており、中長期の戦略方向性に対する市場の関心も高まっています。</p>
+  </section>
+
+  <!-- 章4: 地域別・製品別内訳 -->
+  <section id="ch4">
+    <h2>4. 主要トピック2: 地域別・製品別内訳</h2>
+
+    <h3>4-1. 全地域同時最高 ― とりわけ中国の急回復が顕著</h3>
+    <p>Q1 FY2026では、米州・欧州・中国（Greater China）・日本・アジア太平洋の5地域すべてで四半期最高売上を同時達成しました。特筆すべきは中国で、前年比+38%という突出した伸びを記録しています。背景には中国政府による消費刺激策（家電補助金）の効果があるとされています（出典: <a href="https://finance.yahoo.com/news/apple-inc-aapl-q1-2026-050239886.html" target="_blank" rel="noopener">Yahoo Finance</a>）。</p>
+    <p>FY2025通年では同じ中国が前年比-3.9%（644億ドル）と低迷していたことを踏まえると、Q1 FY2026における急反転は注目に値します。これが一時的な政策効果にとどまるのか、継続的な需要回復の始まりなのかは、今後の四半期を見極める必要があります。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>地域</th>
+          <th>Q1 FY2026 売上高</th>
+          <th>前年比</th>
+          <th>FY2025通年</th>
+          <th>前年比</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>米州（Americas）</td>
+          <td>585億ドル</td>
+          <td>+11%</td>
+          <td>1,784億ドル</td>
+          <td>+6.8%</td>
+        </tr>
+        <tr>
+          <td>欧州（Europe）</td>
+          <td>381億ドル</td>
+          <td>+13%</td>
+          <td>1,110億ドル</td>
+          <td>+9.6%</td>
+        </tr>
+        <tr>
+          <td>中国（Greater China）</td>
+          <td>255億ドル</td>
+          <td>+38%</td>
+          <td>644億ドル</td>
+          <td>-3.9%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="caption">出典: Apple決算資料 / ElevateIcons / Bullfincher（日本・アジア太平洋の詳細額はリサーチ資料に記載なし）</p>
+
+    <h3>4-2. 製品別シェア ― プレミアム志向の加速</h3>
+    <p>iPhone 17シリーズの発売直後における早期販売データでは、ProおよびPro Maxモデルが合計で全シリーズ販売の約52%を占めました。最上位モデルのiPhone 17 Pro Maxだけでも約27%のシェアを確保しており、ユーザーが高価格帯へ積極的に移行していることが読み取れます。</p>
+    <p>一方、新フォームファクタ（薄型・軽量を特徴とする新デザインモデル）として発表された「iPhone Air」は早期販売の約6%にとどまり、市場の期待を下回る立ち上がりとなりました。薄型設計をどこまで消費者が評価するかは次モデル以降での改善と普及が課題となっています（出典: <a href="https://appleinsider.com/articles/25/12/02/iphone-17-sales-fueling-a-record-year-pushing-market-toward-higher-prices" target="_blank" rel="noopener">Apple Insider</a> / <a href="https://www.macrumors.com/2025/12/02/apple-2025-iphone-sales-record/" target="_blank" rel="noopener">MacRumors</a>）。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>モデル</th>
+          <th>早期販売構成比</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>iPhone 17 Pro Max</td><td>約27%</td></tr>
+        <tr><td>iPhone 17 Pro（Pro系合計）</td><td>合計 約52%</td></tr>
+        <tr><td>iPhone 17（標準）</td><td>約22%</td></tr>
+        <tr><td>iPhone Air</td><td>約6%</td></tr>
+      </tbody>
+    </table>
+    <p class="caption">出典: Apple Insider / MacRumors（早期販売データ、2025年12月時点）</p>
+  </section>
+
+  <!-- 章5: 市場シェアと競合比較 -->
+  <section id="ch5">
+    <h2>5. 主要トピック3: 市場シェアと競合比較</h2>
+
+    <h3>5-1. 14年ぶりの首位交代、しかし優位は僅差</h3>
+    <p>IDCが発表したデータによれば、2025年通年のグローバルスマートフォン出荷台数でAppleが19.7%のシェアを獲得し、19.1%のSamsungを上回って14年ぶりに首位を奪取しました。世界全体の出荷台数は約12.6億台（前年比+1.5%）で緩やかな成長が続いています（出典: <a href="https://my.idc.com/getdoc.jsp?containerId=prUS53965725" target="_blank" rel="noopener">IDC</a>）。</p>
+    <p>ただし2026年Q1（2026年1〜3月期）のデータでは、SamsungがAppleを再度逆転し首位に返り咲いたとIDCは報告しています。差はわずか170万台（約0.6ポイント）であり、両社のシェア争いは依然として拮抗した状態です（出典: <a href="https://www.phonearena.com/news/q1-2026-global-smartphone-market-report-samsung-first-place-apple-second_id179680" target="_blank" rel="noopener">PhoneArena</a>）。</p>
+
+    <blockquote>「iPhoneが14年ぶりの世界首位を達成した。ただしSamsungとの差はわずか660万台（0.6ポイント）にすぎず、翌四半期には再び順位が入れ替わっている。」<br>― IDC / Android Headlines（2026年1月）</blockquote>
+
+    <h3>5-2. 上位5社の構図</h3>
+    <p>中国メーカーがグローバルシェアを拡大しており、Xiaomiは13.1%で3位に位置します。Vivo（8.2%）とOPPO（8.1%）が4位・5位に続きます。Androidメーカー全体のシェア合計は依然として80%超であり、新興国市場を中心に競合の圧力が続いています。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>順位</th>
+          <th>メーカー</th>
+          <th>出荷台数（億台）</th>
+          <th>市場シェア</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1位</td><td>Apple</td><td>2.478</td><td>19.7%</td></tr>
+        <tr><td>2位</td><td>Samsung</td><td>2.412</td><td>19.1%</td></tr>
+        <tr><td>3位</td><td>Xiaomi</td><td>1.653</td><td>13.1%</td></tr>
+        <tr><td>4位</td><td>Vivo</td><td>1.039</td><td>8.2%</td></tr>
+        <tr><td>5位</td><td>OPPO</td><td>1.020</td><td>8.1%</td></tr>
+        <tr><td>―</td><td>世界合計</td><td>約12.6</td><td>100%</td></tr>
+      </tbody>
+    </table>
+    <p class="caption">出典: IDC（2025年通年データ）</p>
+  </section>
+
+  <!-- 章6: 示唆・インサイト -->
+  <section id="ch6">
+    <h2>6. 示唆・インサイト</h2>
+
+    <div class="insight-card">
+      <span class="insight-num">示唆 1</span>
+      <p><strong>「台数首位」より「収益性」に注目すべき局面</strong>: SamsungとのシェアはわずかO.6ポイント差で流動的です。iPhoneの真の競争優位は台数ではなく、プレミアムモデルへの集中と平均販売単価の高さにあります。Proシリーズが販売の52%以上を占める構成は、競合が価格競争に走る中でAppleが利益率を優先する戦略を徹底している証左といえます。</p>
+    </div>
+
+    <div class="insight-card">
+      <span class="insight-num">示唆 2</span>
+      <p><strong>中国市場は「回復」と「依存リスク」の表裏一体</strong>: Q1 FY2026で+38%という鮮やかな回復を見せた中国市場ですが、この数字は政府補助策という一時的な政策要因に依存している側面があります。米中関係の緊張やHuaweiなど国内ブランドの復活という構造的逆風も依然として存在しており、回復の持続性は慎重に見極める必要があります。</p>
+    </div>
+
+    <div class="insight-card">
+      <span class="insight-num">示唆 3</span>
+      <p><strong>Apple IntelligenceがアップグレードサイクルをAI時代へ更新する</strong>: iPhone 17以降のAI機能搭載強化は、古い端末からの買い替えを促す強力な動機となりつつあります。アナリスト各社は「過去10年で最強の2年間iPhone成長」と評価しており、2026〜2027年もこのモメンタムが続くとのコンセンサスが形成されています。ただしApple Intelligenceの機能充実度や消費者の実感値次第では、期待を下回るシナリオも排除できません。</p>
+    </div>
+
+    <div class="insight-card">
+      <span class="insight-num">示唆 4</span>
+      <p><strong>関税コストが収益性の最大リスク ― インド移管で緩和を図る</strong>: トランプ政権の関税政策により、FY2026通年で推計33億ドルの追加コストが発生するとされています。Appleはインドへの生産移管を加速させていますが、移転コストや品質管理の課題もあり、完全な回避には時間を要します。コスト増を価格転嫁した場合の需要への影響も注視が必要です。</p>
+    </div>
+
+    <div class="insight-card">
+      <span class="insight-num">示唆 5</span>
+      <p><strong>フォルダブルiPhoneとサービス収益が中長期の成長軸</strong>: 1,800〜2,500ドルと想定されるフォルダブルiPhoneの市場投入は、ASPをさらに押し上げる可能性があります。同時にサービス部門は2026年通年で1,200億ドル超が見込まれており、Morgan Stanleyは「Apple Intelligence+」有料プランの実現により年間100〜200億ドルの追加収益を試算しています（ただし消費者の支払い意向は不確実であり、実現可能性は未知数です）。</p>
+    </div>
+
+    <h3>注意点・情報の不確実性について</h3>
+    <p>本レポートは2026年4月26日時点のリサーチに基づいています。Q2 FY2026の確定値（4月30日発表予定）および日本・アジア太平洋地域の詳細な地域別内訳は含まれていません。フォルダブルiPhone・Apple Intelligence+サブスクリプション等に関する数値はアナリスト予測であり、公式に確定した情報ではありません。市場シェアの数値はIDCとCounterpoint Researchで調査手法が異なる場合があります。</p>
+  </section>
+
+  <!-- 章7: まとめ・次のアクション -->
+  <section id="ch7">
+    <h2>7. まとめ・次のアクション</h2>
+
+    <h3>まとめ</h3>
+    <p>iPhoneは2025年に出荷台数・市場シェア・四半期売上高のいずれにおいても過去最高記録を更新しました。iPhone 17 Proシリーズへの需要集中によるプレミアム化の加速、中国市場の急回復（Q1 FY2026で前年比+38%）、そしてApple Intelligenceを核としたエコシステムの強化が好業績の三本柱となっています。</p>
+    <p>一方で、Samsungとのシェア争いは依然として僅差で流動的であり、米国の関税政策に伴うコスト増（FY2026推計33億ドル）、IDCによる2026年のiOS端末台数減少予測など、楽観できないリスクも存在します。アナリストコンセンサスではFY2026のiPhone売上は前年比+6%、FY2027は+4%超の成長が見込まれており、フォルダブルiPhoneやサービス拡大が次の成長ドライバーとして期待されています。</p>
+    <p>技術・地政学・競合の3つの変化が同時に進行する中で、iPhoneビジネスは「量から質」への転換を着実に進めている段階にあります。今後の注目点は、Q2 FY2026の確定値、関税コストの吸収策（インド生産移管の進捗）、そしてフォルダブルiPhoneのリリース時期と市場反応です。</p>
+
+    <h3>次のアクション候補</h3>
+    <ul>
+      <li><strong>Q2 FY2026決算（4月30日）の結果をモニタリング</strong>: 関税コストの実際の影響額と、中国市場の継続的な回復傾向を確認する</li>
+      <li><strong>競合（Samsung・Xiaomi）のフォルダブル戦略を継続調査</strong>: Appleのフォルダブル参入に対する競合の対応策と価格帯の変化を追う</li>
+      <li><strong>Apple Intelligence+サブスク展開の動向を追跡</strong>: 課金モデルの正式発表が出た段階で、サービス収益への影響を定量的に試算する</li>
+      <li><strong>インド生産移管の進捗と供給リスクを評価</strong>: 生産コストや品質管理の課題が顕在化した場合の調達戦略への示唆を検討する</li>
+      <li><strong>中国市場の継続性を四半期ごとに検証</strong>: 政府補助策の終了後も回復基調が続くか、あるいは再び失速するかを判断する</li>
+    </ul>
+  </section>
+
+  <!-- 参考資料 -->
+  <section class="references">
+    <h2>参考資料</h2>
+    <ul>
+      <li><a href="https://www.demandsage.com/iphone-user-statistics/" target="_blank" rel="noopener">iPhone Users &amp; Sales Statistics 2026 (By Year &amp; Country) — DemandSage</a></li>
+      <li><a href="https://www.businessofapps.com/data/apple-statistics/" target="_blank" rel="noopener">Apple Statistics (2026) — Business of Apps</a></li>
+      <li><a href="https://my.idc.com/getdoc.jsp?containerId=prUS53965725" target="_blank" rel="noopener">Worldwide Smartphone Market to Grow 1.5% in 2025 — IDC</a></li>
+      <li><a href="https://www.apple.com/newsroom/2026/01/apple-reports-first-quarter-results/" target="_blank" rel="noopener">Apple reports first quarter results — Apple Newsroom</a></li>
+      <li><a href="https://www.macrumors.com/2026/01/29/apple-1q-2026-earnings/" target="_blank" rel="noopener">Apple Reports Record-Setting 1Q 2026 Results — MacRumors</a></li>
+      <li><a href="https://www.idropnews.com/news/apple-q1-2026-earnings-iphone-17-gemini/259222/" target="_blank" rel="noopener">Apple Q1 2026 Results: Record $143.8B Revenue — iDropNews</a></li>
+      <li><a href="https://elevateicons.com/apple-q1-2026-results-breakdown-and-revenue-insights/" target="_blank" rel="noopener">Apple Q1 2026 Results Breakdown and Revenue Insights — ElevateIcons</a></li>
+      <li><a href="https://finance.yahoo.com/news/apple-inc-aapl-q1-2026-050239886.html" target="_blank" rel="noopener">Apple Inc (AAPL) Q1 2026 Earnings Call Highlights — Yahoo Finance</a></li>
+      <li><a href="https://bullfincher.io/companies/apple/revenue-by-geography" target="_blank" rel="noopener">Apple Revenue Breakdown By Region — Bullfincher</a></li>
+      <li><a href="https://appleinsider.com/articles/25/12/02/iphone-17-sales-fueling-a-record-year-pushing-market-toward-higher-prices" target="_blank" rel="noopener">iPhone 17 sales fueling a record year — Apple Insider</a></li>
+      <li><a href="https://www.macrumors.com/2025/12/02/apple-2025-iphone-sales-record/" target="_blank" rel="noopener">iPhone 17 Demand Is Breaking Apple's Sales Records — MacRumors</a></li>
+      <li><a href="https://www.androidheadlines.com/2026/01/apple-wins-2025-in-terms-of-smartphone-sales-but-samsung-is-close-second.html" target="_blank" rel="noopener">Apple Wins 2025 in Terms of Smartphone Sales — Android Headlines</a></li>
+      <li><a href="https://www.phonearena.com/news/q1-2026-global-smartphone-market-report-samsung-first-place-apple-second_id179680" target="_blank" rel="noopener">Global Smartphone Market Report Q1 2026 — PhoneArena</a></li>
+      <li><a href="https://counterpointresearch.com/en/insights/Global-Smartphone-Forecast-for-2025" target="_blank" rel="noopener">Global Smartphone Forecast for 2025 — Counterpoint Research</a></li>
+      <li><a href="https://www.macrumors.com/2025/11/26/iphone-17-sales-drive-apple-past-samsung/" target="_blank" rel="noopener">iPhone 17 Helps Apple Reclaim Top Spot From Samsung After 14 Years — MacRumors</a></li>
+      <li><a href="https://www.marketpulse.com/markets/apple-inc-aapl-earnings-preview-navigating-growth-tariffs-and-ai-innovation/" target="_blank" rel="noopener">Apple Inc. (AAPL) Earnings Preview: Navigating Growth, Tariffs, and AI Innovation — MarketPulse</a></li>
+      <li><a href="https://www.investing.com/news/economy-news/apple-iphone-17-drives-record-2025-sales-amid-looming-2026-market-decline-93CH-4386857" target="_blank" rel="noopener">Apple iPhone 17 drives record 2025 sales amid looming 2026 market decline — Investing.com</a></li>
+      <li><a href="https://www.cnbc.com/2026/01/31/analysts-apples-staggering-iphone-sales-are-from-pent-up-demand.html" target="_blank" rel="noopener">Analysts: Apple's 'staggering' iPhone sales are from 'pent-up demand' — CNBC</a></li>
+      <li><a href="https://www.ig.com/en/news-and-trade-ideas/apple-2Q26-earnings-preview-260423" target="_blank" rel="noopener">Apple Q2 preview: outlook after a record quarter — IG International</a></li>
+      <li><a href="https://seekingalpha.com/article/4893612-apple-earnings-preview-q2-2026" target="_blank" rel="noopener">Apple Earnings Preview: Q2 2026 — Seeking Alpha</a></li>
+      <li><a href="https://swotpal.com/blog/apple-swot-analysis-2026" target="_blank" rel="noopener">Apple SWOT Analysis 2026 — SwotPal</a></li>
+      <li><a href="https://www.techi.com/apple-stock/" target="_blank" rel="noopener">Apple Stock (AAPL): Price Target, Forecast &amp; Analysis 2026 — techi.com</a></li>
+    </ul>
+  </section>
+
+  <!-- フッター -->
+  <footer class="footer-meta">
+    <p>AI編集部 / リサーチレポート　|　Generated by ai-editorial　|　2026-04-26</p>
+  </footer>
+
+</div>
+
+<a href="#top" class="back-to-top" aria-label="ページトップへ戻る">&#8679;</a>
+
+</body>
+</html>

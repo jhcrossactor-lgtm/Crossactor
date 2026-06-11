@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>境界確認図</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f0f4f8; font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 24px; min-height: 100vh; }
+  h1 { font-size: 18px; color: #1a3a5c; margin-bottom: 4px; }
+  p.sub { font-size: 12px; color: #888; margin-bottom: 6px; }
+  p.area { font-size: 13px; color: #1a3a5c; margin-bottom: 16px; background: #e8f0fa; display: inline-block; padding: 4px 14px; border-radius: 20px; }
+  .container { display: flex; gap: 24px; align-items: flex-start; width: 100%; max-width: 900px; }
+  svg { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); flex: 1; }
+  .table-wrap { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); padding: 16px; min-width: 200px; }
+  .table-wrap h2 { font-size: 13px; color: #1a3a5c; margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #dce8f5; color: #1a3a5c; padding: 5px 8px; text-align: left; }
+  td { padding: 5px 8px; border-bottom: 1px solid #eee; color: #333; }
+  tr:hover td { background: #f5faff; }
+  .badge { display: inline-block; width: 22px; height: 22px; background: #1a3a5c; color: white; border-radius: 50%; text-align: center; line-height: 22px; font-size: 11px; font-weight: bold; }
+  .legend { display: flex; gap: 16px; margin-bottom: 12px; font-size: 11px; color: #555; align-items: center; }
+  .legend-line { display: inline-block; width: 24px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+</style>
+</head>
+<body>
+<h1>境界確認図（辺番号確認用）</h1>
+<p class="sub">道路境界・隣地境界を番号で指定するための参考図です</p>
+<p class="area">敷地面積：<strong>993.63 m²</strong>　（地番：98-2 + 97-2）</p>
+
+<div class="legend">
+  <span><span class="legend-line" style="background:#e6b800;"></span>道路境界</span>
+  <span><span class="legend-line" style="background:#999;"></span>隣地境界（未設定含む）</span>
+</div>
+
+<div class="container">
+<svg id="site-svg" viewBox="0 0 500 550" xmlns="http://www.w3.org/2000/svg"></svg>
+
+<div class="table-wrap">
+  <h2>辺番号一覧</h2>
+  <table>
+    <tr><th>辺</th><th>長さ</th><th>種別</th></tr>
+  </table>
+</div>
+</div>
+
+<script>
+// 辺2（32.96m）が水平になるよう19.46°回転済み座標
+const raw = {"coords": [[61.237,125.698],[61.323,103.658],[48.921,103.657],[15.960,103.657],[15.948,122.659],[18.944,125.661],[48.907,125.687],[61.237,125.698]], "edges": [{"index": 0, "sx": 61.237, "sy": 125.698, "ex": 61.323, "ey": 103.658, "length": 22.04}, {"index": 1, "sx": 61.323, "sy": 103.658, "ex": 48.921, "ey": 103.657, "length": 12.40}, {"index": 2, "sx": 48.921, "sy": 103.657, "ex": 15.960, "ey": 103.657, "length": 32.96}, {"index": 3, "sx": 15.960, "sy": 103.657, "ex": 15.948, "ey": 122.659, "length": 19.00}, {"index": 4, "sx": 15.948, "sy": 122.659, "ex": 18.944, "ey": 125.661, "length": 4.24}, {"index": 5, "sx": 18.944, "sy": 125.661, "ex": 48.907, "ey": 125.687, "length": 29.96}, {"index": 6, "sx": 48.907, "sy": 125.687, "ex": 61.237, "ey": 125.698, "length": 12.33}]};
+
+const SVG_W = 500, SVG_H = 550, PAD = 60;
+const xs = raw.coords.map(c => c[0]);
+const ys = raw.coords.map(c => c[1]);
+const minX = Math.min(...xs), maxX = Math.max(...xs);
+const minY = Math.min(...ys), maxY = Math.max(...ys);
+const scaleX = (SVG_W - PAD*2) / (maxX - minX);
+const scaleY = (SVG_H - PAD*2) / (maxY - minY);
+const scale = Math.min(scaleX, scaleY) * 0.9;
+const cx = SVG_W/2 - ((minX+maxX)/2)*scale;
+const cy = SVG_H/2 + ((minY+maxY)/2)*scale;
+
+function tx(x) { return cx + x * scale; }
+function ty(y) { return cy - y * scale; }  // Y反転
+
+const svg = document.getElementById('site-svg');
+const ns = 'http://www.w3.org/2000/svg';
+
+// 敷地塗り
+const pts = raw.coords.map(c => `${tx(c[0])},${ty(c[1])}`).join(' ');
+const poly = document.createElementNS(ns, 'polygon');
+poly.setAttribute('points', pts);
+poly.setAttribute('fill', '#e8f0fa');
+poly.setAttribute('stroke', '#aaa');
+poly.setAttribute('stroke-width', '1');
+svg.appendChild(poly);
+
+// 各辺と番号
+raw.edges.forEach(e => {
+  const sx = tx(e.sx), sy = ty(e.sy), ex = tx(e.ex), ey = ty(e.ey);
+
+  // 辺の線
+  const line = document.createElementNS(ns, 'line');
+  line.setAttribute('x1', sx); line.setAttribute('y1', sy);
+  line.setAttribute('x2', ex); line.setAttribute('y2', ey);
+  line.setAttribute('stroke', '#555');
+  line.setAttribute('stroke-width', '2');
+  svg.appendChild(line);
+
+  // 中点
+  const mx = (sx + ex) / 2, my = (sy + ey) / 2;
+  const dx = ey - sy, dy = -(ex - sx);
+  const len = Math.sqrt(dx*dx + dy*dy);
+  const nx = len > 0 ? dx/len * 22 : 22;
+  const ny = len > 0 ? dy/len * 22 : 22;
+  const lx = mx + nx, ly = my + ny;
+
+  const r = 13;
+  const circle = document.createElementNS(ns, 'circle');
+  circle.setAttribute('cx', lx); circle.setAttribute('cy', ly);
+  circle.setAttribute('r', r);
+  circle.setAttribute('fill', '#1a3a5c');
+  svg.appendChild(circle);
+
+  const numText = document.createElementNS(ns, 'text');
+  numText.setAttribute('x', lx); numText.setAttribute('y', ly + 4);
+  numText.setAttribute('text-anchor', 'middle');
+  numText.setAttribute('fill', 'white');
+  numText.setAttribute('font-size', '11');
+  numText.setAttribute('font-weight', 'bold');
+  numText.textContent = e.index;
+  svg.appendChild(numText);
+
+  const distText = document.createElementNS(ns, 'text');
+  distText.setAttribute('x', lx); distText.setAttribute('y', ly + r + 13);
+  distText.setAttribute('text-anchor', 'middle');
+  distText.setAttribute('fill', '#333');
+  distText.setAttribute('font-size', '10');
+  distText.textContent = `${e.length}m`;
+  svg.appendChild(distText);
+});
+
+const tbody = document.querySelector('table');
+raw.edges.forEach(e => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><span class="badge">${e.index}</span></td><td>${e.length}m</td><td style="color:#aaa">未読定</td>`;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>

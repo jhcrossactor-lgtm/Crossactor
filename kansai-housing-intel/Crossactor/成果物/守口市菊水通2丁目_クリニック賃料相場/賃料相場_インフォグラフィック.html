@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>守口市菊水通2丁目 商業テナント賃料相場調査 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  font-stretch:normal;
+  background:#0c0904;
+  color:#fff;
+  -webkit-font-smoothing:antialiased;
+}
+@media screen{body{padding:40px 20px;}}
+
+/* ======= PAGE ======= */
+.page{
+  width:1080px;
+  margin:0 auto 48px;
+  position:relative;
+  overflow:hidden;
+  border-radius:18px;
+  box-shadow:0 24px 80px rgba(0,0,0,.7);
+}
+.page-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 40px;
+  border-bottom:1px solid rgba(245,158,11,.12);
+}
+.page-num{font-size:11px;color:rgba(255,255,255,.35);letter-spacing:2px;}
+.logo-tag{font-size:11px;color:rgba(255,255,255,.35);letter-spacing:1.5px;}
+
+.badge{
+  display:inline-block;padding:4px 14px;border-radius:20px;
+  font-size:11px;font-weight:700;letter-spacing:.5px;
+}
+.badge-amber  {background:#F59E0B;color:#000;}
+.badge-gold   {background:#C9A84C;color:#000;}
+.badge-green  {background:#22C55E;color:#000;}
+.badge-orange {background:#F97316;color:#fff;}
+.badge-teal   {background:#14B8A6;color:#000;}
+.badge-red    {background:#EF4444;color:#fff;}
+
+.section-label{
+  font-size:11px;font-weight:700;letter-spacing:3px;
+  color:#F59E0B;text-transform:uppercase;margin-bottom:6px;
+}
+.divider{width:40px;height:3px;background:linear-gradient(90deg,#F59E0B,#F97316);border-radius:2px;margin:10px 0 18px;}
+
+.card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:14px;padding:20px;
+}
+.card-hl{
+  background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(249,115,22,.10));
+  border:1px solid rgba(245,158,11,.3);
+  border-radius:14px;padding:20px;
+}
+.grid-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(245,158,11,.022) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(245,158,11,.022) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+.glow{
+  position:absolute;border-radius:50%;
+  filter:blur(90px);pointer-events:none;
+}
+
+/* ======= P1 COVER ======= */
+#page1{background:linear-gradient(135deg,#1e1208 0%,#2a1800 55%,#1e1208 100%);min-height:780px;}
+.p1-hero{display:grid;grid-template-columns:1fr 1fr;gap:56px;padding:42px 56px 32px;align-items:center;}
+.p1-eyebrow{font-size:12px;font-weight:700;color:#F59E0B;letter-spacing:3px;margin-bottom:14px;}
+.p1-title{font-size:38px;font-weight:900;line-height:1.2;margin-bottom:18px;}
+.p1-title .hl{color:#F59E0B;}
+.p1-desc{font-size:13px;color:rgba(255,255,255,.58);line-height:1.9;margin-bottom:24px;}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.spec-item{background:rgba(255,255,255,.06);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:12px 14px;}
+.spec-lbl{font-size:9.5px;color:rgba(255,255,255,.38);letter-spacing:1px;margin-bottom:4px;}
+.spec-val{font-size:13px;font-weight:700;}
+.p1-map{background:rgba(255,255,255,.04);border:1px solid rgba(245,158,11,.2);border-radius:16px;padding:26px;}
+.map-vis{
+  width:100%;height:220px;background:linear-gradient(135deg,#1e1008,#2a1400);
+  border-radius:12px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;margin-bottom:16px;
+}
+.map-vis::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(245,158,11,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.07) 1px,transparent 1px);
+  background-size:30px 30px;
+}
+.map-pin{
+  width:18px;height:18px;background:#F97316;border-radius:50%;
+  box-shadow:0 0 0 6px rgba(249,115,22,.28),0 0 0 14px rgba(249,115,22,.1);
+  position:relative;z-index:2;animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 6px rgba(249,115,22,.28),0 0 0 14px rgba(249,115,22,.1);}
+  50%     {box-shadow:0 0 0 8px rgba(249,115,22,.40),0 0 0 20px rgba(249,115,22,.08);}
+}
+.map-addr{
+  position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  background:rgba(249,115,22,.92);color:#fff;padding:5px 13px;
+  border-radius:7px;font-size:11px;font-weight:700;white-space:nowrap;z-index:2;
+}
+.map-sta{
+  position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+  background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.45);
+  border-radius:20px;padding:4px 14px;font-size:11px;color:#F59E0B;white-space:nowrap;z-index:2;
+}
+.access-chips{display:flex;gap:10px;justify-content:center;}
+.access-chip{background:rgba(255,255,255,.07);border:1px solid rgba(245,158,11,.2);border-radius:20px;padding:6px 14px;font-size:11px;color:rgba(255,255,255,.78);}
+.p1-stats{display:flex;gap:12px;padding:0 56px 36px;}
+.stat-box{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(245,158,11,.15);border-radius:12px;padding:16px 10px;text-align:center;}
+.stat-box .sv{font-size:20px;font-weight:900;color:#F59E0B;line-height:1.2;}
+.stat-box .sl{font-size:9.5px;color:rgba(255,255,255,.45);margin-top:5px;line-height:1.5;}
+
+/* ======= P2 ZONE ======= */
+#page2{background:linear-gradient(160deg,#130d04 0%,#1e1208 70%,#100a00 100%);min-height:780px;}
+.p2-body{padding:26px 40px 30px;}
+.price-hero{
+  background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(249,115,22,.14));
+  border:2px solid rgba(245,158,11,.38);border-radius:16px;
+  padding:22px 32px;text-align:center;margin-bottom:20px;
+}
+.ph-lbl{font-size:12px;color:rgba(255,255,255,.48);letter-spacing:2px;margin-bottom:8px;}
+.ph-range{display:flex;align-items:baseline;justify-content:center;gap:8px;}
+.ph-num{font-size:52px;font-weight:900;color:#F59E0B;line-height:1;}
+.ph-sep{font-size:22px;color:rgba(255,255,255,.4);}
+.ph-unit{font-size:20px;color:rgba(255,255,255,.55);}
+.ph-sub{font-size:12px;color:rgba(255,255,255,.48);margin-top:6px;}
+.ph-sub strong{color:#fff;}
+.zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.zone-list{display:flex;flex-direction:column;gap:9px;}
+.zone-item{
+  display:flex;align-items:center;gap:14px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:10px;padding:11px 14px;position:relative;overflow:hidden;
+}
+.zone-item.target{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.4);}
+.zone-bar-bg{position:absolute;left:0;top:0;bottom:0;border-radius:10px;opacity:.07;}
+.zone-rank{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;position:relative;z-index:1;}
+.zone-info{flex:1;position:relative;z-index:1;}
+.zone-name{font-size:12.5px;font-weight:700;margin-bottom:2px;}
+.zone-sub{font-size:10.5px;color:rgba(255,255,255,.45);}
+.zone-price{font-size:13.5px;font-weight:900;white-space:nowrap;position:relative;z-index:1;}
+.zone-star{font-size:9.5px;color:#C9A84C;font-weight:700;margin-left:4px;}
+.ref-list{display:flex;flex-direction:column;gap:8px;}
+.ref-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;}
+.ref-num{width:24px;height:24px;background:linear-gradient(135deg,#F59E0B,#F97316);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#000;flex-shrink:0;}
+.ref-info{flex:1;}
+.ref-name{font-size:11.5px;font-weight:700;margin-bottom:1px;}
+.ref-detail{font-size:10px;color:rgba(255,255,255,.45);}
+.ref-price{font-size:15px;font-weight:900;color:#F59E0B;white-space:nowrap;}
+.ref-tsubo{font-size:9.5px;color:rgba(255,255,255,.4);white-space:nowrap;}
+
+/* ======= P3 BIZ CHART ======= */
+#page3{background:linear-gradient(160deg,#130d04 0%,#1e1208 100%);min-height:780px;}
+.p3-body{padding:26px 40px 28px;}
+.chart-wrap{background:rgba(255,255,255,.04);border:1px solid rgba(245,158,11,.12);border-radius:14px;padding:20px 24px;margin-bottom:18px;}
+.chart-inner{position:relative;height:330px;}
+.biz-legend{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.biz-leg-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.leg-name{font-size:10.5px;font-weight:700;}
+.leg-badge{margin-top:1px;}
+.badge-s{display:inline-block;padding:1px 7px;border-radius:10px;font-weight:700;font-size:9.5px;}
+.bs-top{background:rgba(245,158,11,.2);color:#F59E0B;}
+.bs-mid{background:rgba(20,184,166,.2);color:#14B8A6;}
+.bs-low{background:rgba(255,255,255,.12);color:rgba(255,255,255,.5);}
+
+/* ======= P4 TREND ======= */
+#page4{background:linear-gradient(160deg,#130d04 0%,#1e1208 100%);min-height:780px;}
+.p4-body{padding:26px 40px 30px;}
+.trend-hero{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;
+}
+.trend-stat{
+  background:rgba(255,255,255,.05);border:1px solid rgba(245,158,11,.12);
+  border-radius:12px;padding:14px;text-align:center;
+}
+.trend-stat .tv{font-size:24px;font-weight:900;line-height:1.1;}
+.trend-stat .tl{font-size:9.5px;color:rgba(255,255,255,.48);margin-top:5px;line-height:1.5;}
+.ts-amber {color:#F59E0B;}
+.ts-gold  {color:#C9A84C;}
+.ts-green {color:#22C55E;}
+.ts-orange{color:#F97316;}
+.reason-list{display:flex;flex-direction:column;gap:7px;margin-top:16px;}
+.reason-item{
+  display:flex;align-items:flex-start;gap:10px;padding:10px 14px;
+  background:rgba(255,255,255,.04);border-left:3px solid #F59E0B;border-radius:0 8px 8px 0;
+}
+.reason-dot{width:6px;height:6px;border-radius:50%;background:#F59E0B;margin-top:6px;flex-shrink:0;}
+.reason-text{font-size:12px;color:rgba(255,255,255,.72);line-height:1.65;}
+.reason-text strong{color:#fff;}
+
+/* ======= P5 FORECAST ======= */
+#page5{background:linear-gradient(160deg,#130d04 0%,#1e1208 60%,#2a1400 100%);min-height:780px;}
+.p5-body{padding:26px 40px 30px;}
+.p5-grid{display:grid;grid-template-columns:3fr 2fr;gap:22px;margin-top:16px;}
+.forecast-chart-wrap{background:rgba(255,255,255,.04);border:1px solid rgba(245,158,11,.12);border-radius:14px;padding:20px 22px;}
+.forecast-chart-inner{position:relative;height:280px;}
+.scenario-cards{display:flex;flex-direction:column;gap:10px;}
+.sc-card{border-radius:12px;padding:14px 16px;}
+.sc-card.agg {background:linear-gradient(135deg,rgba(249,115,22,.16),rgba(249,115,22,.05));border:1px solid rgba(249,115,22,.35);}
+.sc-card.std {background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.06));border:1px solid rgba(245,158,11,.38);}
+.sc-card.con {background:linear-gradient(135deg,rgba(20,184,166,.15),rgba(20,184,166,.05));border:1px solid rgba(20,184,166,.3);}
+.sc-lbl{font-size:10.5px;font-weight:900;letter-spacing:1.5px;margin-bottom:4px;}
+.sc-card.agg .sc-lbl{color:#F97316;}
+.sc-card.std .sc-lbl{color:#F59E0B;}
+.sc-card.con .sc-lbl{color:#14B8A6;}
+.sc-pr{font-size:22px;font-weight:900;margin-bottom:3px;}
+.sc-card.agg .sc-pr{color:#F97316;}
+.sc-card.std .sc-pr{color:#F59E0B;}
+.sc-card.con .sc-pr{color:#14B8A6;}
+.sc-ann{font-size:10.5px;color:rgba(255,255,255,.5);margin-bottom:5px;}
+.sc-tgt{font-size:10.5px;color:rgba(255,255,255,.65);}
+.completion-badge{
+  background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);
+  border-radius:10px;padding:12px 14px;margin-bottom:10px;
+}
+.cb-lbl{font-size:10px;color:#F59E0B;font-weight:700;letter-spacing:1px;margin-bottom:4px;}
+.cb-val{font-size:14px;font-weight:900;color:#F59E0B;}
+.cb-sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;}
+
+/* ======= P6 SIMULATION ======= */
+#page6{background:linear-gradient(160deg,#130d04 0%,#1e1208 100%);min-height:780px;}
+.p6-body{padding:26px 40px 30px;}
+.p6-grid{display:grid;grid-template-columns:3fr 2fr;gap:22px;margin-top:16px;}
+.sim-cards{display:flex;flex-direction:column;gap:10px;}
+.sim-card{border-radius:12px;padding:15px 18px;}
+.sim-card.aggressive{background:linear-gradient(135deg,rgba(249,115,22,.18),rgba(249,115,22,.06));border:1px solid rgba(249,115,22,.38);}
+.sim-card.standard  {background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.06));border:1px solid rgba(245,158,11,.38);}
+.sim-card.conserv   {background:linear-gradient(135deg,rgba(20,184,166,.15),rgba(20,184,166,.05));border:1px solid rgba(20,184,166,.3);}
+.sim-lbl{font-size:10.5px;font-weight:900;letter-spacing:1.5px;margin-bottom:4px;}
+.sim-card.aggressive .sim-lbl{color:#F97316;}
+.sim-card.standard   .sim-lbl{color:#F59E0B;}
+.sim-card.conserv    .sim-lbl{color:#14B8A6;}
+.sim-price{font-size:26px;font-weight:900;margin-bottom:3px;}
+.sim-card.aggressive .sim-price{color:#F97316;}
+.sim-card.standard   .sim-price{color:#F59E0B;}
+.sim-card.conserv    .sim-price{color:#14B8A6;}
+.sim-annual{font-size:11px;color:rgba(255,255,255,.5);margin-bottom:5px;}
+.sim-target{font-size:11px;color:rgba(255,255,255,.65);}
+.cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cond-card{border-radius:10px;padding:13px 14px;}
+.cond-card.plus {background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);}
+.cond-card.minus{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25);}
+.cond-title{font-size:10.5px;font-weight:900;letter-spacing:1px;margin-bottom:7px;}
+.cond-card.plus  .cond-title{color:#F59E0B;}
+.cond-card.minus .cond-title{color:#EF4444;}
+.cond-list{list-style:none;}
+.cond-list li{font-size:10.5px;color:rgba(255,255,255,.68);line-height:1.8;padding-left:14px;position:relative;}
+.cond-card.plus  .cond-list li::before{content:'↑';position:absolute;left:0;color:#F59E0B;}
+.cond-card.minus .cond-list li::before{content:'↓';position:absolute;left:0;color:#EF4444;}
+.deposit-box{background:rgba(255,255,255,.04);border:1px solid rgba(245,158,11,.12);border-radius:12px;padding:14px 16px;margin-top:12px;}
+.deposit-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.65);margin-bottom:9px;}
+.deposit-row{display:flex;align-items:center;gap:10px;margin-bottom:5px;}
+.deposit-key{font-size:10.5px;color:rgba(255,255,255,.5);width:100px;flex-shrink:0;}
+.deposit-val{font-size:12px;font-weight:700;color:#fff;}
+
+/* ======= P7 STRATEGY ======= */
+#page7{background:linear-gradient(160deg,#130d04 0%,#1e1208 60%,#2a1400 100%);min-height:780px;}
+.p7-body{padding:24px 40px 28px;}
+.p7-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:14px;}
+
+.rec-cards{display:flex;flex-direction:column;gap:10px;}
+.rec-card{border-radius:12px;padding:16px 18px;width:100%;}
+.rec-card.first {background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.06));border:1px solid rgba(245,158,11,.38);}
+.rec-card.second{background:linear-gradient(135deg,rgba(249,115,22,.15),rgba(249,115,22,.06));border:1px solid rgba(249,115,22,.3);}
+.rec-card.third {background:linear-gradient(135deg,rgba(20,184,166,.14),rgba(20,184,166,.05));border:1px solid rgba(20,184,166,.28);}
+.rec-rank{font-size:10px;font-weight:700;letter-spacing:2px;margin-bottom:3px;}
+.rec-card.first  .rec-rank{color:#F59E0B;}
+.rec-card.second .rec-rank{color:#F97316;}
+.rec-card.third  .rec-rank{color:#14B8A6;}
+.rec-name{font-size:15px;font-weight:900;margin-bottom:4px;letter-spacing:0;word-break:keep-all;}
+.rec-card.first  .rec-name{color:#F59E0B;}
+.rec-card.second .rec-name{color:#F97316;}
+.rec-card.third  .rec-name{color:#14B8A6;}
+.rec-price{font-size:11px;color:rgba(255,255,255,.62);margin-bottom:6px;}
+.rec-bullets{list-style:none;}
+.rec-bullets li{font-size:11px;color:rgba(255,255,255,.72);line-height:1.75;padding-left:13px;position:relative;word-break:keep-all;}
+.rec-bullets li::before{content:'•';position:absolute;left:0;color:rgba(255,255,255,.4);}
+
+.strategy-box{
+  background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(249,115,22,.10));
+  border:1px solid rgba(245,158,11,.35);border-radius:14px;padding:18px;margin-bottom:12px;
+}
+.stg-title{font-size:11.5px;font-weight:900;color:#F59E0B;letter-spacing:2px;margin-bottom:11px;}
+.stg-steps{display:flex;flex-direction:column;gap:9px;}
+.stg-step{display:flex;align-items:flex-start;gap:11px;}
+.step-num{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#F59E0B,#F97316);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#000;
+}
+.step-content{flex:1;padding-top:3px;}
+.step-head{font-size:11.5px;font-weight:700;margin-bottom:2px;}
+.step-body{font-size:10.5px;color:rgba(255,255,255,.56);line-height:1.65;word-break:keep-all;}
+
+.verdict{
+  background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.08));
+  border:2px solid rgba(201,168,76,.45);border-radius:14px;padding:16px 20px;margin-top:12px;
+}
+.verdict-label{font-size:10.5px;font-weight:900;color:#C9A84C;letter-spacing:2px;margin-bottom:7px;}
+.verdict-price{font-size:28px;font-weight:900;color:#C9A84C;margin-bottom:4px;letter-spacing:0;}
+.verdict-detail{font-size:11px;color:rgba(255,255,255,.6);line-height:1.85;word-break:keep-all;}
+.verdict-detail strong{color:#fff;}
+
+.src-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.src-item{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.04);border-radius:8px;padding:7px 10px;}
+.src-icon{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#F59E0B,#F97316);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.src-name{font-size:11px;font-weight:700;}
+.src-url{font-size:9.5px;color:rgba(255,255,255,.38);margin-top:1px;}
+.src-tag{font-size:9.5px;color:rgba(255,255,255,.38);margin-left:auto;white-space:nowrap;}
+.disclaimer{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:8px;padding:11px 14px;font-size:9.5px;color:rgba(255,255,255,.32);
+  line-height:1.8;margin-top:10px;
+}
+
+@media print{
+  body{background:#0c0904;padding:0;}
+  .page{margin:0;border-radius:0;box-shadow:none;page-break-after:always;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ PAGE 1 ============================================================ -->
+<div class="page" id="page1">
+  <div class="grid-bg"></div>
+  <div class="glow" style="width:500px;height:500px;background:rgba(245,158,11,.08);top:-150px;right:-100px;"></div>
+  <div class="glow" style="width:400px;height:400px;background:rgba(249,115,22,.07);bottom:-80px;left:-80px;"></div>
+  <div class="page-header">
+    <span class="page-num">PAGE 01 / 07</span>
+    <span class="badge badge-gold">2026年5月 作成</span>
+    <span class="logo-tag">COMMERCIAL TENANT REPORT</span>
+  </div>
+  <div class="p1-hero">
+    <div>
+      <div class="p1-eyebrow">MORIGUCHI CITY — COMMERCIAL TENANT ANALYSIS</div>
+      <div class="p1-title">1階店舗<br><span class="hl">テナント</span>賃料<br>相場調査</div>
+      <div class="p1-desc">
+        守口市菊水通2丁目に計画中のRC造新築ビル<br>（2028年頃完成予定）1階店舗 205.20㎡（62坪）に<br>
+        対し、クリニックを中心とした最適テナント業態・<br>
+        適正賃料・将来予測を多角的に分析します。
+      </div>
+      <div class="spec-grid">
+        <div class="spec-item"><div class="spec-lbl">📍 所在地</div><div class="spec-val">守口市菊水通2丁目8-17</div></div>
+        <div class="spec-item"><div class="spec-lbl">🏢 構造</div><div class="spec-val">RC造（鉄筋コンクリート）</div></div>
+        <div class="spec-item"><div class="spec-lbl">🏪 店舗面積</div><div class="spec-val">205.20㎡ / 約62坪（1室）</div></div>
+        <div class="spec-item"><div class="spec-lbl">📅 竣工予定</div><div class="spec-val">2028年頃（約2年後）</div></div>
+        <div class="spec-item"><div class="spec-lbl">🚇 最寄駅</div><div class="spec-val">京阪 西三荘 / 地下鉄 守口市</div></div>
+        <div class="spec-item"><div class="spec-lbl">🏙 用途地域</div><div class="spec-val">準住居地域（建蔽60/容積300）</div></div>
+      </div>
+    </div>
+    <div class="p1-map">
+      <div class="map-vis">
+        <div class="map-addr">守口市菊水通2丁目8-17</div>
+        <div class="map-pin"></div>
+        <div class="map-sta">🚃 京阪 西三荘駅 近距離</div>
+      </div>
+      <div class="access-chips">
+        <div class="access-chip">🚃 西三荘駅</div>
+        <div class="access-chip">🚇 守口市駅</div>
+        <div class="access-chip">🚃 門真市駅</div>
+      </div>
+    </div>
+  </div>
+  <div class="p1-stats">
+    <div class="stat-box"><div class="sv">62 坪</div><div class="sl">店舗面積（1階）</div></div>
+    <div class="stat-box"><div class="sv" style="color:#C9A84C;">7,744円</div><div class="sl">同エリア事務所実勢<br>（菊水ビル/坪）</div></div>
+    <div class="stat-box"><div class="sv" style="color:#22C55E;">8〜10千円</div><div class="sl">本物件 目標<br>坪単価レンジ</div></div>
+    <div class="stat-box"><div class="sv" style="color:#F97316;">496〜620万</div><div class="sl">62坪 月額レンジ<br>（家賃のみ）</div></div>
+    <div class="stat-box"><div class="sv" style="color:#14B8A6;">RC造<br>新築</div><div class="sl">1階路面・単独<br>希少性 ★★★</div></div>
+  </div>
+</div>
+
+
+<!-- ============================================================ PAGE 2 ============================================================ -->
+<div class="page" id="page2">
+  <div class="glow" style="width:350px;height:350px;background:rgba(245,158,11,.06);top:-80px;left:-80px;"></div>
+  <div class="page-header">
+    <span class="page-num">PAGE 02 / 07</span>
+    <span class="badge badge-amber">エリア賃料水準</span>
+    <span class="logo-tag">COMMERCIAL TENANT REPORT</span>
+  </div>
+  <div class="p2-body">
+    <div class="section-label">AREA PRICE ZONE COMPARISON</div>
+    <div style="font-size:21px;font-weight:900;margin-bottom:3px;">エリア別 坪単価ゾーン比較</div>
+    <div style="font-size:11.5px;color:rgba(255,255,255,.45);margin-bottom:16px;">大阪市内〜近郊郊外の商業テナント坪単価レンジ（実勢調査ベース）</div>
+
+    <div class="price-hero">
+      <div class="ph-lbl">守口・門真エリア 商業テナント 坪単価レンジ（月額）</div>
+      <div class="ph-range">
+        <span class="ph-num">6,000</span><span class="ph-sep">〜</span><span class="ph-num">12,000</span><span class="ph-unit">円 / 坪・月</span>
+      </div>
+      <div class="ph-sub">本物件目標（新築RC・1階路面プレミアム加算後）：<strong>8,000〜10,000 円/坪</strong></div>
+    </div>
+
+    <div class="zone-grid">
+      <div>
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:10px;">🗾 エリア別 坪単価マップ</div>
+        <div class="zone-list">
+          <div class="zone-item">
+            <div class="zone-bar-bg" style="width:100%;background:#3D2A00;"></div>
+            <div class="zone-rank" style="background:#3D2A00;">①</div>
+            <div class="zone-info"><div class="zone-name">大阪市中心部</div><div class="zone-sub">梅田・心斎橋・難波</div></div>
+            <div class="zone-price" style="color:#FCD34D;">15,000〜25,000円</div>
+          </div>
+          <div class="zone-item">
+            <div class="zone-bar-bg" style="width:80%;background:#3B2200;"></div>
+            <div class="zone-rank" style="background:#3B2200;">②</div>
+            <div class="zone-info"><div class="zone-name">大阪市準中心部</div><div class="zone-sub">天王寺・本町・淀屋橋</div></div>
+            <div class="zone-price" style="color:#FDE68A;">10,000〜18,000円</div>
+          </div>
+          <div class="zone-item">
+            <div class="zone-bar-bg" style="width:65%;background:#2D1A00;"></div>
+            <div class="zone-rank" style="background:#2D1A00;">③</div>
+            <div class="zone-info"><div class="zone-name">大阪市周縁部</div><div class="zone-sub">京橋・西中島・都島</div></div>
+            <div class="zone-price" style="color:#F59E0B;">8,000〜14,000円</div>
+          </div>
+          <div class="zone-item target">
+            <div class="zone-bar-bg" style="width:50%;background:#C9A84C;"></div>
+            <div class="zone-rank" style="background:#C9A84C;color:#000;">★</div>
+            <div class="zone-info"><div class="zone-name">近郊郊外 <span class="zone-star">← 本物件エリア</span></div><div class="zone-sub">守口・門真・東大阪・寝屋川</div></div>
+            <div class="zone-price" style="color:#C9A84C;">6,000〜12,000円</div>
+          </div>
+          <div class="zone-item">
+            <div class="zone-bar-bg" style="width:35%;background:#4A5568;"></div>
+            <div class="zone-rank" style="background:#4A5568;">⑤</div>
+            <div class="zone-info"><div class="zone-name">地方幹線沿い</div><div class="zone-sub">北河内全般</div></div>
+            <div class="zone-price" style="color:rgba(255,255,255,.55);">5,000〜10,000円</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:11px 14px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:10px;">
+          <div style="font-size:10.5px;color:#C9A84C;font-weight:700;margin-bottom:4px;">▶ プレミアム加算（本物件）</div>
+          <div style="font-size:10.5px;color:rgba(255,255,255,.68);line-height:1.9;">
+            新築RC（鉄骨比）：<strong style="color:#fff;">+1,000〜2,000円/坪</strong><br>
+            1階路面（2〜3階比）：<strong style="color:#fff;">+500〜1,500円/坪</strong><br>
+            竣工時新品・未使用：<strong style="color:#fff;">+500〜1,000円/坪</strong>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:10px;">📋 周辺参考物件（実例）</div>
+        <div class="ref-list">
+          <div class="ref-item">
+            <div class="ref-num">A</div>
+            <div class="ref-info"><div class="ref-name">守口市京阪本通1-2-13（商店街1F）</div><div class="ref-detail">75.62坪 / 既存店舗 / 路面</div></div>
+            <div style="text-align:right;"><div class="ref-price">48.0万円</div><div class="ref-tsubo">6,347円/坪</div></div>
+          </div>
+          <div class="ref-item">
+            <div class="ref-num">B</div>
+            <div class="ref-info"><div class="ref-name">守口市大日町（1F路面・駅2分）</div><div class="ref-detail">16.63坪 / 小規模 / 駅近</div></div>
+            <div style="text-align:right;"><div class="ref-price">25.0万円</div><div class="ref-tsubo">15,033円/坪</div></div>
+          </div>
+          <div class="ref-item">
+            <div class="ref-num">C</div>
+            <div class="ref-info"><div class="ref-name">守口市南寺方東通5丁目</div><div class="ref-detail">59.9坪 / 3F・鉄骨</div></div>
+            <div style="text-align:right;"><div class="ref-price">33.0万円</div><div class="ref-tsubo">5,509円/坪</div></div>
+          </div>
+          <div class="ref-item" style="background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.35);">
+            <div class="ref-num" style="background:linear-gradient(135deg,#C9A84C,#8B6914);">★</div>
+            <div class="ref-info"><div class="ref-name" style="color:#C9A84C;">菊水ビル401（菊水通2丁目・事務所）</div><div class="ref-detail">11.64坪 / 鉄骨5F ← <strong style="color:#C9A84C;">同一エリア ベースライン</strong></div></div>
+            <div style="text-align:right;"><div class="ref-price" style="color:#C9A84C;">9.02万円</div><div class="ref-tsubo" style="color:#C9A84C;">7,744円/坪</div></div>
+          </div>
+          <div class="ref-item">
+            <div class="ref-num">D</div>
+            <div class="ref-info"><div class="ref-name">枚方市（クリニックモール内・共益費込）</div><div class="ref-detail">北河内エリア / 医療モール</div></div>
+            <div style="text-align:right;"><div class="ref-price" style="color:rgba(255,255,255,.6);">参考</div><div class="ref-tsubo">7,000〜8,000円/坪</div></div>
+          </div>
+        </div>
+        <div style="font-size:9.5px;color:rgba(255,255,255,.32);margin-top:8px;">※アットホーム・ホームズ等 公開掲載物件（2026年5月時点）。成約事例の非公開分は反映されていません。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ PAGE 3 ============================================================ -->
+<div class="page" id="page3">
+  <div class="glow" style="width:400px;height:400px;background:rgba(20,184,166,.05);bottom:-80px;right:-80px;"></div>
+  <div class="page-header">
+    <span class="page-num">PAGE 03 / 07</span>
+    <span class="badge badge-teal">業態別比較</span>
+    <span class="logo-tag">COMMERCIAL TENANT REPORT</span>
+  </div>
+  <div class="p3-body">
+    <div class="section-label">BUSINESS TYPE COMPARISON</div>
+    <div style="font-size:21px;font-weight:900;margin-bottom:3px;">業態別 坪単価 比較グラフ</div>
+    <div style="font-size:11.5px;color:rgba(255,255,255,.45);margin-bottom:14px;">守口・門真エリア想定 ／ 1階路面店舗・62坪</div>
+    <div class="chart-wrap">
+      <div class="chart-inner"><canvas id="bizChart"></canvas></div>
+    </div>
+    <div class="biz-legend">
+      <div class="biz-leg-item"><div class="leg-dot" style="background:#F59E0B;"></div><div><div class="leg-name">整形外科・リハビリ</div><div class="leg-badge"><span class="badge-s bs-top">◎ 第一推奨</span></div></div></div>
+      <div class="biz-leg-item"><div class="leg-dot" style="background:#FCD34D;"></div><div><div class="leg-name">内科・小児科・皮膚科</div><div class="leg-badge"><span class="badge-s bs-top">◎ 第一推奨</span></div></div></div>
+      <div class="biz-leg-item"><div class="leg-dot" style="background:#FDE68A;"></div><div><div class="leg-name">歯科クリニック</div><div class="leg-badge"><span class="badge-s bs-top">◎ 第一推奨</span></div></div></div>
+      <div class="biz-leg-item"><div class="leg-dot" style="background:#F97316;"></div><div><div class="leg-name">美容クリニック（自由診療）</div><div class="leg-badge"><span class="badge-s bs-mid">○ 次点</span></div></div></div>
+      <div class="biz-leg-item"><div class="leg-dot" style="background:#14B8A6;"></div><div><div class="leg-name">エステ・美容室</div><div class="leg-badge"><span class="badge-s bs-mid">○ 次点</span></div></div></div>
+      <div class="biz-leg-item"><div class="leg-dot" style="background:#4A5568;"></div><div><div class="leg-name">調剤薬局</div><div class="leg-badge"><span class="badge-s bs-low">△ 補完</span></div></div></div>
+      <div class="biz-leg-item"><div class="leg-dot" style="background:#374151;"></div><div><div class="leg-name">デイサービス</div><div class="leg-badge"><span class="badge-s bs-low">△ 補完</span></div></div></div>
+      <div class="biz-leg-item"><div class="leg-dot" style="background:#2D3748;"></div><div><div class="leg-name">学習塾・英会話</div><div class="leg-badge"><span class="badge-s bs-low">△ 補完</span></div></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px;">
+      <div class="card" style="text-align:center;border-color:rgba(245,158,11,.25);">
+        <div style="font-size:9.5px;color:#F59E0B;font-weight:700;letter-spacing:1px;margin-bottom:5px;">◎ 第一推奨 月額レンジ（62坪）</div>
+        <div style="font-size:22px;font-weight:900;color:#F59E0B;">47〜74万円</div>
+        <div style="font-size:10.5px;color:rgba(255,255,255,.45);margin-top:3px;">整形外科・歯科・内科</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(249,115,22,.25);">
+        <div style="font-size:9.5px;color:#F97316;font-weight:700;letter-spacing:1px;margin-bottom:5px;">○ 次点 月額レンジ（62坪）</div>
+        <div style="font-size:22px;font-weight:900;color:#F97316;">50〜93万円</div>
+        <div style="font-size:10.5px;color:rgba(255,255,255,.45);margin-top:3px;">美容クリニック（自由診療）</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(255,255,255,.1);">
+        <div style="font-size:9.5px;color:rgba(255,255,255,.45);font-weight:700;letter-spacing:1px;margin-bottom:5px;">△ 補完 月額レンジ（62坪）</div>
+        <div style="font-size:22px;font-weight:900;color:rgba(255,255,255,.55);">31〜56万円</div>
+        <div style="font-size:10.5px;color:rgba(255,255,255,.45);margin-top:3px;">デイサービス・学習塾</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ PAGE 4 TREND ============================================================ -->
+<div class="page" id="page4">
+  <div class="glow" style="width:400px;height:400px;background:rgba(245,158,11,.06);top:-100px;left:-80px;"></div>
+  <div class="glow" style="width:300px;height:300px;background:rgba(20,184,166,.05);bottom:-60px;right:-60px;"></div>
+  <div class="page-header">
+    <span class="page-num">PAGE 04 / 07</span>
+    <span class="badge badge-teal">過去3年 推移</span>
+    <span class="logo-tag">COMMERCIAL TENANT REPORT</span>
+  </div>
+  <div class="p4-body">
+    <div class="section-label">HISTORICAL RENT TREND  2023 → 2026</div>
+    <div style="font-size:21px;font-weight:900;margin-bottom:3px;">守口・門真エリア 商業テナント賃料 推移</div>
+    <div style="font-size:11.5px;color:rgba(255,255,255,.45);margin-bottom:16px;">過去3年間（2023〜2026年）の坪単価動向 ／ 近郊郊外エリア平均</div>
+
+    <div class="trend-hero">
+      <div class="trend-stat"><div class="tv ts-amber">5,900<span style="font-size:14px;">円</span></div><div class="tl">2023年（3年前）<br>コロナ回復初期</div></div>
+      <div class="trend-stat"><div class="tv ts-amber">6,600<span style="font-size:14px;">円</span></div><div class="tl">2024年（2年前）<br>市場回復基調</div></div>
+      <div class="trend-stat"><div class="tv ts-green">7,200<span style="font-size:14px;">円</span></div><div class="tl">2025年（1年前）<br>万博効果・上昇加速</div></div>
+      <div class="trend-stat"><div class="tv ts-gold">7,744<span style="font-size:14px;">円</span></div><div class="tl">2026年（現在）<br>菊水ビル実勢★</div></div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-inner" style="height:300px;"><canvas id="trendChart"></canvas></div>
+    </div>
+
+    <div class="reason-list">
+      <div class="reason-item">
+        <div class="reason-dot"></div>
+        <div class="reason-text"><strong>2023〜2024年：</strong>新型コロナ禍からの回復期。テナント需要が徐々に戻り、空室率低下とともに賃料も下げ止まり・微上昇へ転換。</div>
+      </div>
+      <div class="reason-item">
+        <div class="reason-dot"></div>
+        <div class="reason-text"><strong>2024〜2025年：</strong>大阪万博・インバウンド回復・建設費高騰が相まって賃料上昇が加速。守口・門真エリアでも新築供給が少なく需給がタイトに。</div>
+      </div>
+      <div class="reason-item">
+        <div class="reason-dot"></div>
+        <div class="reason-text"><strong>2025〜2026年（現在）：</strong>菊水ビル事務所実勢7,744円/坪が同エリアのベースラインを形成。新築RC・1階路面プレミアムを加算すると<strong>8,000〜10,000円/坪</strong>が現実的目標値。</div>
+      </div>
+      <div class="reason-item">
+        <div class="reason-dot" style="background:#C9A84C;"></div>
+        <div class="reason-text" style="border-left-color:#C9A84C;"><strong>3年間の上昇率：</strong>+31.3%（5,900円 → 7,744円）。年率換算で約9.5%の上昇ペース。大阪近郊では全国平均を上回る上昇が継続中。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ PAGE 5 FORECAST ============================================================ -->
+<div class="page" id="page5">
+  <div class="glow" style="width:450px;height:450px;background:rgba(249,115,22,.06);top:-100px;right:-100px;"></div>
+  <div class="glow" style="width:300px;height:300px;background:rgba(20,184,166,.05);bottom:-60px;left:-60px;"></div>
+  <div class="page-header">
+    <span class="page-num">PAGE 05 / 07</span>
+    <span class="badge badge-orange">5年後 予測</span>
+    <span class="logo-tag">COMMERCIAL TENANT REPORT</span>
+  </div>
+  <div class="p5-body">
+    <div class="section-label">5-YEAR RENT FORECAST  2026 → 2031</div>
+    <div style="font-size:21px;font-weight:900;margin-bottom:3px;">賃料予測シナリオ（2026〜2031年）</div>
+    <div style="font-size:11.5px;color:rgba(255,255,255,.45);margin-bottom:14px;">本物件（新築RC・1階・62坪）の想定坪単価予測 ／ 2028年完成・入居開始</div>
+
+    <div class="p5-grid">
+      <div>
+        <div class="forecast-chart-wrap">
+          <div style="font-size:10.5px;color:rgba(255,255,255,.45);margin-bottom:10px;display:flex;gap:18px;flex-wrap:wrap;">
+            <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:20px;height:3px;background:#F59E0B;border-radius:2px;"></span>エリア市場推移</span>
+            <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:20px;height:3px;background:#F97316;border-radius:2px;border-top:2px dashed #F97316;"></span>強気シナリオ</span>
+            <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:20px;height:3px;background:#C9A84C;border-radius:2px;border-top:2px dashed #C9A84C;"></span>標準シナリオ</span>
+            <span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:20px;height:3px;background:#14B8A6;border-radius:2px;border-top:2px dashed #14B8A6;"></span>抑えシナリオ</span>
+          </div>
+          <div class="forecast-chart-inner"><canvas id="forecastChart"></canvas></div>
+        </div>
+
+        <div style="margin-top:14px;padding:12px 16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;">
+          <div style="font-size:10.5px;color:#F59E0B;font-weight:700;margin-bottom:5px;">📌 2028年 竣工・入居開始時の予測坪単価</div>
+          <div style="display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;">
+            <div style="text-align:center;"><div style="font-size:9.5px;color:#F97316;margin-bottom:2px;">強気</div><div style="font-size:20px;font-weight:900;color:#F97316;">10,000円</div></div>
+            <div style="font-size:18px;color:rgba(255,255,255,.3);">|</div>
+            <div style="text-align:center;"><div style="font-size:9.5px;color:#C9A84C;margin-bottom:2px;">標準（推奨）</div><div style="font-size:20px;font-weight:900;color:#C9A84C;">8,800円</div></div>
+            <div style="font-size:18px;color:rgba(255,255,255,.3);">|</div>
+            <div style="text-align:center;"><div style="font-size:9.5px;color:#14B8A6;margin-bottom:2px;">抑え</div><div style="font-size:20px;font-weight:900;color:#14B8A6;">7,200円</div></div>
+            <div style="font-size:10.5px;color:rgba(255,255,255,.45);align-self:flex-end;">／坪・月</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="scenario-cards">
+          <div class="sc-card agg">
+            <div class="sc-lbl">SCENARIO A — 強気</div>
+            <div class="sc-pr">10,000→12,000円/坪</div>
+            <div class="sc-ann">62坪月額：62〜74万円（2028→2031年）</div>
+            <div class="sc-tgt">美容クリニック・歯科での誘致成功時。<br>自由診療中心で高収益テナント想定。</div>
+          </div>
+          <div class="sc-card std">
+            <div class="sc-lbl">SCENARIO B — 標準（推奨）</div>
+            <div class="sc-pr">8,800→10,200円/坪</div>
+            <div class="sc-ann">62坪月額：55〜63万円（2028→2031年）</div>
+            <div class="sc-tgt">整形外科・内科・皮膚科クリニック想定。<br>保険診療で安定した長期契約が見込める。</div>
+          </div>
+          <div class="sc-card con">
+            <div class="sc-lbl">SCENARIO C — 抑え</div>
+            <div class="sc-pr">7,200→8,000円/坪</div>
+            <div class="sc-ann">62坪月額：45〜50万円（2028→2031年）</div>
+            <div class="sc-tgt">デイサービス・学習塾・調剤薬局想定。<br>競合増・市況悪化のリスクヘッジ水準。</div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;padding:12px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;">
+          <div style="font-size:10.5px;font-weight:700;color:rgba(255,255,255,.65);margin-bottom:7px;">📊 2031年（5年後）想定レンジ</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+            <div><div style="font-size:9.5px;color:#F97316;margin-bottom:2px;">強気上限</div><div style="font-size:18px;font-weight:900;color:#F97316;">74万円</div><div style="font-size:9px;color:rgba(255,255,255,.4);">月額/62坪</div></div>
+            <div><div style="font-size:9.5px;color:#C9A84C;margin-bottom:2px;">標準中央</div><div style="font-size:18px;font-weight:900;color:#C9A84C;">63万円</div><div style="font-size:9px;color:rgba(255,255,255,.4);">月額/62坪</div></div>
+            <div><div style="font-size:9.5px;color:#14B8A6;margin-bottom:2px;">抑え下限</div><div style="font-size:18px;font-weight:900;color:#14B8A6;">50万円</div><div style="font-size:9px;color:rgba(255,255,255,.4);">月額/62坪</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ PAGE 6 SIMULATION ============================================================ -->
+<div class="page" id="page6">
+  <div class="glow" style="width:400px;height:400px;background:rgba(201,168,76,.06);top:-100px;right:-100px;"></div>
+  <div class="page-header">
+    <span class="page-num">PAGE 06 / 07</span>
+    <span class="badge badge-gold">3シナリオ試算</span>
+    <span class="logo-tag">COMMERCIAL TENANT REPORT</span>
+  </div>
+  <div class="p6-body">
+    <div class="section-label">3-SCENARIO RENT SIMULATION</div>
+    <div style="font-size:21px;font-weight:900;margin-bottom:3px;">月額・年額 試算シミュレーション</div>
+    <div style="font-size:11.5px;color:rgba(255,255,255,.45);margin-bottom:14px;">本物件（62坪）への適用 ／ 家賃のみ・共益費別途</div>
+
+    <div class="p6-grid">
+      <div>
+        <div class="sim-cards">
+          <div class="sim-card aggressive">
+            <div class="sim-lbl">SCENARIO A — 強気設定</div>
+            <div class="sim-price">620,000円 / 月</div>
+            <div class="sim-annual">年額：7,440万円　坪単価：10,000円/坪</div>
+            <div class="sim-target">対象：歯科クリニック・美容クリニック（自由診療）　保証金 6〜12ヶ月 ／ フリーレント 1〜2ヶ月</div>
+          </div>
+          <div class="sim-card standard">
+            <div class="sim-lbl">SCENARIO B — 標準設定（推奨）</div>
+            <div class="sim-price">527,000円 / 月</div>
+            <div class="sim-annual">年額：6,324万円　坪単価：8,500円/坪</div>
+            <div class="sim-target">対象：内科・整形外科・皮膚科クリニック　保証金 6〜10ヶ月 ／ フリーレント 2〜3ヶ月</div>
+          </div>
+          <div class="sim-card conserv">
+            <div class="sim-lbl">SCENARIO C — 抑え設定</div>
+            <div class="sim-price">434,000円 / 月</div>
+            <div class="sim-annual">年額：5,208万円　坪単価：7,000円/坪</div>
+            <div class="sim-target">対象：デイサービス・学習塾・訪問看護　保証金 3〜6ヶ月 ／ フリーレント 3ヶ月</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;height:200px;position:relative;">
+          <canvas id="scenarioChart"></canvas>
+        </div>
+      </div>
+      <div>
+        <div class="cond-grid">
+          <div class="cond-card plus">
+            <div class="cond-title">↑ UP 要因</div>
+            <ul class="cond-list">
+              <li>新築RC（鉄骨比）<br><strong style="color:#fff;">+1,000〜2,000円/坪</strong></li>
+              <li>1階路面（2〜3階比）<br><strong style="color:#fff;">+500〜1,500円/坪</strong></li>
+              <li>竣工時新品・未使用<br><strong style="color:#fff;">+500〜1,000円/坪</strong></li>
+              <li>2028年市況上昇<br><strong style="color:#fff;">プラス方向の可能性</strong></li>
+            </ul>
+          </div>
+          <div class="cond-card minus">
+            <div class="cond-title">↓ DOWN 要因</div>
+            <ul class="cond-list">
+              <li>駐車場なし<br><strong style="color:#fff;">医療系に大マイナス</strong></li>
+              <li>スケルトン渡し<br><strong style="color:#fff;">FR要求が入りやすい</strong></li>
+              <li>準住居地域<br><strong style="color:#fff;">商業地域より集客劣る</strong></li>
+              <li>競合物件供給増<br><strong style="color:#fff;">2年後の市況次第</strong></li>
+            </ul>
+          </div>
+        </div>
+        <div class="deposit-box">
+          <div class="deposit-title">💼 初期条件の目安（医療系テナント）</div>
+          <div class="deposit-row"><div class="deposit-key">保証金</div><div class="deposit-val">家賃の 6〜12ヶ月</div></div>
+          <div class="deposit-row"><div class="deposit-key">フリーレント</div><div class="deposit-val">1〜3ヶ月（内装工事期間分）</div></div>
+          <div class="deposit-row"><div class="deposit-key">内装工事費</div><div class="deposit-val">3,100〜6,200万円（テナント負担）</div></div>
+          <div class="deposit-row"><div class="deposit-key">共益費</div><div class="deposit-val">別途 10,000〜30,000円/月</div></div>
+          <div class="deposit-row"><div class="deposit-key">契約期間</div><div class="deposit-val">事業用定期借家 3〜5年</div></div>
+        </div>
+        <div style="margin-top:12px;padding:12px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;">
+          <div style="font-size:10.5px;font-weight:700;color:rgba(255,255,255,.65);margin-bottom:6px;">📌 調剤薬局の注意点</div>
+          <div style="font-size:10.5px;color:rgba(255,255,255,.55);line-height:1.75;">
+            標準面積は10〜25坪。62坪は過大。<br>
+            現実的対応：<strong style="color:#fff;">クリニック50坪＋調剤薬局12坪</strong>への分割設計変更も検討余地あり。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ PAGE 7 STRATEGY ============================================================ -->
+<div class="page" id="page7">
+  <div class="glow" style="width:450px;height:450px;background:rgba(245,158,11,.06);top:-120px;right:-120px;"></div>
+  <div class="glow" style="width:350px;height:350px;background:rgba(20,184,166,.05);bottom:-80px;left:-80px;"></div>
+  <div class="page-header">
+    <span class="page-num">PAGE 07 / 07</span>
+    <span class="badge badge-green">誘致戦略</span>
+    <span class="logo-tag">COMMERCIAL TENANT REPORT</span>
+  </div>
+  <div class="p7-body">
+    <div class="section-label">TENANT ATTRACTION STRATEGY</div>
+    <div style="font-size:21px;font-weight:900;margin-bottom:3px;">誘致戦略 まとめ</div>
+    <div style="font-size:11.5px;color:rgba(255,255,255,.45);margin-bottom:14px;">推奨業態・フリーレント戦略・総合アクション</div>
+
+    <div class="p7-grid">
+      <div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:9px;">🏆 推奨業態ランキング</div>
+        <div class="rec-cards">
+          <div class="rec-card first">
+            <div class="rec-rank">◎ FIRST CHOICE</div>
+            <div class="rec-name">整形外科・リハビリクリニック</div>
+            <div class="rec-price">坪単価 7,500〜11,000円 ／ 月額 47〜68万円（62坪）</div>
+            <ul class="rec-bullets">
+              <li>62坪はリハビリ室確保に最適な規模</li>
+              <li>守口・門真は高齢化率が高く安定した患者需要</li>
+              <li>保険診療のため長期入居・収益が安定</li>
+              <li>駐車場確保できれば集患力が大幅向上</li>
+            </ul>
+          </div>
+          <div class="rec-card second">
+            <div class="rec-rank">◎ SECOND CHOICE</div>
+            <div class="rec-name">皮膚科＋美容皮膚科（複合型）</div>
+            <div class="rec-price">坪単価 8,000〜12,000円 ／ 月額 50〜74万円（62坪）</div>
+            <ul class="rec-bullets">
+              <li>保険診療＋自由診療の複合型で収益性が高い</li>
+              <li>新築RCの清潔感が女性集患に有利</li>
+              <li>9,000〜10,000円/坪の高賃料設定が狙える</li>
+            </ul>
+          </div>
+          <div class="rec-card third">
+            <div class="rec-rank">○ THIRD CHOICE</div>
+            <div class="rec-name">歯科クリニック</div>
+            <div class="rec-price">坪単価 7,500〜12,000円 ／ 月額 47〜74万円（62坪）</div>
+            <ul class="rec-bullets">
+              <li>高収益業態で賃料許容度が高い</li>
+              <li>内装費が高額のため初期条件の緩和が必要</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="strategy-box">
+          <div class="stg-title">STRATEGY — フリーレント戦略</div>
+          <div class="stg-steps">
+            <div class="stg-step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-head">内装工事期間のフリーレント提示</div>
+                <div class="step-body">スケルトン渡しの内装工事期間（2〜4ヶ月）を無償化し、テナントの初期負担を大幅に軽減することで誘致競争力が向上する。</div>
+              </div>
+            </div>
+            <div class="stg-step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-head">保証金を交渉カードとして活用</div>
+                <div class="step-body">医療系では6〜12ヶ月が設定可能。資金力に応じて3〜6ヶ月への削減を提示し高賃料設定を維持する。</div>
+              </div>
+            </div>
+            <div class="stg-step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-head">先行設備でテナント工事費を削減</div>
+                <div class="step-body">電気容量増設・給排水先行配備・換気設備のオーナー施工により3,100〜6,200万円の内装費の一部を削減できる。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="verdict">
+          <div class="verdict-label">CONCLUSION — 総合判断</div>
+          <div class="verdict-price">8,000〜10,000 円/坪</div>
+          <div class="verdict-detail">
+            月額：<strong>496,000〜620,000円</strong>（62坪・家賃のみ）<br>
+            年間収入：<strong>5,952万〜7,440万円</strong>（共益費別途）<br>
+            5年後標準予測：<strong>10,200円/坪</strong>（月額約63万円）<br>
+            第一推奨は<strong>整形外科</strong>または<strong>皮膚科複合型</strong>。
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:7px;margin-top:10px;">📚 調査出典</div>
+          <div class="src-list">
+            <div class="src-item"><div class="src-icon">🏥</div><div><div class="src-name">医師の不動産デスク</div><div class="src-url">ishinofudosandesk.com</div></div><div class="src-tag">クリニック賃料相場</div></div>
+            <div class="src-item"><div class="src-icon">🦷</div><div><div class="src-name">デンタルウェブ</div><div class="src-url">dental-web.jp</div></div><div class="src-tag">歯科クリニック適正家賃</div></div>
+            <div class="src-item"><div class="src-icon">🏠</div><div><div class="src-name">アットホーム / HOMES</div><div class="src-url">athome.co.jp / homes.co.jp</div></div><div class="src-tag">守口市貸店舗</div></div>
+          </div>
+        </div>
+
+        <div class="disclaimer">
+          ※本レポートは2026年5月1日時点の公開情報をもとに作成。成約事例の非公開分・市況変動は反映されていません。<br>作成：株式会社フジヒサハウジング 都市再生企画室
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+Chart.defaults.color = 'rgba(255,255,255,0.55)';
+Chart.defaults.font.family = "'Noto Sans JP', sans-serif";
+
+/* ---- P3: 業態別坪単価 ---- */
+new Chart(document.getElementById('bizChart'), {
+  type: 'bar',
+  data: {
+    labels: ['美容クリニック（自由診療）','歯科クリニック','整形外科・リハビリ','内科・小児科・皮膚科','エステ・美容室','調剤薬局','デイサービス・訪問看護','学習塾・英会話'],
+    datasets: [
+      { label: '下限', data: [8000,7500,7500,7000,6000,7000,5000,5000], backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 4, borderSkipped: false },
+      { label: '上限幅', data: [7000,4500,3500,3000,7000,5000,3000,4000],
+        backgroundColor: ['#F97316','#FDE68A','#F59E0B','#FCD34D','#14B8A6','#4A5568','#374151','#2D3748'],
+        borderRadius: 4, borderSkipped: false }
+    ]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => {
+        const lo=[8000,7500,7500,7000,6000,7000,5000,5000][ctx.dataIndex];
+        const hi=lo+[7000,4500,3500,3000,7000,5000,3000,4000][ctx.dataIndex];
+        return ctx.datasetIndex===1?`${lo.toLocaleString()}〜${hi.toLocaleString()} 円/坪`:'';
+      }}}
+    },
+    scales: {
+      x: { stacked:true, max:16000, grid:{color:'rgba(255,255,255,0.06)'}, ticks:{callback:v=>v===0?'0':(v/1000)+'千',font:{size:10}}, title:{display:true,text:'坪単価（円/坪/月）',font:{size:10}} },
+      y: { stacked:true, grid:{display:false}, ticks:{font:{size:10}} }
+    }
+  }
+});
+
+/* ---- P4: 過去3年推移 ---- */
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: ['2023年', '2024年', '2025年', '2026年（現在）'],
+    datasets: [{
+      label: 'エリア平均坪単価（円/坪）',
+      data: [5900, 6600, 7200, 7744],
+      borderColor: '#F59E0B',
+      backgroundColor: 'rgba(245,158,11,0.12)',
+      borderWidth: 3,
+      pointBackgroundColor: ['#F59E0B','#F59E0B','#22C55E','#C9A84C'],
+      pointBorderColor:     ['#F59E0B','#F59E0B','#22C55E','#C9A84C'],
+      pointRadius: 8, pointHoverRadius: 10,
+      tension: 0.35, fill: true
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => `${ctx.raw.toLocaleString()} 円/坪` } }
+    },
+    scales: {
+      x: { grid:{color:'rgba(255,255,255,0.06)'}, ticks:{font:{size:11}} },
+      y: {
+        min: 5000, max: 9000,
+        grid:{color:'rgba(255,255,255,0.06)'},
+        ticks:{callback:v=>`${v.toLocaleString()}円`, font:{size:10}},
+        title:{display:true,text:'坪単価（円/坪/月）',font:{size:10}}
+      }
+    }
+  }
+});
+
+/* ---- P5: 5年後予測 ---- */
+(function(){
+  const labels  = ['2023','2024','2025','2026','2027','2028\n(完成)','2029','2030','2031'];
+  const hist    = [5900,6600,7200,7744,null,null,null,null,null];
+  const market  = [null,null,null,7744,8200,8600,9000,9400,9700];
+  const aggr    = [null,null,null,7744,8800,10000,10800,11500,12000];
+  const std     = [null,null,null,7744,8200,8800, 9200, 9700,10200];
+  const cons    = [null,null,null,7744,7800, 7200, 7600, 7900, 8000];
+
+  new Chart(document.getElementById('forecastChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'実績', data:hist, borderColor:'#F59E0B', backgroundColor:'rgba(245,158,11,0.10)', borderWidth:3, pointRadius:5, tension:0.3, fill:true, spanGaps:false },
+        { label:'エリア市場', data:market, borderColor:'rgba(245,158,11,0.5)', borderDash:[4,4], borderWidth:2, pointRadius:4, tension:0.3, spanGaps:false },
+        { label:'強気', data:aggr, borderColor:'#F97316', borderDash:[6,3], borderWidth:2.5, pointRadius:4, tension:0.3, spanGaps:false },
+        { label:'標準', data:std,  borderColor:'#C9A84C', borderDash:[6,3], borderWidth:2.5, pointRadius:4, tension:0.3, spanGaps:false },
+        { label:'抑え', data:cons, borderColor:'#14B8A6', borderDash:[6,3], borderWidth:2.5, pointRadius:4, tension:0.3, spanGaps:false }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{display:false},
+        tooltip:{ callbacks:{ label: ctx => ctx.raw!==null?`${ctx.dataset.label}：${ctx.raw.toLocaleString()}円/坪`:'' } }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{font:{size:10}} },
+        y: {
+          min:5000, max:13000,
+          grid:{color:'rgba(255,255,255,0.05)'},
+          ticks:{callback:v=>`${(v/1000).toFixed(0)}千円`, font:{size:10}},
+          title:{display:true,text:'坪単価（円/坪/月）',font:{size:10}}
+        }
+      }
+    }
+  });
+})();
+
+/* ---- P6: シナリオ年額 ---- */
+new Chart(document.getElementById('scenarioChart'), {
+  type: 'bar',
+  data: {
+    labels: ['強気設定 10,000円/坪','標準設定 8,500円/坪','抑え設定 7,000円/坪'],
+    datasets: [{
+      label:'年間賃料収入（万円）',
+      data: [7440, 6324, 5208],
+      backgroundColor:['rgba(249,115,22,0.7)','rgba(245,158,11,0.7)','rgba(20,184,166,0.7)'],
+      borderColor:    ['#F97316','#F59E0B','#14B8A6'],
+      borderWidth: 2, borderRadius: 6
+    }]
+  },
+  options: {
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins: {
+      legend:{display:false},
+      tooltip:{ callbacks:{ label: ctx=>`${ctx.raw.toLocaleString()}万円/年` } }
+    },
+    scales: {
+      x: { grid:{color:'rgba(255,255,255,0.06)'}, ticks:{callback:v=>`${v.toLocaleString()}万`, font:{size:10}}, title:{display:true,text:'年間賃料収入（万円）',font:{size:10}} },
+      y: { grid:{display:false}, ticks:{font:{size:10}} }
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>守口市 家賃相場レポート 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #0a0f1e;
+    color: #fff;
+  }
+
+  /* ============ PAGE SYSTEM ============ */
+  .page {
+    width: 1080px;
+    min-height: 720px;
+    margin: 0 auto 40px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    page-break-after: always;
+  }
+
+  /* ============ COMMON COMPONENTS ============ */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .page-number {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 2px;
+  }
+  .logo-tag {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .badge-orange { background: #FF6B2B; color: #fff; }
+  .badge-cyan   { background: #00C9E0; color: #000; }
+  .badge-green  { background: #00E096; color: #000; }
+  .badge-purple { background: #8B5CF6; color: #fff; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #00C9E0;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .divider {
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #00C9E0, #8B5CF6);
+    border-radius: 2px;
+    margin: 12px 0;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .card-highlight {
+    background: linear-gradient(135deg, rgba(0,201,224,0.15), rgba(139,92,246,0.15));
+    border: 1px solid rgba(0,201,224,0.3);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  /* ============ PAGE 1 ============ */
+  #page1 {
+    background: linear-gradient(135deg, #0d1b3e 0%, #1a0d3e 50%, #0d1b3e 100%);
+  }
+  .p1-hero {
+    padding: 50px 60px 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .p1-title {
+    font-size: 13px;
+    color: #00C9E0;
+    letter-spacing: 3px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .p1-main-title {
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+  .p1-main-title span { color: #00C9E0; }
+  .p1-subtitle {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.8;
+    margin-bottom: 24px;
+  }
+  .p1-spec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .p1-spec-item {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .p1-spec-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .p1-spec-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .p1-map-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+  }
+  .p1-map-visual {
+    width: 100%;
+    height: 240px;
+    background: linear-gradient(135deg, #0f2442, #1a1042);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .map-dot {
+    width: 16px;
+    height: 16px;
+    background: #FF6B2B;
+    border-radius: 50%;
+    box-shadow: 0 0 0 6px rgba(255,107,43,0.3), 0 0 0 12px rgba(255,107,43,0.1);
+    position: relative;
+  }
+  .map-dot::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 16px solid #FF6B2B;
+  }
+  .map-label {
+    position: absolute;
+    background: rgba(255,107,43,0.9);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .map-station {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,201,224,0.2);
+    border: 1px solid rgba(0,201,224,0.5);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 11px;
+    color: #00C9E0;
+    white-space: nowrap;
+  }
+  .access-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .access-chip {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+  }
+  .p1-bottom {
+    padding: 20px 60px 30px;
+    display: flex;
+    gap: 16px;
+  }
+  .p1-bottom-stat {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .p1-bottom-stat .val { font-size: 24px; font-weight: 900; color: #00C9E0; }
+  .p1-bottom-stat .lab { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+  .grid-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(0,201,224,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,201,224,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .glow-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+
+  /* ============ PAGE 2 ============ */
+  #page2 {
+    background: linear-gradient(160deg, #0a1628 0%, #0d1b3e 60%, #100a28 100%);
+  }
+  .p2-body { padding: 30px 40px; }
+  .p2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
+  .price-hero {
+    background: linear-gradient(135deg, rgba(0,201,224,0.2), rgba(139,92,246,0.2));
+    border: 2px solid rgba(0,201,224,0.4);
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .price-label { font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 2px; margin-bottom: 8px; }
+  .price-main { font-size: 56px; font-weight: 900; color: #00C9E0; line-height: 1; }
+  .price-unit { font-size: 20px; color: rgba(255,255,255,0.6); }
+  .price-range { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 8px; }
+  .price-range strong { color: #fff; }
+
+  .example-list { display: flex; flex-direction: column; gap: 10px; }
+  .example-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+  .example-num {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #00C9E0, #8B5CF6);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 900; flex-shrink: 0;
+  }
+  .example-info { flex: 1; }
+  .example-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .example-name a { color: #fff; text-decoration: underline; text-decoration-color: rgba(0,201,224,0.5); text-underline-offset: 3px; }
+  .example-name a:hover { color: #00C9E0; }
+  .example-detail { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .example-price { font-size: 18px; font-weight: 900; color: #00C9E0; white-space: nowrap; }
+  .example-price span { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .example-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(0,201,224,0.15);
+    border: 1px solid rgba(0,201,224,0.35);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 10px; font-weight: 700; color: #00C9E0;
+    text-decoration: none; white-space: nowrap; flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .example-link:hover { background: rgba(0,201,224,0.3); }
+
+  .factor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .factor-item {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .factor-icon { font-size: 20px; }
+  .factor-text { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .factor-text strong { display: block; font-size: 13px; color: #fff; margin-bottom: 2px; }
+
+  /* ============ PAGE 3 ============ */
+  #page3 {
+    background: linear-gradient(160deg, #0a1628 0%, #0d1b3e 100%);
+  }
+  .p3-body { padding: 30px 40px; }
+  .chart-container {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 16px;
+  }
+  .chart-wrapper { position: relative; height: 280px; }
+  .trend-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px; }
+  .trend-stat {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .trend-stat .ts-val { font-size: 22px; font-weight: 900; }
+  .trend-stat .ts-lab { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; letter-spacing: 0.5px; }
+  .ts-up { color: #00E096; }
+  .ts-orange { color: #FF6B2B; }
+  .ts-cyan { color: #00C9E0; }
+  .ts-purple { color: #8B5CF6; }
+
+  .reason-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .reason-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid #00C9E0;
+    border-radius: 0 8px 8px 0;
+  }
+  .reason-dot { width: 6px; height: 6px; border-radius: 50%; background: #00C9E0; margin-top: 6px; flex-shrink: 0; }
+  .reason-text { font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+  .reason-text strong { color: #fff; }
+
+  /* ============ PAGE 4 ============ */
+  #page4 {
+    background: linear-gradient(160deg, #0a1628 0%, #0d1b3e 100%);
+  }
+  .p4-body { padding: 30px 40px; }
+  .p4-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 24px; margin-top: 16px; }
+  .forecast-chart-wrapper { position: relative; height: 280px; }
+
+  .scenario-cards { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+  .scenario-card {
+    border-radius: 12px;
+    padding: 14px 18px;
+  }
+  .scenario-card.base {
+    background: linear-gradient(135deg, rgba(0,201,224,0.15), rgba(0,201,224,0.05));
+    border: 1px solid rgba(0,201,224,0.35);
+  }
+  .scenario-card.bull {
+    background: linear-gradient(135deg, rgba(0,224,150,0.12), rgba(0,224,150,0.04));
+    border: 1px solid rgba(0,224,150,0.3);
+  }
+  .scenario-card.bear {
+    background: linear-gradient(135deg, rgba(255,107,43,0.12), rgba(255,107,43,0.04));
+    border: 1px solid rgba(255,107,43,0.3);
+  }
+  .scenario-title { font-size: 12px; font-weight: 900; letter-spacing: 1px; margin-bottom: 4px; }
+  .scenario-card.base .scenario-title { color: #00C9E0; }
+  .scenario-card.bull .scenario-title { color: #00E096; }
+  .scenario-card.bear .scenario-title { color: #FF6B2B; }
+  .scenario-price { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
+  .scenario-desc { font-size: 11px; color: rgba(255,255,255,0.55); line-height: 1.5; }
+
+  .reason-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .reason-card {
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .reason-card.up {
+    background: rgba(0,224,150,0.08);
+    border: 1px solid rgba(0,224,150,0.25);
+  }
+  .reason-card.down {
+    background: rgba(255,107,43,0.08);
+    border: 1px solid rgba(255,107,43,0.25);
+  }
+  .reason-card-title {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .reason-card.up .reason-card-title { color: #00E096; }
+  .reason-card.down .reason-card-title { color: #FF6B2B; }
+  .reason-card ul { list-style: none; }
+  .reason-card ul li {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.7;
+    padding-left: 12px;
+    position: relative;
+  }
+  .reason-card.up ul li::before { content: '↑'; position: absolute; left: 0; color: #00E096; }
+  .reason-card.down ul li::before { content: '↓'; position: absolute; left: 0; color: #FF6B2B; }
+
+  /* ============ PAGE 5 ============ */
+  #page5 {
+    background: linear-gradient(160deg, #0a1628 0%, #0d1b3e 60%, #1a0d3e 100%);
+  }
+  .p5-body { padding: 30px 40px; }
+  .p5-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; }
+  .timeline-wrap { position: relative; }
+  .timeline-line {
+    position: absolute;
+    left: 16px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, #00C9E0, #8B5CF6, #FF6B2B);
+  }
+  .timeline-item { display: flex; gap: 20px; margin-bottom: 16px; position: relative; }
+  .tl-dot {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900;
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+  }
+  .tl-dot.past { background: linear-gradient(135deg, #00C9E0, #0080a0); }
+  .tl-dot.now { background: linear-gradient(135deg, #00E096, #00a064); }
+  .tl-dot.future { background: linear-gradient(135deg, #FF6B2B, #c04020); }
+  .tl-content { flex: 1; padding-top: 6px; }
+  .tl-year { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 2px; }
+  .tl-price { font-size: 22px; font-weight: 900; }
+  .tl-price.past { color: #00C9E0; }
+  .tl-price.now { color: #00E096; }
+  .tl-price.future { color: #FF6B2B; }
+  .tl-note { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+  .verdict-card {
+    background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(0,201,224,0.15));
+    border: 1px solid rgba(139,92,246,0.4);
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 16px;
+  }
+  .verdict-title { font-size: 12px; font-weight: 900; color: #8B5CF6; letter-spacing: 2px; margin-bottom: 10px; }
+  .verdict-text { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.8; }
+  .verdict-text strong { color: #fff; }
+
+  .source-list { display: flex; flex-direction: column; gap: 8px; }
+  .source-item {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .source-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #00C9E0, #8B5CF6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0;
+  }
+  .source-info { flex: 1; }
+  .source-name { font-size: 12px; font-weight: 700; }
+  .source-url { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+  .source-tag { font-size: 10px; color: rgba(255,255,255,0.4); white-space: nowrap; }
+
+  .disclaimer {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    line-height: 1.7;
+    margin-top: 16px;
+  }
+
+  /* Print styles */
+  @media print {
+    body { background: #fff; }
+    .page { margin: 0; border-radius: 0; box-shadow: none; page-break-after: always; }
+  }
+
+  @media screen {
+    body { padding: 40px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== PAGE 1: OVERVIEW ========== -->
+<div class="page" id="page1">
+  <div class="grid-bg"></div>
+  <div class="glow-circle" style="width:400px;height:400px;background:rgba(0,201,224,0.08);top:-100px;right:-100px;"></div>
+  <div class="glow-circle" style="width:300px;height:300px;background:rgba(139,92,246,0.08);bottom:-50px;left:-50px;"></div>
+
+  <div class="page-header">
+    <span class="page-number">PAGE 01 / 05</span>
+    <span class="badge badge-orange">2026年4月 作成</span>
+    <span class="logo-tag">RENTAL MARKET REPORT</span>
+  </div>
+
+  <div class="p1-hero">
+    <div>
+      <div class="p1-title">MORIGUCHI CITY RENTAL ANALYSIS</div>
+      <div class="p1-main-title">守口市<br><span>家賃相場</span><br>調査レポート</div>
+      <div class="p1-subtitle">
+        守口市京阪本通2丁目周辺エリアを対象に、<br>
+        現在の相場・過去5年の推移・<br>今後5年の予測を分析します。
+      </div>
+      <div class="p1-spec-grid">
+        <div class="p1-spec-item">
+          <div class="p1-spec-label">📍 所在地</div>
+          <div class="p1-spec-value">守口市京阪本通2丁目周辺</div>
+        </div>
+        <div class="p1-spec-item">
+          <div class="p1-spec-label">🏢 構造・規模</div>
+          <div class="p1-spec-value">RC造 7階建て</div>
+        </div>
+        <div class="p1-spec-item">
+          <div class="p1-spec-label">📅 築年数</div>
+          <div class="p1-spec-value">築30年（1996年頃竣工）</div>
+        </div>
+        <div class="p1-spec-item">
+          <div class="p1-spec-label">🏠 間取り・面積</div>
+          <div class="p1-spec-value">1K / 25㎡</div>
+        </div>
+        <div class="p1-spec-item">
+          <div class="p1-spec-label">🚇 最寄り駅</div>
+          <div class="p1-spec-value">地下鉄守口駅 徒歩5分</div>
+        </div>
+        <div class="p1-spec-item">
+          <div class="p1-spec-label">🔑 対象用途</div>
+          <div class="p1-spec-value">単身者向け賃貸</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p1-map-card">
+      <div class="p1-map-visual">
+        <div class="map-label">守口市京阪本通2丁目</div>
+        <div class="map-dot"></div>
+        <div class="map-station">🚇 地下鉄守口駅 徒歩5分</div>
+      </div>
+      <div class="access-row">
+        <div class="access-chip">🚃 京橋 7分</div>
+        <div class="access-chip">🚃 梅田 15分</div>
+        <div class="access-chip">🚃 難波 20分</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="p1-bottom">
+    <div class="p1-bottom-stat">
+      <div class="val">5.0万円</div>
+      <div class="lab">現在の推定相場（月額）</div>
+    </div>
+    <div class="p1-bottom-stat">
+      <div class="val">+5.0%</div>
+      <div class="lab">過去3年間の上昇率</div>
+    </div>
+    <div class="p1-bottom-stat">
+      <div class="val">143,096人</div>
+      <div class="lab">守口市人口（2020年国勢調査）</div>
+    </div>
+    <div class="p1-bottom-stat">
+      <div class="val">▲18.9%</div>
+      <div class="lab">2050年までの人口減少予測</div>
+    </div>
+    <div class="p1-bottom-stat">
+      <div class="val">29.3%</div>
+      <div class="lab">65歳以上の人口割合（2025年）</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== PAGE 2: CURRENT MARKET ========== -->
+<div class="page" id="page2">
+  <div class="glow-circle" style="width:300px;height:300px;background:rgba(0,201,224,0.06);top:-80px;left:-80px;"></div>
+
+  <div class="page-header">
+    <span class="page-number">PAGE 02 / 05</span>
+    <span class="badge badge-cyan">現在の相場</span>
+    <span class="logo-tag">RENTAL MARKET REPORT</span>
+  </div>
+
+  <div class="p2-body">
+    <div class="section-label">CURRENT MARKET RATE</div>
+    <div style="font-size:22px;font-weight:900;margin-bottom:4px;">現在の周辺家賃相場（2026年4月時点）</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);">検討物件と同程度（RC造・1K・25㎡・築30年前後・駅徒歩5分）の物件を基準に算出</div>
+
+    <div class="price-hero">
+      <div class="price-label">推定相場 月額家賃（中央値）</div>
+      <div>
+        <span class="price-main">4.8</span>
+        <span class="price-unit">〜</span>
+        <span class="price-main">5.5</span>
+        <span style="font-size:24px;color:rgba(255,255,255,0.6);">万円</span>
+      </div>
+      <div class="price-range">平均値 <strong>約5.0〜5.2万円</strong> ／ 守口市1K全体平均 5.49万円（LIFULL HOME'S調べ）</div>
+    </div>
+
+    <div class="p2-grid">
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">📋 類似物件の相場例（SUUMO掲載・実物件）</div>
+        <div class="example-list">
+          <div class="example-item">
+            <div class="example-num">A</div>
+            <div class="example-info">
+              <div class="example-name"><a href="https://suumo.jp/chintai/jnc_000106393073/" target="_blank">リバティービル守口</a></div>
+              <div class="example-detail">25.49㎡ / 4F・6F建 / 築28年 / 鉄骨 / 管理費5,000円</div>
+              <div class="example-detail" style="margin-top:3px;">🚇守口駅 徒歩2分 ／ 🔧エレベーター・TVインターホン・エアコン</div>
+            </div>
+            <div class="example-price">50,000<span>円/月</span></div>
+            <a class="example-link" href="https://suumo.jp/chintai/jnc_000106393073/" target="_blank">🔗 詳細</a>
+          </div>
+          <div class="example-item">
+            <div class="example-num">B</div>
+            <div class="example-info">
+              <div class="example-name"><a href="https://suumo.jp/chintai/jnc_000106616903/" target="_blank">アヴェーレ太子橋</a></div>
+              <div class="example-detail">25㎡ / 1F・7F建 / 築23年 / RC造 / 管理費7,000円</div>
+              <div class="example-detail" style="margin-top:3px;">🚇太子橋今市駅 徒歩1分 ／ 🔧オートロック・エレベーター・光ファイバー・バストイレ別</div>
+            </div>
+            <div class="example-price">45,000〜<span>円/月</span></div>
+            <a class="example-link" href="https://suumo.jp/chintai/jnc_000106616903/" target="_blank">🔗 詳細</a>
+          </div>
+          <div class="example-item">
+            <div class="example-num">C</div>
+            <div class="example-info">
+              <div class="example-name"><a href="https://suumo.jp/chintai/jnc_000037238822/" target="_blank">コボックス太子橋</a></div>
+              <div class="example-detail">20㎡ / 4F・8F建 / 築25年 / RC造 / 管理費6,000円</div>
+              <div class="example-detail" style="margin-top:3px;">🚇太子橋今市駅 徒歩3分 ／ 🔧オートロック・エレベーター・<strong style="color:#00E096;">宅配BOX</strong>・IH・バストイレ別</div>
+            </div>
+            <div class="example-price">44,000〜<span>円/月</span></div>
+            <a class="example-link" href="https://suumo.jp/chintai/jnc_000037238822/" target="_blank">🔗 詳細</a>
+          </div>
+          <div class="example-item">
+            <div class="example-num">D</div>
+            <div class="example-info">
+              <div class="example-name"><a href="https://suumo.jp/chintai/jnc_000104166091/" target="_blank">コンチネンタル太子橋</a></div>
+              <div class="example-detail">30㎡ / 4F・4F建 / 築29年 / RC造 / 管理費6,000円</div>
+              <div class="example-detail" style="margin-top:3px;">🚇太子橋今市駅 徒歩3分 ／ 🔧オートロック・エレベーター・防犯カメラ・IH・温水洗浄便座</div>
+            </div>
+            <div class="example-price">54,000<span>円/月</span></div>
+            <a class="example-link" href="https://suumo.jp/chintai/jnc_000104166091/" target="_blank">🔗 詳細</a>
+          </div>
+          <div class="example-item">
+            <div class="example-num">E</div>
+            <div class="example-info">
+              <div class="example-name"><a href="https://suumo.jp/chintai/jnc_000106393072/" target="_blank">グラシアス中島</a></div>
+              <div class="example-detail">20.6㎡ / 2F・9F建 / 築27年 / 鉄骨 / 管理費7,000円</div>
+              <div class="example-detail" style="margin-top:3px;">🚇守口駅 徒歩8分 ／ 🔧オートロック・エレベーター・<strong style="color:#00C9E0;">オール電化</strong>・高速ネット・温水洗浄便座</div>
+            </div>
+            <div class="example-price">45,000<span>円/月</span></div>
+            <a class="example-link" href="https://suumo.jp/chintai/jnc_000106393072/" target="_blank">🔗 詳細</a>
+          </div>
+        </div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:8px;">※SUUMO掲載の実物件データ（2026年4月時点）。募集状況は変動します。出典：suumo.jp</div>
+      </div>
+
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">📊 家賃に影響する主な要因</div>
+        <div class="factor-grid">
+          <div class="factor-item">
+            <div class="factor-icon">🏢</div>
+            <div class="factor-text">
+              <strong>RC造のプレミアム</strong>
+              木造・鉄骨より10〜15%高め
+            </div>
+          </div>
+          <div class="factor-item">
+            <div class="factor-icon">🚇</div>
+            <div class="factor-text">
+              <strong>駅徒歩5分以内</strong>
+              新築比で約10〜20%低め
+            </div>
+          </div>
+          <div class="factor-item">
+            <div class="factor-icon">📅</div>
+            <div class="factor-text">
+              <strong>築30年の影響</strong>
+              新築同条件より▲15〜25%
+            </div>
+          </div>
+          <div class="factor-item">
+            <div class="factor-icon">🏙️</div>
+            <div class="factor-text">
+              <strong>大阪市へのアクセス</strong>
+              梅田まで15分の立地優位性
+            </div>
+          </div>
+          <div class="factor-item">
+            <div class="factor-icon">🌿</div>
+            <div class="factor-text">
+              <strong>生活環境</strong>
+              商業施設・病院が充実
+            </div>
+          </div>
+          <div class="factor-item">
+            <div class="factor-icon">📐</div>
+            <div class="factor-text">
+              <strong>25㎡は標準的</strong>
+              単身者の最低水準を確保
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <div style="font-size:11px;font-weight:700;color:#00C9E0;margin-bottom:8px;">💡 新築との比較（同立地・同面積）</div>
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="text-align:center;">
+              <div style="font-size:11px;color:rgba(255,255,255,0.5);">新築相場</div>
+              <div style="font-size:20px;font-weight:900;color:#fff;">6.4万円</div>
+            </div>
+            <div style="font-size:20px;color:rgba(255,255,255,0.3);">→</div>
+            <div style="text-align:center;">
+              <div style="font-size:11px;color:rgba(255,255,255,0.5);">築30年相場</div>
+              <div style="font-size:20px;font-weight:900;color:#00C9E0;">5.0万円</div>
+            </div>
+            <div style="text-align:center;background:rgba(0,201,224,0.15);border-radius:8px;padding:8px 12px;">
+              <div style="font-size:11px;color:rgba(255,255,255,0.5);">割安率</div>
+              <div style="font-size:18px;font-weight:900;color:#00E096;">▲22%</div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:8px;">出典：SUUMO守口市家賃相場（2026年4月13日更新）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== PAGE 3: HISTORICAL TREND ========== -->
+<div class="page" id="page3">
+  <div class="glow-circle" style="width:350px;height:350px;background:rgba(0,224,150,0.05);bottom:-100px;right:-100px;"></div>
+
+  <div class="page-header">
+    <span class="page-number">PAGE 03 / 05</span>
+    <span class="badge badge-green">過去5年の推移</span>
+    <span class="logo-tag">RENTAL MARKET REPORT</span>
+  </div>
+
+  <div class="p3-body">
+    <div class="section-label">5-YEAR HISTORICAL TREND</div>
+    <div style="font-size:22px;font-weight:900;margin-bottom:4px;">2021→2026年 家賃相場の推移</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);">守口市 1K・RC造・築30年前後・駅徒歩5分の物件を対象としたエリア相場の変化</div>
+
+    <div class="chart-container">
+      <div class="chart-wrapper">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+
+    <div class="trend-stats">
+      <div class="trend-stat">
+        <div class="ts-val ts-cyan">4.5万円</div>
+        <div class="ts-lab">2021年 相場（推定）</div>
+      </div>
+      <div class="trend-stat">
+        <div class="ts-val ts-purple">4.7万円</div>
+        <div class="ts-lab">2023年 相場（推定）</div>
+      </div>
+      <div class="trend-stat">
+        <div class="ts-val" style="color:#fff;">5.0万円</div>
+        <div class="ts-lab">2026年 現在相場</div>
+      </div>
+      <div class="trend-stat">
+        <div class="ts-val ts-up">+11.1%</div>
+        <div class="ts-lab">5年間での上昇率</div>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;margin-top:16px;margin-bottom:8px;">📌 上昇の主な背景・根拠</div>
+    <div class="reason-list">
+      <div class="reason-item">
+        <div class="reason-dot"></div>
+        <div class="reason-text">
+          <strong>大阪・関西万博（2025年）による需要拡大：</strong>
+          万博開催にともないインバウンド・転入者が増加し、大阪近郊エリアの賃貸需要が底上げされた。
+          <span style="color:rgba(255,255,255,0.4);font-size:10px;">出典：大阪日銀調査レポート（2025年3月）</span>
+        </div>
+      </div>
+      <div class="reason-item">
+        <div class="reason-dot"></div>
+        <div class="reason-text">
+          <strong>建設費・資材費の高騰による新築供給の絞り込み：</strong>
+          新築の供給が減少し、既存の中古物件への需要が集中。守口市でも空室率の低下が確認されている。
+          <span style="color:rgba(255,255,255,0.4);font-size:10px;">出典：PRIMA大阪賃貸市場動向レポート（2025年版）</span>
+        </div>
+      </div>
+      <div class="reason-item">
+        <div class="reason-dot"></div>
+        <div class="reason-text">
+          <strong>守口市全体の賃料は3年で+5.03%上昇：</strong>
+          LIFULL HOME'S「見える賃貸経営」データによると、守口市の標準賃料は大阪府平均（+4.34%）を上回るペースで上昇している。
+          <span style="color:rgba(255,255,255,0.4);font-size:10px;">出典：LIFULL HOME'S 見える賃貸経営 守口市ページ</span>
+        </div>
+      </div>
+      <div class="reason-item">
+        <div class="reason-dot"></div>
+        <div class="reason-text">
+          <strong>金利上昇による持ち家需要の後退：</strong>
+          2024〜2025年の日銀政策金利引き上げにより住宅ローン金利が上昇、買い控えが賃貸需要を支えた。
+          <span style="color:rgba(255,255,255,0.4);font-size:10px;">出典：国土交通省「不動産価格指数」・各種報道</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== PAGE 4: FORECAST ========== -->
+<div class="page" id="page4">
+  <div class="glow-circle" style="width:300px;height:300px;background:rgba(255,107,43,0.06);top:-50px;right:-50px;"></div>
+
+  <div class="page-header">
+    <span class="page-number">PAGE 04 / 05</span>
+    <span class="badge badge-orange">今後5年の予測</span>
+    <span class="logo-tag">RENTAL MARKET REPORT</span>
+  </div>
+
+  <div class="p4-body">
+    <div class="section-label">5-YEAR FORECAST</div>
+    <div style="font-size:22px;font-weight:900;margin-bottom:4px;">2026→2031年 家賃相場の見通し</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);">人口動態・経済動向・市場トレンドをもとにしたシナリオ分析</div>
+
+    <div class="p4-grid">
+      <div>
+        <div class="chart-container" style="margin-top:12px;">
+          <div class="forecast-chart-wrapper">
+            <canvas id="forecastChart"></canvas>
+          </div>
+        </div>
+
+        <div class="reason-grid" style="margin-top:16px;">
+          <div class="reason-card up">
+            <div class="reason-card-title">▲ 上昇要因</div>
+            <ul>
+              <li>インフレ継続による賃料上昇圧力</li>
+              <li>大阪都市圏への転入者需要</li>
+              <li>建設費高騰で新築供給が限定的</li>
+              <li>梅田・淀屋橋へのアクセス優位性</li>
+            </ul>
+          </div>
+          <div class="reason-card down">
+            <div class="reason-card-title">▼ 下落要因</div>
+            <ul>
+              <li>守口市の人口減少（2050年▲18.9%）</li>
+              <li>高齢化率29.3%で単身需要が変化</li>
+              <li>築年数増加（2031年で築35年）</li>
+              <li>万博後の特需消滅</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:13px;font-weight:700;margin:12px 0 10px;">📈 シナリオ別 2031年予測家賃</div>
+        <div class="scenario-cards">
+          <div class="scenario-card base">
+            <div class="scenario-title">📊 ベースシナリオ（最も可能性が高い）</div>
+            <div class="scenario-price" style="color:#00C9E0;">約5.0〜5.2万円</div>
+            <div class="scenario-desc">
+              インフレ・都市部需要が人口減少を相殺し、ほぼ横ばい〜微増で推移。<br>
+              2026年比で<strong style="color:#00C9E0;">±3%以内</strong>の変動幅を想定。
+            </div>
+          </div>
+          <div class="scenario-card bull">
+            <div class="scenario-title">🚀 強気シナリオ（大阪経済の好転）</div>
+            <div class="scenario-price" style="color:#00E096;">約5.5〜6.0万円</div>
+            <div class="scenario-desc">
+              大阪都心エリアのスピルオーバー需要が守口市まで波及した場合。<br>
+              2026年比で<strong style="color:#00E096;">+10〜20%</strong>の上昇を想定。
+            </div>
+          </div>
+          <div class="scenario-card bear">
+            <div class="scenario-title">📉 弱気シナリオ（人口減少が加速）</div>
+            <div class="scenario-price" style="color:#FF6B2B;">約4.5〜4.8万円</div>
+            <div class="scenario-desc">
+              少子高齢化が加速し、空室率が上昇する場合。<br>
+              2026年比で<strong style="color:#FF6B2B;">▲5〜10%</strong>の下落を想定。
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px;">
+          <div style="font-size:11px;font-weight:700;color:#8B5CF6;margin-bottom:6px;">🔍 根拠データ</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);line-height:1.8;">
+            • 守口市人口：2020年143,096人→2050年約116,000人（▲18.9%）<br>
+            <span style="color:rgba(255,255,255,0.35);font-size:10px;">出典：国立社会保障・人口問題研究所 将来推計人口</span><br>
+            • 大阪府の賃貸家賃は「過去最高水準」を更新中（2025年時点）<br>
+            <span style="color:rgba(255,255,255,0.35);font-size:10px;">出典：LIFULL HOME'S 関西エリア賃貸市場レポート（2025年4月）</span><br>
+            • 大阪市内不動産は2026年も上昇傾向継続の見通し<br>
+            <span style="color:rgba(255,255,255,0.35);font-size:10px;">出典：大阪空き家・長屋買取センターブログ（2026年）</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== PAGE 5: SUMMARY & SOURCES ========== -->
+<div class="page" id="page5">
+  <div class="glow-circle" style="width:400px;height:400px;background:rgba(139,92,246,0.08);bottom:-100px;left:-100px;"></div>
+
+  <div class="page-header">
+    <span class="page-number">PAGE 05 / 05</span>
+    <span class="badge badge-purple">まとめ・情報源</span>
+    <span class="logo-tag">RENTAL MARKET REPORT</span>
+  </div>
+
+  <div class="p5-body">
+    <div class="section-label">SUMMARY & SOURCES</div>
+    <div style="font-size:22px;font-weight:900;margin-bottom:4px;">総括と調査情報源</div>
+
+    <div class="p5-grid">
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">📅 家賃相場タイムライン</div>
+        <div class="timeline-wrap">
+          <div class="timeline-line"></div>
+          <div class="timeline-item">
+            <div class="tl-dot past">過</div>
+            <div class="tl-content">
+              <div class="tl-year">5年前（2021年）</div>
+              <div class="tl-price past">約 4.5万円</div>
+              <div class="tl-note">コロナ禍。都心回帰需要は限定的で相場は低め</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="tl-dot past">3年</div>
+            <div class="tl-content">
+              <div class="tl-year">3年前（2023年）</div>
+              <div class="tl-price past">約 4.7万円</div>
+              <div class="tl-note">インバウンド回復・物価上昇で賃料上昇基調へ</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="tl-dot now">現在</div>
+            <div class="tl-content">
+              <div class="tl-year">現在（2026年4月）</div>
+              <div class="tl-price now">約 5.0〜5.2万円</div>
+              <div class="tl-note">万博後も需要維持。守口市1K平均5.49万円</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="tl-dot future">予</div>
+            <div class="tl-content">
+              <div class="tl-year">5年後（2031年）　ベースシナリオ</div>
+              <div class="tl-price future">約 5.0〜5.2万円</div>
+              <div class="tl-note">人口減少とインフレが相殺。ほぼ横ばいを予測</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="verdict-card">
+          <div class="verdict-title">💡 総合判断</div>
+          <div class="verdict-text">
+            守口市・RC造・1K・築30年・駅徒歩5分の検討物件の<strong>適正家賃は月額4.8〜5.5万円</strong>程度が妥当な水準。<br>
+            今後5年は<strong>大きな変動なく横ばい基調</strong>が続く見込みで、下限リスクは人口減少、上振れ要因は大阪都心需要の拡大。<br>
+            <strong>長期保有前提</strong>であれば入居者確保に向けた設備更新（Wi-Fi・宅配BOX等）が賃料維持の鍵となる。
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">📚 調査情報源一覧</div>
+        <div class="source-list">
+          <div class="source-item">
+            <div class="source-icon">🏠</div>
+            <div class="source-info">
+              <div class="source-name">SUUMO（リクルート）</div>
+              <div class="source-url">suumo.jp/chintai/soba/osaka/sc_moriguchi/</div>
+            </div>
+            <div class="source-tag">家賃相場</div>
+          </div>
+          <div class="source-item">
+            <div class="source-icon">🔍</div>
+            <div class="source-info">
+              <div class="source-name">LIFULL HOME'S 家賃相場</div>
+              <div class="source-url">homes.co.jp/chintai/osaka/moriguchi-city/price/</div>
+            </div>
+            <div class="source-tag">守口市平均</div>
+          </div>
+          <div class="source-item">
+            <div class="source-icon">📊</div>
+            <div class="source-info">
+              <div class="source-name">LIFULL HOME'S 見える賃貸経営</div>
+              <div class="source-url">toushi.homes.co.jp/owner/osaka/city270209/</div>
+            </div>
+            <div class="source-tag">賃料推移</div>
+          </div>
+          <div class="source-item">
+            <div class="source-icon">🏙️</div>
+            <div class="source-info">
+              <div class="source-name">Yahoo!不動産 守口市家賃推移</div>
+              <div class="source-url">realestate.yahoo.co.jp/rent/price/...</div>
+            </div>
+            <div class="source-tag">相場推移</div>
+          </div>
+          <div class="source-item">
+            <div class="source-icon">📈</div>
+            <div class="source-info">
+              <div class="source-name">PRIMA 大阪賃貸市場動向レポート2025</div>
+              <div class="source-url">prima-apartment.com/osaka-c-cube/blog/news/504/</div>
+            </div>
+            <div class="source-tag">市場動向</div>
+          </div>
+          <div class="source-item">
+            <div class="source-icon">👥</div>
+            <div class="source-info">
+              <div class="source-name">国立社会保障・人口問題研究所</div>
+              <div class="source-url">ipss.go.jp — 守口市将来推計人口</div>
+            </div>
+            <div class="source-tag">人口予測</div>
+          </div>
+          <div class="source-item">
+            <div class="source-icon">🏛️</div>
+            <div class="source-info">
+              <div class="source-name">守口市 特性・主要課題（令和7年版）</div>
+              <div class="source-url">city.moriguchi.osaka.jp — 統計・行政資料</div>
+            </div>
+            <div class="source-tag">市政資料</div>
+          </div>
+          <div class="source-item">
+            <div class="source-icon">💹</div>
+            <div class="source-info">
+              <div class="source-name">大阪日銀 インバウンド調査レポート</div>
+              <div class="source-url">boj.or.jp/osaka — 2025年3月発表</div>
+            </div>
+            <div class="source-tag">需要分析</div>
+          </div>
+        </div>
+
+        <div class="disclaimer">
+          ※本レポートは公開情報をもとに作成した参考情報であり、特定の投資・取引を推奨するものではありません。実際の家賃設定や投資判断は不動産の専門家にご相談ください。予測値はあくまで統計的推計であり、市場環境の変化により実際の相場は大きく異なる場合があります。調査日：2026年4月30日。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ============ TREND CHART (Page 3) ============
+(function() {
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  const labels = ['2021年', '2022年', '2023年', '2024年', '2025年', '2026年\n(現在)'];
+  const data = [4.5, 4.58, 4.72, 4.83, 4.95, 5.05];
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+  gradient.addColorStop(0, 'rgba(0,201,224,0.35)');
+  gradient.addColorStop(1, 'rgba(0,201,224,0.01)');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '月額家賃（万円）',
+        data: data,
+        borderColor: '#00C9E0',
+        backgroundColor: gradient,
+        borderWidth: 3,
+        pointBackgroundColor: '#00C9E0',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(13,27,62,0.95)',
+          borderColor: 'rgba(0,201,224,0.4)',
+          borderWidth: 1,
+          titleColor: '#00C9E0',
+          bodyColor: '#fff',
+          padding: 12,
+          callbacks: {
+            label: function(context) {
+              return '  家賃相場：約 ' + context.parsed.y.toFixed(2) + ' 万円';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: 'rgba(255,255,255,0.6)', font: { family: 'Noto Sans JP', size: 11 } },
+          border: { color: 'rgba(255,255,255,0.1)' }
+        },
+        y: {
+          min: 4.0,
+          max: 5.5,
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: {
+            color: 'rgba(255,255,255,0.6)',
+            font: { family: 'Noto Sans JP', size: 11 },
+            callback: function(val) { return val.toFixed(1) + '万円'; }
+          },
+          border: { color: 'rgba(255,255,255,0.1)' }
+        }
+      }
+    }
+  });
+})();
+
+// ============ FORECAST CHART (Page 4) ============
+(function() {
+  const ctx = document.getElementById('forecastChart').getContext('2d');
+  const labels = ['2026', '2027', '2028', '2029', '2030', '2031'];
+  const base =  [5.05, 5.08, 5.12, 5.10, 5.06, 5.05];
+  const bull =  [5.05, 5.20, 5.38, 5.50, 5.62, 5.75];
+  const bear =  [5.05, 4.95, 4.80, 4.72, 4.65, 4.60];
+
+  const gradBlue = ctx.createLinearGradient(0, 0, 0, 280);
+  gradBlue.addColorStop(0, 'rgba(0,201,224,0.15)');
+  gradBlue.addColorStop(1, 'rgba(0,201,224,0.0)');
+
+  const gradGreen = ctx.createLinearGradient(0, 0, 0, 280);
+  gradGreen.addColorStop(0, 'rgba(0,224,150,0.1)');
+  gradGreen.addColorStop(1, 'rgba(0,224,150,0.0)');
+
+  const gradOrange = ctx.createLinearGradient(0, 0, 0, 280);
+  gradOrange.addColorStop(0, 'rgba(255,107,43,0.1)');
+  gradOrange.addColorStop(1, 'rgba(255,107,43,0.0)');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: '強気シナリオ',
+          data: bull,
+          borderColor: '#00E096',
+          backgroundColor: gradGreen,
+          borderWidth: 2,
+          borderDash: [6, 3],
+          pointRadius: 4,
+          pointBackgroundColor: '#00E096',
+          fill: true,
+          tension: 0.4
+        },
+        {
+          label: 'ベース（基本）シナリオ',
+          data: base,
+          borderColor: '#00C9E0',
+          backgroundColor: gradBlue,
+          borderWidth: 3,
+          pointRadius: 5,
+          pointBackgroundColor: '#00C9E0',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          fill: true,
+          tension: 0.4
+        },
+        {
+          label: '弱気シナリオ',
+          data: bear,
+          borderColor: '#FF6B2B',
+          backgroundColor: gradOrange,
+          borderWidth: 2,
+          borderDash: [6, 3],
+          pointRadius: 4,
+          pointBackgroundColor: '#FF6B2B',
+          fill: true,
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          labels: {
+            color: 'rgba(255,255,255,0.7)',
+            font: { family: 'Noto Sans JP', size: 10 },
+            boxWidth: 20,
+            padding: 10
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(13,27,62,0.95)',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#fff',
+          bodyColor: 'rgba(255,255,255,0.8)',
+          padding: 10,
+          callbacks: {
+            label: function(context) {
+              return '  ' + context.dataset.label + '：約 ' + context.parsed.y.toFixed(2) + ' 万円';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: 'rgba(255,255,255,0.6)', font: { family: 'Noto Sans JP', size: 11 } },
+          border: { color: 'rgba(255,255,255,0.1)' }
+        },
+        y: {
+          min: 4.2,
+          max: 6.0,
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: {
+            color: 'rgba(255,255,255,0.6)',
+            font: { family: 'Noto Sans JP', size: 11 },
+            callback: function(val) { return val.toFixed(1) + '万円'; }
+          },
+          border: { color: 'rgba(255,255,255,0.1)' }
+        }
+      }
+    }
+  });
+})();
+</script>
+
+
+<!-- ========== PAGE 6: RENT PREMIUM FACTORS ========== -->
+<style>
+  #page6 { background: linear-gradient(160deg, #0a1628 0%, #0d1b3e 60%, #1a0d3e 100%); }
+  .p6-body { padding: 22px 40px; }
+
+  /* 2カラム構成 */
+  .p6-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+  .p6-col-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 12px; font-weight: 900; letter-spacing: 1px;
+  }
+  .p6-col-header.rent-col  { background: rgba(0,201,224,0.15); border: 1px solid rgba(0,201,224,0.35); color: #00C9E0; }
+  .p6-col-header.mgmt-col  { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.35); color: #8B5CF6; }
+
+  .prem-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    margin-bottom: 7px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  .prem-icon { font-size: 18px; flex-shrink: 0; width: 26px; text-align: center; }
+  .prem-info { flex: 1; }
+  .prem-name { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .prem-desc { font-size: 10px; color: rgba(255,255,255,0.45); line-height: 1.4; }
+  .prem-amt  { font-size: 13px; font-weight: 900; white-space: nowrap; }
+  .prem-amt.rent-amt { color: #00C9E0; }
+  .prem-amt.mgmt-amt { color: #8B5CF6; }
+  .prem-amt.neg-amt  { color: #FF6B2B; }
+
+  /* ベースライン帯・サブ見出し */
+  .baseline-banner {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .baseline-banner strong { color: #fff; }
+  .sub-header {
+    font-size: 10px; font-weight: 900; letter-spacing: 1px;
+    padding: 4px 10px; border-radius: 6px;
+    margin: 8px 0 6px;
+    display: inline-block;
+  }
+  .sub-header.plus  { background: rgba(0,201,224,0.15); color: #00C9E0; }
+  .sub-header.minus { background: rgba(255,107,43,0.15); color: #FF6B2B; }
+  .prem-amt.neg-amt2 { color: #FF6B2B; }
+
+  .data-note-box {
+    background: rgba(255,107,43,0.08);
+    border: 1px solid rgba(255,107,43,0.25);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+  .data-note-box strong { color: #FF6B2B; }
+
+  /* 物件比較表 */
+  .spec-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 10.5px; }
+  .spec-table th {
+    background: rgba(0,201,224,0.1);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 7px 8px;
+    color: #00C9E0;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+  .spec-table th.mgmt-th { color: #8B5CF6; background: rgba(139,92,246,0.1); }
+  .spec-table td {
+    border: 1px solid rgba(255,255,255,0.07);
+    padding: 6px 8px;
+    color: rgba(255,255,255,0.8);
+    text-align: center;
+    vertical-align: middle;
+  }
+  .spec-table tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+  .spec-table .prop-name { text-align: left; font-weight: 700; color: #fff; white-space: nowrap; }
+  .spec-table .prop-name a { color: #00C9E0; text-decoration: none; }
+  .spec-table .prop-name a:hover { text-decoration: underline; }
+  .has { color: #00E096; font-size: 13px; }
+  .none { color: rgba(255,255,255,0.18); font-size: 11px; }
+  .price-cell { font-weight: 900; color: #00C9E0; }
+  .total-cell { font-weight: 900; color: #fff; }
+  .mgmt-cell  { color: #8B5CF6; font-weight: 700; }
+  .station-near { color: #00E096; font-weight: 700; font-size: 10px; }
+  .station-far  { color: #FF6B2B; font-size: 10px; }
+  .legend-row { display: flex; gap: 16px; margin-top: 8px; align-items: center; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 9px; color: rgba(255,255,255,0.4); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+</style>
+
+<div class="page" id="page6">
+  <div class="glow-circle" style="width:350px;height:350px;background:rgba(0,224,150,0.06);top:-80px;right:-80px;"></div>
+
+  <div class="page-header">
+    <span class="page-number">PAGE 06 / 06</span>
+    <span class="badge badge-green">家賃・共益費 上乗せ要因</span>
+    <span class="logo-tag">RENTAL MARKET REPORT</span>
+  </div>
+
+  <div class="p6-body">
+    <div class="section-label">RENT &amp; MANAGEMENT FEE PREMIUM FACTORS</div>
+    <div style="font-size:20px;font-weight:900;margin-bottom:3px;">設備・条件による上乗せ額の目安｜家賃 vs 共益費 の区別</div>
+    <div class="data-note-box">
+      ⚠️ <strong>データについて：</strong>物件例（A〜E）はSUUMO守口市・太子橋エリアの実掲載データ（ローカル）。上乗せ金額は全国賃貸市場調査（全国賃貸管理ビジネス協会・部屋まる・ablaze調べ）をベースに、周辺物件の管理費実績で補正した参考値です。毎回の調査では周辺物件から設備有無を比較し、ローカルな上乗せ実態に近づけます。
+    </div>
+
+    <!-- 2カラム：家賃 vs 共益費 -->
+    <div class="p6-cols">
+
+      <!-- 左列：家賃への影響（プラス・マイナス） -->
+      <div>
+        <div class="p6-col-header rent-col">🏠 家賃への影響（ベースライン基準）</div>
+
+        <!-- ベースライン説明 -->
+        <div class="baseline-banner">
+          📐 <strong>相場5.0万円のベースライン（標準装備）：</strong>バストイレ別・エレベーター・エアコン・バルコニー・駐輪場が揃っている状態を前提として算出。
+        </div>
+
+        <!-- プラス -->
+        <div class="sub-header plus">▲ ベース超え　上乗せ</div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🐾</div>
+          <div class="prem-info">
+            <div class="prem-name">ペット可</div>
+            <div class="prem-desc">損耗・臭気リスクを家賃に転嫁。小型犬・猫で+5%、大型犬で+10%超。敷金も別途1〜2ヶ月増。</div>
+          </div>
+          <div class="prem-amt rent-amt">+3,000〜<br>10,000円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">⚡</div>
+          <div class="prem-info">
+            <div class="prem-name">オール電化</div>
+            <div class="prem-desc">設備投資コストを家賃に転嫁するケースが主。火気なし・光熱費安定が訴求。</div>
+          </div>
+          <div class="prem-amt rent-amt">+1,000〜<br>2,000円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🌡️</div>
+          <div class="prem-info">
+            <div class="prem-name">温水洗浄便座</div>
+            <div class="prem-desc">築30年物件では未装備が多く、あれば差別化になる。</div>
+          </div>
+          <div class="prem-amt rent-amt">+500〜<br>1,000円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🏢</div>
+          <div class="prem-info">
+            <div class="prem-name">高層階（1階上がるごと）</div>
+            <div class="prem-desc">眺望・日当たり・防犯性で上乗せ。7Fと1Fでは3,000〜6,000円差も。</div>
+          </div>
+          <div class="prem-amt rent-amt">+500〜<br>1,000円/F</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🚶</div>
+          <div class="prem-info">
+            <div class="prem-name">駅距離（基準5分より近い）</div>
+            <div class="prem-desc">80m（徒歩1分）短縮するごとに上昇。</div>
+          </div>
+          <div class="prem-amt rent-amt">+100〜<br>200円/80m</div>
+        </div>
+
+        <!-- マイナス -->
+        <div class="sub-header minus">▼ ベース未満　マイナス</div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🛁</div>
+          <div class="prem-info">
+            <div class="prem-name">ユニットバス（バストイレ一緒）</div>
+            <div class="prem-desc">ベースの「バストイレ別」が欠如。単身者の忌避率が高く、家賃を下げないと競争できない。</div>
+          </div>
+          <div class="prem-amt neg-amt2">▲2,000〜<br>3,000円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🚫</div>
+          <div class="prem-info">
+            <div class="prem-name">エレベーターなし</div>
+            <div class="prem-desc">7F建てでEVなしは致命的。低層（3F以下）でも▲影響あり。</div>
+          </div>
+          <div class="prem-amt neg-amt2">▲1,000〜<br>2,000円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">❄️</div>
+          <div class="prem-info">
+            <div class="prem-name">エアコンなし</div>
+            <div class="prem-desc">現在は標準装備が前提。未設置は入居者が敬遠し、空室リスクが高まる。</div>
+          </div>
+          <div class="prem-amt neg-amt2">▲1,000〜<br>2,000円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🏗️</div>
+          <div class="prem-info">
+            <div class="prem-name">バルコニーなし</div>
+            <div class="prem-desc">洗濯物干しスペース不足として評価が下がる。</div>
+          </div>
+          <div class="prem-amt neg-amt2">▲500〜<br>1,000円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🚶</div>
+          <div class="prem-info">
+            <div class="prem-name">駅距離（基準5分より遠い）</div>
+            <div class="prem-desc">80m（徒歩1分）延びるごとに下落。10分超えると敬遠されやすい。</div>
+          </div>
+          <div class="prem-amt neg-amt2">▲100〜<br>200円/80m</div>
+        </div>
+      </div>
+
+      <!-- 右列：共益費・管理費に反映 -->
+      <div>
+        <div class="p6-col-header mgmt-col">🔧 共益費・管理費に反映されるもの</div>
+
+        <div class="prem-row">
+          <div class="prem-icon">📦</div>
+          <div class="prem-info">
+            <div class="prem-name">宅配ボックス</div>
+            <div class="prem-desc">共用設備のため保守・電気代を共益費で回収するのが一般的。家賃ではなく管理費に上乗せ。</div>
+          </div>
+          <div class="prem-amt mgmt-amt">共益費<br>+300〜1,000円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🔒</div>
+          <div class="prem-info">
+            <div class="prem-name">オートロック</div>
+            <div class="prem-desc">電気代・保守点検費が共益費に加算される。ただし物件の魅力向上で家賃水準も間接的に上がる。</div>
+          </div>
+          <div class="prem-amt mgmt-amt">共益費<br>+500〜1,500円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🛗</div>
+          <div class="prem-info">
+            <div class="prem-name">エレベーター</div>
+            <div class="prem-desc">法定点検・電気代・保守費の主要コスト。共益費の大部分を占める場合も。</div>
+          </div>
+          <div class="prem-amt mgmt-amt">共益費<br>+500〜1,500円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">📹</div>
+          <div class="prem-info">
+            <div class="prem-name">防犯カメラ</div>
+            <div class="prem-desc">録画機器・通信費・保守が共用コスト。オートロックとセット導入で共益費に一括。</div>
+          </div>
+          <div class="prem-amt mgmt-amt">共益費<br>+300〜500円</div>
+        </div>
+
+        <div class="prem-row">
+          <div class="prem-icon">🌐</div>
+          <div class="prem-info">
+            <div class="prem-name">共用ネット設備（光ファイバー等）</div>
+            <div class="prem-desc">全戸無料Wi-Fiなど共用提供型は共益費に含む。個室引込み型は家賃・各戸負担で区別。</div>
+          </div>
+          <div class="prem-amt mgmt-amt">共益費<br>+500〜1,000円</div>
+        </div>
+
+        <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:9px 12px;margin-top:8px;font-size:10px;color:rgba(255,255,255,0.6);line-height:1.7;">
+          💡 <strong style="color:#8B5CF6;">まとめ：</strong>室内の専用設備（バストイレ・ペット・電化等）は<strong style="color:#00C9E0;">家賃に反映</strong>、共用部の維持コスト（ロック・EV・宅配BOX等）は<strong style="color:#8B5CF6;">共益費に反映</strong>されるのが基本。ただし物件によって「家賃込み」に統合されるケースも多い。
+        </div>
+      </div>
+    </div>
+
+    <!-- 物件比較表 -->
+    <div style="font-size:12px;font-weight:700;margin-top:14px;margin-bottom:4px;">📋 掲載物件の設備比較表（SUUMO実データ）</div>
+    <table class="spec-table">
+      <thead>
+        <tr>
+          <th style="text-align:left;width:20%;">物件名</th>
+          <th>家賃</th>
+          <th class="mgmt-th">共益費</th>
+          <th>合計</th>
+          <th>構造</th>
+          <th>最寄駅 徒歩</th>
+          <th>オート<br>ロック</th>
+          <th>宅配<br>BOX</th>
+          <th>BT<br>別</th>
+          <th>IH/<br>電化</th>
+          <th>防犯<br>カメラ</th>
+          <th>ネット</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="prop-name"><a href="https://suumo.jp/chintai/jnc_000106393073/" target="_blank">A リバティービル守口</a></td>
+          <td class="price-cell">5.0万</td>
+          <td class="mgmt-cell">5,000</td>
+          <td class="total-cell">55,000</td>
+          <td>鉄骨</td>
+          <td class="station-near">守口駅 2分</td>
+          <td class="none">—</td><td class="none">—</td><td class="has">✓</td><td class="none">—</td><td class="none">—</td><td style="font-size:10px;">CATV</td>
+        </tr>
+        <tr>
+          <td class="prop-name"><a href="https://suumo.jp/chintai/jnc_000106616903/" target="_blank">B アヴェーレ太子橋</a></td>
+          <td class="price-cell">4.5万〜</td>
+          <td class="mgmt-cell">7,000</td>
+          <td class="total-cell">52,000〜</td>
+          <td>RC</td>
+          <td class="station-near">太子橋今市 1分</td>
+          <td class="has">✓</td><td class="none">—</td><td class="has">✓</td><td class="none">—</td><td class="none">—</td><td style="font-size:10px;">光回線</td>
+        </tr>
+        <tr>
+          <td class="prop-name"><a href="https://suumo.jp/chintai/jnc_000037238822/" target="_blank">C コボックス太子橋</a></td>
+          <td class="price-cell">4.4万〜</td>
+          <td class="mgmt-cell">6,000</td>
+          <td class="total-cell">50,000〜</td>
+          <td>RC</td>
+          <td class="station-near">太子橋今市 3分</td>
+          <td class="has">✓</td><td class="has" style="color:#00E096;font-weight:900;">✓</td><td class="has">✓</td><td style="font-size:10px;">IH</td><td class="none">—</td><td style="font-size:10px;">CATV</td>
+        </tr>
+        <tr>
+          <td class="prop-name"><a href="https://suumo.jp/chintai/jnc_000104166091/" target="_blank">D コンチネンタル太子橋</a></td>
+          <td class="price-cell">5.4万</td>
+          <td class="mgmt-cell">6,000</td>
+          <td class="total-cell">60,000</td>
+          <td>RC</td>
+          <td class="station-near">太子橋今市 3分</td>
+          <td class="has">✓</td><td class="none">—</td><td class="has">✓</td><td style="font-size:10px;">IH</td><td class="has">✓</td><td class="none">—</td>
+        </tr>
+        <tr>
+          <td class="prop-name"><a href="https://suumo.jp/chintai/jnc_000106393072/" target="_blank">E グラシアス中島</a></td>
+          <td class="price-cell">4.5万</td>
+          <td class="mgmt-cell">7,000</td>
+          <td class="total-cell">52,000</td>
+          <td>鉄骨</td>
+          <td class="station-far">守口駅 8分</td>
+          <td class="has">✓</td><td class="none">—</td><td class="has">✓</td><td style="font-size:10px;color:#00C9E0;font-weight:700;">全電化</td><td class="none">—</td><td style="font-size:10px;">高速</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="legend-row">
+      <div class="legend-item"><div class="legend-dot" style="background:#00C9E0;"></div>家賃に上乗せ</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6;"></div>共益費に反映</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#00E096;"></div>設備あり ✓</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FF6B2B;"></div>駅6分以上</div>
+      <div style="margin-left:auto;font-size:9px;color:rgba(255,255,255,0.3);">物件データ：SUUMO（2026年4月取得）／上乗せ額：全国賃貸管理ビジネス協会・部屋まる・ablaze調べ</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

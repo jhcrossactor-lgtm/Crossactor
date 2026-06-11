@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>棟３プラン検討 建築設計ツール</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 12px; }
+
+header { background: #1a3a5c; color: white; padding: 7px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+header h1 { font-size: 14px; font-weight: 600; }
+.tag { background: #e67e22; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+.hdr-info { font-size: 11px; color: #a8c4e0; margin-left: auto; }
+
+.floor-bar { background: white; border-bottom: 1px solid #dde4ed; padding: 5px 14px; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.ftab { padding: 3px 11px; border-radius: 4px; font-size: 11px; cursor: pointer; border: 1px solid #dde4ed; background: #f8f9fb; color: #555; }
+.ftab.active { background: #1a3a5c; color: white; border-color: #1a3a5c; font-weight: 600; }
+.flabel { font-size: 10px; color: #aaa; }
+
+.body { display: flex; flex: 1; overflow: hidden; }
+
+.param-panel { width: 200px; background: white; border-right: 1px solid #dde4ed; overflow-y: auto; flex-shrink: 0; padding: 0; }
+.param-section { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; }
+.param-section h3 { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; font-weight: 600; }
+.param-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; gap: 4px; }
+.param-row label { font-size: 11px; color: #444; flex: 1; }
+.param-row .unit { font-size: 10px; color: #999; margin-left: 2px; white-space: nowrap; }
+.param-row input[type=number] { width: 58px; padding: 3px 5px; border: 1px solid #cdd5de; border-radius: 4px; font-size: 11px; text-align: right; }
+.param-row input[type=number]:focus { outline: none; border-color: #4a90d9; }
+.param-row select { padding: 3px 4px; border: 1px solid #cdd5de; border-radius: 4px; font-size: 11px; width: 100%; }
+.param-fixed { font-size: 11px; color: #999; background: #f8f9fb; padding: 2px 5px; border-radius: 3px; }
+.param-note { font-size: 10px; color: #aaa; margin-top: -3px; margin-bottom: 3px; line-height: 1.4; }
+
+.gen-btn { width: calc(100% - 20px); margin: 8px 10px; padding: 8px; background: #1a3a5c; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.gen-btn:hover { background: #2a5080; }
+.gen-btn:active { background: #0f2a40; }
+
+.canvas-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+#svg-main { display: block; }
+
+.result-panel { width: 200px; background: white; border-left: 1px solid #dde4ed; overflow-y: auto; flex-shrink: 0; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.result-panel h3 { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; margin-bottom: 4px; }
+.info-box { background: #f8f9fb; border-radius: 6px; padding: 8px; }
+.info-box p { font-size: 11px; color: #333; line-height: 1.6; }
+.unit-box { background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px; padding: 8px; }
+.unit-box h4 { font-size: 10px; color: #e65100; margin-bottom: 4px; font-weight: 600; }
+.r-row { display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0; }
+.r-row.sep { border-top: 1px solid #e5e5e5; margin-top: 3px; padding-top: 4px; }
+.r-row.bold { font-weight: 700; color: #1a3a5c; }
+.r-row.ok   { font-weight: 700; color: #27ae60; }
+.r-row.warn { font-weight: 700; color: #e74c3c; }
+.sum-box { background: #f8f9fb; border-radius: 6px; padding: 8px; }
+
+.legend { display: flex; flex-direction: column; gap: 3px; }
+.leg-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #555; }
+.leg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.leg-b { margin-left: auto; font-size: 9px; padding: 0 3px; border-radius: 2px; }
+.b-in  { background: #fde8e8; color: #c0392b; }
+.b-out { background: #e8f5e9; color: #27ae60; }
+.b-15  { background: #fef9e7; color: #d35400; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>棟３プラン検討 建築設計ツール</h1>
+  <span class="tag">棟３・3階建て・容積率適合確認</span>
+  <span class="hdr-info">98-2 + 97-2　敷地面積：495.9 m²　容積率：200%　建蔽率：80%</span>
+</header>
+
+<div class="floor-bar">
+  <span class="flabel">表示フロア：</span>
+  <button class="ftab active" onclick="setFloor(0)">全体</button>
+  <button class="ftab" onclick="setFloor(1)">1F</button>
+  <button class="ftab" onclick="setFloor(2)">2F</button>
+  <button class="ftab" onclick="setFloor(3)">3F</button>
+</div>
+
+<div class="body">
+
+  <div class="param-panel">
+    <div class="param-section">
+      <h3>基準グリッド寸法</h3>
+      <div class="param-row">
+        <label>基準柱間寸法</label>
+        <span class="param-fixed">600</span>
+        <span class="unit">mm</span>
+      </div>
+      <p class="param-note">柱心から500 → 躯体心600</p>
+    </div>
+
+    <div class="param-section">
+      <h3>共用部設定</h3>
+      <div class="param-row"><label>共用部方位</label></div>
+      <select id="p-orientation" onchange="onParamChange()">
+        <option value="top">上側（北）廊下向き</option>
+        <option value="left">左側（西）廊下向き</option>
+      </select>
+      <br><br>
+      <div class="param-row">
+        <label>共用廊下幅</label>
+        <input type="number" id="p-corr-w" value="1400" min="1000" max="3000" step="100" onchange="onParamChange()">
+        <span class="unit">mm</span>
+      </div>
+      <div class="param-row">
+        <label>階段幅（片幅）</label>
+        <input type="number" id="p-stair-w" value="1400" min="900" max="2000" step="100" onchange="onParamChange()">
+        <span class="unit">mm</span>
+      </div>
+      <div class="param-row"><label>階段タイプ</label></div>
+      <select id="p-stair-type" onchange="onParamChange()">
+        <option value="U">U折返（1400×2）</option>
+        <option value="straight">直通（1400）</option>
+      </select>
+      <br><br>
+      <div class="param-row">
+        <label>エントランス 幅</label>
+        <input type="number" id="p-ent-w" value="2000" min="1500" max="4000" step="100" onchange="onParamChange()">
+        <span class="unit">mm</span>
+      </div>
+      <div class="param-row">
+        <label>エントランス 奥行</label>
+        <input type="number" id="p-ent-d" value="2000" min="1500" max="4000" step="100" onchange="onParamChange()">
+        <span class="unit">mm</span>
+      </div>
+      <div class="param-row">
+        <label>バルコニー奥行</label>
+        <input type="number" id="p-balc-d" value="1200" min="900" max="2400" step="100" onchange="onParamChange()">
+        <span class="unit">mm</span>
+      </div>
+    </div>
+
+    <div class="param-section">
+      <h3>住戸設定</h3>
+      <div class="param-row">
+        <label>住戸幅</label>
+        <input type="number" id="p-unit-w" value="3300" min="2700" max="8000" step="100" onchange="onParamChange()">
+        <span class="unit">mm</span>
+      </div>
+      <div class="param-row">
+        <label>住戸奥行</label>
+        <input type="number" id="p-unit-d" value="8100" min="4000" max="12000" step="100" onchange="onParamChange()">
+        <span class="unit">mm</span>
+      </div>
+      <div class="param-row">
+        <label>住戸数 / フロア</label>
+        <input type="number" id="p-units" value="5" min="2" max="20" step="1" onchange="onParamChange()">
+        <span class="unit">戸</span>
+      </div>
+      <div class="param-row">
+        <label>階数</label>
+        <input type="number" id="p-floors" value="3" min="1" max="5" step="1" onchange="onParamChange()">
+        <span class="unit">F</span>
+      </div>
+    </div>
+
+    <button class="gen-btn" onclick="generateAndRender()">▶ プラン生成 / 更新</button>
+
+    <div class="param-section">
+      <h3>凡例</h3>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <svg id="svg-main" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <div class="result-panel">
+    <div class="info-box" id="r-pattern">
+      <p style="color:#888;text-align:center">↑ パラメータを入力して<br>「プラン生成」を押してください</p>
+    </div>
+    <div class="unit-box">
+      <h4>住戸スペック（1戸）</h4>
+      <div class="r-row"><span>専有面積</span><span id="r-unit-area">—</span></div>
+      <div class="r-row"><span>バルコニー</span><span id="r-unit-balc">—</span></div>
+      <div class="r-row"><span>方位</span><span id="r-unit-dir">—</span></div>
+    </div>
+    <div>
+      <h3>面積集計（全F延べ面積）</h3>
+      <div class="sum-box" id="r-areas"></div>
+    </div>
+    <div>
+      <h3>容積率チェック</h3>
+      <div class="sum-box" id="r-far"></div>
+    </div>
+    <div>
+      <h3>建蔽率チェック</h3>
+      <div class="sum-box" id="r-cov"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══ 定数 ══
+const SITE_COORDS = [
+  [38.636, 125.678],
+  [38.636, 103.657],
+  [15.960, 103.657],
+  [15.948, 122.659],
+  [18.944, 125.661],
+];
+const SITE_AREA = 495.9;
+const FAR_LIMIT = 2.00;
+const COV_LIMIT = 0.80;
+const NEIGHBOR_SETBACK = 0.60;
+
+const TYPES = {
+  '専有部分':    { color:'#4a90d9', far:'in'  },
+  '共用廊下':    { color:'#f39c12', far:'out' },
+  '共用階段':    { color:'#e67e22', far:'out' },
+  'エントランス':{ color:'#16a085', far:'out' },
+  'バルコニー':  { color:'#27ae60', far:'out' },
+  '駐車場':      { color:'#7f8c8d', far:'1/5' },
+  '駐輪場':      { color:'#95a5a6', far:'in'  },
+  'ゴミ置き場':  { color:'#c0392b', far:'in'  },
+};
+
+const bld_xmin = 16.0;
+const bld_xmax = 38.636 - NEIGHBOR_SETBACK;
+const bld_ymin = 103.657 + NEIGHBOR_SETBACK;
+const bld_ymax = 125.7;
+
+// ══ パラメータ ══
+function getParams() {
+  return {
+    orientation: document.getElementById('p-orientation').value,
+    corr_w:  +document.getElementById('p-corr-w').value / 1000,
+    stair_w: +document.getElementById('p-stair-w').value / 1000,
+    stair_type: document.getElementById('p-stair-type').value,
+    ent_w:   +document.getElementById('p-ent-w').value / 1000,
+    ent_d:   +document.getElementById('p-ent-d').value / 1000,
+    balc_d:  +document.getElementById('p-balc-d').value / 1000,
+    unit_w:  +document.getElementById('p-unit-w').value / 1000,
+    unit_d:  +document.getElementById('p-unit-d').value / 1000,
+    units:   +document.getElementById('p-units').value,
+    floors:  +document.getElementById('p-floors').value,
+  };
+}
+
+// ══ プラン生成 ══
+let ALL_ROOMS = [];
+let planGenerated = false;
+
+function generatePlan(p) {
+  const rooms = [];
+  const add = (type, x, y, w, h, floor, note='') => rooms.push({ type, x, y, w, h, floor, note });
+
+  const stair_total_w = p.stair_type === 'U' ? p.stair_w * 2 : p.stair_w;
+  const bike_count = p.units * p.floors;
+  const bike_cols  = Math.ceil(bike_count / 2);
+  const bike_w     = 0.6 * bike_cols;
+  const bike_d     = 2.0 * 2 + 0.1;
+  const trash_w = 2.0, trash_d = 2.0;
+  const GAP = 0.1;
+
+  if (p.orientation === 'top') {
+    const y0          = bld_ymin;
+    const y_corr_top  = y0 + p.corr_w;
+    const y_unit_top  = y_corr_top + p.unit_d;
+    const y_balc_top  = y_unit_top + p.balc_d;
+    const y_avoid_top = y_balc_top + 1.1;
+    const building_w  = p.units * p.unit_w + stair_total_w;
+    const x0          = Math.max(bld_xmin, (bld_xmin + bld_xmax) / 2 - building_w / 2);
+    const x_stair     = x0 + p.units * p.unit_w;
+    const stair_d     = p.corr_w + p.unit_d;
+
+    for (let f = 1; f <= p.floors; f++) {
+      for (let u = 0; u < p.units; u++) {
+        add('専有部分', x0 + u * p.unit_w, y_corr_top, p.unit_w, p.unit_d, f);
+      }
+      add('共用廊下', x0, y0, p.units * p.unit_w + stair_total_w, p.corr_w, f);
+      add('バルコニー', x0, y_unit_top, p.units * p.unit_w, p.balc_d, f);
+      add('共用階段', x_stair, y0, stair_total_w, stair_d, f, p.stair_type==='U'?'U折返':'直通');
+    }
+    add('エントランス', x0 - p.ent_w - GAP, y0, p.ent_w, p.ent_d, 1);
+    const park_y = y_avoid_top + GAP;
+    for (let i = 0; i < p.units; i++) add('駐車場', x0 + i * 2.5, park_y, 2.5, 5.0, 1);
+    const bike_x = x0 + p.units * 2.5 + GAP;
+    add('駐輪場', bike_x, park_y, bike_w, bike_d, 1, `${bike_count}台`);
+    add('ゴミ置き場', bike_x + bike_w + GAP, park_y, trash_w, trash_d, 1, '‥');
+
+  } else {
+    const x0         = bld_xmin;
+    const x_balc_end = x0 + p.balc_d;
+    const x_unit_end = x_balc_end + p.unit_d;
+    const x_corr_end = x_unit_end + p.corr_w;
+    const building_h = p.units * p.unit_w + stair_total_w;
+    const y0         = Math.max(bld_ymin, (bld_ymin + bld_ymax) / 2 - building_h / 2);
+    const y_stair    = y0 + p.units * p.unit_w;
+    const stair_d    = p.balc_d + p.unit_d + p.corr_w;
+
+    for (let f = 1; f <= p.floors; f++) {
+      for (let u = 0; u < p.units; u++) {
+        add('専有部分', x_balc_end, y0 + u * p.unit_w, p.unit_d, p.unit_w, f);
+      }
+      add('共用廊下', x_unit_end, y0, p.corr_w, p.units * p.unit_w + stair_total_w, f);
+      add('バルコニー', x0, y0, p.balc_d, p.units * p.unit_w, f);
+      add('共用階段', x0, y_stair, stair_d, stair_total_w, f, p.stair_type==='U'?'U折返':'直通');
+    }
+    add('エントランス', x_unit_end, y0 - p.ent_d - GAP, p.ent_w, p.ent_d, 1);
+    const park_x = x_corr_end + GAP;
+    for (let i = 0; i < p.units; i++) add('駐車場', park_x, y0 + i * 2.5, 5.0, 2.5, 1);
+    const bike_y = y0 + p.units * 2.5 + GAP;
+    add('駐輪場', park_x, bike_y, bike_d, bike_w, 1, `${bike_count}台`);
+    add('ゴミ置き場', park_x, bike_y + bike_w + GAP, trash_d, trash_w, 1, '‥');
+  }
+  return rooms;
+}
+
+let autoUpdate = false;
+function onParamChange() { if (autoUpdate) generateAndRender(); }
+function generateAndRender() {
+  const p = getParams();
+  ALL_ROOMS = generatePlan(p);
+  planGenerated = true;
+  autoUpdate = true;
+  render();
+  updateResults(p);
+}
+
+// ══ フロア ══
+let currentFloor = 0;
+function setFloor(f) {
+  currentFloor = f;
+  document.querySelectorAll('.ftab').forEach((b,i) => b.classList.toggle('active', i === f));
+  render();
+}
+function visibleRooms() {
+  if (!planGenerated) return [];
+  if (currentFloor === 0) return ALL_ROOMS.filter(r => r.floor === 1);
+  return ALL_ROOMS.filter(r => r.floor === currentFloor);
+}
+
+// ══ SVG ══
+const svg = document.getElementById('svg-main');
+const PAD = 40;
+let SVG_W, SVG_H, SCALE, OX, OY;
+
+function initSVG() {
+  const el = svg.parentElement;
+  SVG_W = el.clientWidth; SVG_H = el.clientHeight;
+  svg.setAttribute('width', SVG_W); svg.setAttribute('height', SVG_H);
+  const xs = SITE_COORDS.map(c=>c[0]), ys = SITE_COORDS.map(c=>c[1]);
+  const mnX=Math.min(...xs), mxX=Math.max(...xs), mnY=Math.min(...ys), mxY=Math.max(...ys);
+  SCALE = Math.min((SVG_W-PAD*2)/(mxX-mnX), (SVG_H-PAD*2)/(mxY-mnY)) * 0.88;
+  OX = SVG_W/2 - ((mnX+mxX)/2)*SCALE;
+  OY = SVG_H/2 + ((mnY+mxY)/2)*SCALE;
+}
+const tx = x => OX + x*SCALE;
+const ty = y => OY - y*SCALE;
+const ns = 'http://www.w3.org/2000/svg';
+function mkEl(tag, a={}) { const e=document.createElementNS(ns,tag); for(const[k,v] of Object.entries(a)) e.setAttribute(k,v); return e; }
+
+function render() {
+  svg.innerHTML = '';
+
+  // グリッド
+  const xs=SITE_COORDS.map(c=>c[0]), ys=SITE_COORDS.map(c=>c[1]);
+  const gx0=Math.floor(Math.min(...xs)/5)*5, gx1=Math.ceil(Math.max(...xs)/5)*5;
+  const gy0=Math.floor(Math.min(...ys)/5)*5, gy1=Math.ceil(Math.max(...ys)/5)*5;
+  for(let x=gx0;x<=gx1;x+=5) svg.appendChild(mkEl('line',{x1:tx(x),y1:ty(gy0),x2:tx(x),y2:ty(gy1),stroke:'#dde4ed','stroke-width':0.5}));
+  for(let y=gy0;y<=gy1;y+=5) svg.appendChild(mkEl('line',{x1:tx(gx0),y1:ty(y),x2:tx(gx1),y2:ty(y),stroke:'#dde4ed','stroke-width':0.5}));
+
+  // 建築可能範囲
+  svg.appendChild(mkEl('rect',{
+    x:tx(bld_xmin), y:ty(bld_ymax), width:(bld_xmax-bld_xmin)*SCALE, height:(bld_ymax-bld_ymin)*SCALE,
+    fill:'#f0f7ff', stroke:'#b0c8e8', 'stroke-width':1, 'stroke-dasharray':'4 3'
+  }));
+
+  // 部屋
+  visibleRooms().forEach(r => {
+    const t = TYPES[r.type] || {color:'#ccc'};
+    const rx=tx(r.x), ry=ty(r.y+r.h), rw=r.w*SCALE, rh=r.h*SCALE;
+    svg.appendChild(mkEl('rect',{x:rx,y:ry,width:rw,height:rh,fill:t.color+'cc',stroke:t.color,'stroke-width':1.5,rx:2}));
+    if(rw>24&&rh>12){
+      const lt=mkEl('text',{x:rx+rw/2,y:ry+rh/2-(rh>24?5:0),'text-anchor':'middle','dominant-baseline':'middle',fill:'white','font-size':Math.min(10,rw/5,rh/2),'font-weight':'600','pointer-events':'none',style:'text-shadow:0 1px 2px rgba(0,0,0,0.5)'});
+      lt.textContent=r.note||r.type; svg.appendChild(lt);
+    }
+    if(rw>28&&rh>24){
+      const at=mkEl('text',{x:rx+rw/2,y:ry+rh/2+7,'text-anchor':'middle','dominant-baseline':'middle',fill:'white','font-size':Math.min(9,rw/6),'pointer-events':'none',style:'text-shadow:0 1px 2px rgba(0,0,0,0.5)'});
+      at.textContent=(r.w*r.h).toFixed(1)+'m²'; svg.appendChild(at);
+    }
+    if(currentFloor>0&&r.type==='専有部分'){
+      const rooms=visibleRooms();
+      const idx=rooms.filter(x=>x.type==='専有部分').indexOf(r)+1;
+      const nt=mkEl('text',{x:rx+rw/2,y:ry+10,'text-anchor':'middle',fill:'white','font-size':8,'font-weight':'700','pointer-events':'none'});
+      nt.textContent=`${currentFloor}0${idx}`; svg.appendChild(nt);
+    }
+  });
+
+  // 敷地境界線
+  for(let i=0;i<SITE_COORDS.length;i++){
+    const p0=SITE_COORDS[i], p1=SITE_COORDS[(i+1)%SITE_COORDS.length];
+    svg.appendChild(mkEl('line',{x1:tx(p0[0]),y1:ty(p0[1]),x2:tx(p1[0]),y2:ty(p1[1]),
+      stroke: i>=2?'#e6b800':'#1a3a5c', 'stroke-width':2}));
+  }
+
+  // 敷地ラベル
+  if(!planGenerated){
+    const cx=SITE_COORDS.reduce((s,c)=>s+c[0],0)/SITE_COORDS.length;
+    const cy=SITE_COORDS.reduce((s,c)=>s+c[1],0)/SITE_COORDS.length;
+    const st=mkEl('text',{x:tx(cx),y:ty(cy),'text-anchor':'middle',fill:'#aaa','font-size':12});
+    st.textContent='敷地 495.9m²（北側半分）'; svg.appendChild(st);
+    const st2=mkEl('text',{x:tx(cx),y:ty(cy)+18,'text-anchor':'middle',fill:'#aaa','font-size':10});
+    st2.textContent='↑ プラン生成ボタンを押してください'; svg.appendChild(st2);
+  }
+
+  // 道路ラベル
+  const rd=mkEl('text',{x:tx(14),y:ty(113),'text-anchor':'middle',fill:'#e6b800','font-size':9,'transform':`rotate(-90,${tx(14)},${ty(113)})`});
+  rd.textContent='西道路 8m'; svg.appendChild(rd);
+  const rd2=mkEl('text',{x:tx(28.8),y:ty(127),'text-anchor':'middle',fill:'#e6b800','font-size':9});
+  rd2.textContent='北道路 8m'; svg.appendChild(rd2);
+  const rdE=mkEl('text',{x:tx(39.8),y:ty(114.2),'text-anchor':'middle',fill:'#1a3a5c','font-size':8,'transform':`rotate(-90,${tx(39.8)},${ty(114.2)})`});
+  rdE.textContent='北側境界（隣地）'; svg.appendChild(rdE);
+
+  // スケールバー
+  const barPx = 10 * SCALE;
+  const bx = SVG_W - PAD - barPx, by = SVG_H - 18;
+  svg.appendChild(mkEl('line',{x1:bx,y1:by,x2:bx+barPx,y2:by,stroke:'#555','stroke-width':2}));
+  svg.appendChild(mkEl('line',{x1:bx,y1:by-4,x2:bx,y2:by+4,stroke:'#555','stroke-width':1.5}));
+  svg.appendChild(mkEl('line',{x1:bx+barPx,y1:by-4,x2:bx+barPx,y2:by+4,stroke:'#555','stroke-width':1.5}));
+  const sc=mkEl('text',{x:bx+barPx/2,y:by-6,'text-anchor':'middle',fill:'#555','font-size':8});
+  sc.textContent='10m'; svg.appendChild(sc);
+}
+
+// ══ 結果表示 ══
+function updateResults(p) {
+  const totals = {};
+  Object.keys(TYPES).forEach(k=>totals[k]=0);
+  ALL_ROOMS.forEach(r=>{ totals[r.type]=(totals[r.type]||0)+r.w*r.h; });
+
+  const totalFloor = Object.values(totals).reduce((a,b)=>a+b,0);
+  const garageExempt = Math.min(totals['駐車場']||0, totalFloor/5);
+  let farArea = 0;
+  Object.entries(totals).forEach(([k,v])=>{
+    const t=TYPES[k]; if(!t) return;
+    if(t.far==='in') farArea+=v;
+    else if(t.far==='1/5') farArea+=Math.max(0,v-garageExempt);
+  });
+  const farRatio=farArea/SITE_AREA, farOk=farRatio<=FAR_LIMIT;
+  const covRooms=ALL_ROOMS.filter(r=>r.floor===1&&r.type!=='バルコニー'&&r.type!=='駐車場'&&r.type!=='駐輪場'&&r.type!=='ゴミ置き場');
+  let covArea=0; covRooms.forEach(r=>covArea+=r.w*r.h);
+  const covRatio=covArea/SITE_AREA, covOk=covRatio<=COV_LIMIT;
+
+  document.getElementById('r-pattern').innerHTML=`<p><strong>パターン1</strong><br>片廊下・${p.units}戸×${p.floors}F＝${p.units*p.floors}戸<br>${p.orientation==='top'?'北側廊下向き':'西側廊下向き'}</p>`;
+  document.getElementById('r-unit-area').textContent=(p.unit_w*p.unit_d).toFixed(1)+' m²';
+  document.getElementById('r-unit-balc').textContent=(p.unit_w*p.balc_d).toFixed(1)+' m²';
+  document.getElementById('r-unit-dir').textContent=p.orientation==='top'?'南向き（廊下北）':'東向き（廊下西）';
+
+  let aHTML='';
+  Object.entries(totals).forEach(([k,v])=>{
+    if(v<0.1) return;
+    const t=TYPES[k];
+    const b=t.far==='in'?'<span style="color:#c0392b;font-size:9px">算入</span>':t.far==='1/5'?'<span style="color:#d35400;font-size:9px">1/5</span>':'<span style="color:#27ae60;font-size:9px">除外</span>';
+    aHTML+=`<div class="r-row"><span>${k} ${b}</span><span>${v.toFixed(1)} m²</span></div>`;
+  });
+  aHTML+=`<div class="r-row sep bold"><span>延べ面積合計</span><span>${totalFloor.toFixed(1)} m²</span></div>`;
+  document.getElementById('r-areas').innerHTML=aHTML;
+
+  document.getElementById('r-far').innerHTML=`
+    <div class="r-row"><span>容積算入面積</span><span>${farArea.toFixed(1)} m²</span></div>
+    <div class="r-row"><span>駐車場除外</span><span>-${garageExempt.toFixed(1)} m²</span></div>
+    <div class="r-row sep ${farOk?'ok':'warn'}"><span>容積率</span><span>${(farRatio*100).toFixed(1)}% / ${FAR_LIMIT*100}%</span></div>
+    <div class="r-row"><span>余剰容積</span><span>${((FAR_LIMIT-farRatio)*SITE_AREA).toFixed(0)} m²</span></div>`;
+
+  document.getElementById('r-cov').innerHTML=`
+    <div class="r-row"><span>建築面積（1F）</span><span>${covArea.toFixed(1)} m²</span></div>
+    <div class="r-row sep ${covOk?'ok':'warn'}"><span>建蔽率</span><span>${(covRatio*100).toFixed(1)}% / ${COV_LIMIT*100}%</span></div>`;
+}
+
+// ══ 凡例 ══
+function buildLegend() {
+  const d=document.getElementById('legend');
+  Object.entries(TYPES).forEach(([k,t])=>{
+    const bl=t.far==='in'?'b-in':t.far==='1/5'?'b-15':'b-out';
+    const bl2=t.far==='in'?'算入':t.far==='1/5'?'1/5':'除外';
+    d.innerHTML+=`<div class="leg-item"><span class="leg-dot" style="background:${t.color}"></span>${k}<span class="leg-b ${bl}">${bl2}</span></div>`;
+  });
+}
+
+window.addEventListener('resize', ()=>{initSVG();render();});
+buildLegend();
+initSVG();
+render();
+</script>
+</body>
+</html>

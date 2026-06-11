@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iPhoneの売り上げ ― 最新動向・市場シェア・地域別分析・今後の展望 — インフォグラフィック</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #FFFBF5;
+    color: #1A1A1A;
+    padding: clamp(16px, 3vw, 40px);
+  }
+
+  /* ===== ナビゲーション ===== */
+  .nav {
+    position: sticky;
+    top: 0;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(8px);
+    padding: 12px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(194,65,12,0.10);
+    margin-bottom: clamp(20px, 3vw, 40px);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    z-index: 100;
+  }
+  .nav-title {
+    font-weight: 700;
+    color: #C2410C;
+    margin-right: auto;
+    font-size: clamp(13px, 1.5vw, 17px);
+  }
+  .nav a {
+    font-size: clamp(11px, 1.3vw, 14px);
+    color: #57534E;
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: #FFF7ED;
+    transition: background 0.2s, color 0.2s;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .nav a:hover { background: #FFEDD5; color: #C2410C; }
+
+  /* ===== シート共通 ===== */
+  .sheet {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto clamp(24px, 4vw, 48px);
+    aspect-ratio: 16 / 9;
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(194,65,12,0.12);
+    padding: clamp(28px, 4vw, 54px) clamp(32px, 5vw, 64px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .sheet-num {
+    position: absolute;
+    top: 20px;
+    right: 28px;
+    font-size: clamp(11px, 1.3vw, 15px);
+    color: #A8A29E;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .kicker {
+    display: inline-block;
+    font-size: clamp(11px, 1.3vw, 15px);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #EA580C;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+  }
+  h2.sheet-heading {
+    font-size: clamp(20px, 3vw, 36px);
+    font-weight: 700;
+    color: #C2410C;
+    border-bottom: 3px solid #C2410C;
+    padding-bottom: 8px;
+    margin-bottom: clamp(12px, 1.8vw, 20px);
+    line-height: 1.25;
+    flex-shrink: 0;
+  }
+  .footer-note {
+    position: absolute;
+    bottom: 14px;
+    left: 28px;
+    right: 28px;
+    font-size: clamp(9px, 1.1vw, 12px);
+    color: #A8A29E;
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  /* ===== Sheet 1: タイトルカバー ===== */
+  .sheet.cover {
+    background: linear-gradient(135deg, #EA580C 0%, #7C2D12 100%);
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+  }
+  .sheet.cover::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 12% 88%, rgba(255,255,255,0.07) 0%, transparent 50%),
+      radial-gradient(circle at 88% 12%, rgba(255,255,255,0.07) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .cover-eyebrow {
+    display: inline-block;
+    border: 1.5px solid rgba(255,255,255,0.50);
+    border-radius: 999px;
+    padding: 5px 20px;
+    font-size: clamp(11px, 1.3vw, 14px);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.88);
+    text-transform: uppercase;
+    margin-bottom: clamp(14px, 2vw, 22px);
+  }
+  .cover h1 {
+    font-size: clamp(32px, 5.2vw, 66px);
+    font-weight: 900;
+    color: #FFFFFF;
+    line-height: 1.15;
+    margin-bottom: clamp(14px, 2vw, 22px);
+  }
+  .cover-subtitle {
+    font-size: clamp(14px, 1.9vw, 24px);
+    color: rgba(255,255,255,0.90);
+    font-weight: 400;
+    line-height: 1.6;
+    max-width: 800px;
+  }
+  .cover-meta {
+    position: absolute;
+    bottom: 20px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: clamp(10px, 1.1vw, 13px);
+    color: rgba(255,255,255,0.55);
+  }
+
+  /* ===== Sheet 2: キーナンバー ===== */
+  .hero-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(6px, 1vw, 12px);
+  }
+  .hero-main-row {
+    display: flex;
+    align-items: flex-end;
+    gap: clamp(6px, 1vw, 12px);
+    justify-content: center;
+  }
+  .hero-number {
+    font-size: clamp(64px, 10.5vw, 136px);
+    font-weight: 900;
+    background: linear-gradient(135deg, #C2410C 0%, #EA580C 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .hero-unit {
+    font-size: clamp(20px, 3vw, 38px);
+    font-weight: 700;
+    color: #C2410C;
+    padding-bottom: clamp(8px, 1.2vw, 16px);
+  }
+  .hero-label {
+    font-size: clamp(14px, 1.8vw, 22px);
+    color: #57534E;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .hero-sub-row {
+    display: flex;
+    gap: clamp(14px, 2.2vw, 32px);
+    margin-top: clamp(8px, 1.4vw, 18px);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .hero-sub-item {
+    text-align: center;
+    background: #FFF7ED;
+    border-radius: 10px;
+    padding: clamp(8px, 1.2vw, 14px) clamp(14px, 2.2vw, 28px);
+  }
+  .hero-sub-value {
+    font-size: clamp(20px, 2.8vw, 36px);
+    font-weight: 900;
+    color: #9A3412;
+    line-height: 1;
+  }
+  .hero-sub-label {
+    font-size: clamp(11px, 1.2vw, 14px);
+    color: #57534E;
+    font-weight: 500;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* ===== 横棒グラフ共通 ===== */
+  .bar-chart {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .bar-row {
+    display: grid;
+    align-items: center;
+    gap: clamp(8px, 1.2vw, 14px);
+    margin-bottom: clamp(8px, 1.2vw, 13px);
+    font-size: clamp(13px, 1.5vw, 17px);
+  }
+  .bar-row .bar-label { font-weight: 500; color: #1A1A1A; }
+  .bar-row .bar-track {
+    background: #FFEDD5;
+    border-radius: 4px;
+    height: clamp(16px, 2.1vw, 22px);
+    overflow: hidden;
+  }
+  .bar-row .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #EA580C 0%, #C2410C 100%);
+  }
+  .bar-row .bar-fill.muted {
+    background: linear-gradient(90deg, #C2410C 0%, #9A3412 100%);
+    opacity: 0.75;
+  }
+  .bar-row .bar-fill.dim {
+    background: #D6D3D1;
+  }
+  .bar-row .bar-value { font-weight: 700; color: #C2410C; }
+  .bar-row .bar-value.muted-val { color: #57534E; }
+  .bar-delta {
+    display: block;
+    font-size: clamp(10px, 1.1vw, 13px);
+    color: #57534E;
+    font-weight: 500;
+    margin-top: 1px;
+  }
+
+  /* ===== Sheet 3: 年次売上推移 ===== */
+  .sheet-3-grid {
+    grid-template-columns: clamp(58px, 9vw, 100px) 1fr clamp(100px, 14vw, 180px);
+  }
+
+  /* ===== Sheet 4: 地域別 + モデル別 ===== */
+  .region-model-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(14px, 2vw, 28px);
+    align-items: stretch;
+  }
+  .region-col { display: flex; flex-direction: column; justify-content: center; }
+  .col-label {
+    font-size: clamp(13px, 1.5vw, 17px);
+    font-weight: 700;
+    color: #9A3412;
+    letter-spacing: 0.04em;
+    margin-bottom: clamp(8px, 1.2vw, 12px);
+    flex-shrink: 0;
+  }
+  .region-bar-wrap { display: flex; flex-direction: column; gap: clamp(9px, 1.3vw, 14px); }
+  .region-item { display: flex; flex-direction: column; gap: 3px; }
+  .region-name-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .region-name { font-size: clamp(13px, 1.5vw, 18px); font-weight: 700; color: #1A1A1A; }
+  .region-value { font-size: clamp(13px, 1.5vw, 17px); font-weight: 700; color: #C2410C; }
+  .region-delta {
+    font-size: clamp(11px, 1.2vw, 14px);
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #FFF7ED;
+    color: #C2410C;
+    white-space: nowrap;
+  }
+  .region-delta.strong { color: #9A3412; background: #FFEDD5; }
+  .region-track { background: #FFEDD5; border-radius: 4px; height: clamp(11px, 1.5vw, 17px); overflow: hidden; margin-top: 3px; }
+  .region-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #EA580C 0%, #C2410C 100%); }
+  .region-fill.strong { background: linear-gradient(90deg, #C2410C 0%, #9A3412 100%); }
+  .region-note { font-size: clamp(12px, 1.3vw, 15px); color: #57534E; margin-top: clamp(8px, 1.2vw, 12px); line-height: 1.55; flex-shrink: 0; }
+  .region-note strong { color: #C2410C; }
+
+  /* モデル別シェア */
+  .model-share { display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 12px); }
+  .model-card {
+    display: flex;
+    align-items: center;
+    gap: clamp(10px, 1.4vw, 16px);
+    background: #FFF7ED;
+    border-radius: 10px;
+    padding: clamp(8px, 1.2vw, 13px) clamp(12px, 1.6vw, 18px);
+  }
+  .model-pct {
+    font-size: clamp(24px, 3.4vw, 42px);
+    font-weight: 900;
+    color: #C2410C;
+    line-height: 1;
+    min-width: clamp(54px, 7.5vw, 88px);
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .model-pct.large { color: #9A3412; }
+  .model-pct.small { color: #A8A29E; }
+  .model-name { font-size: clamp(13px, 1.5vw, 18px); font-weight: 700; color: #1A1A1A; line-height: 1.2; }
+  .model-note { font-size: clamp(11px, 1.2vw, 14px); color: #57534E; font-weight: 400; margin-top: 2px; }
+
+  /* ===== Sheet 5: 市場シェア ===== */
+  .share-layout {
+    flex: 1;
+    display: flex;
+    gap: clamp(16px, 2.4vw, 36px);
+    align-items: stretch;
+  }
+  .share-main { flex: 1.7; display: flex; flex-direction: column; justify-content: center; }
+  .share-aside { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 1.4vw, 16px); }
+  .share-bar-row {
+    display: grid;
+    grid-template-columns: clamp(60px, 9vw, 100px) 1fr clamp(100px, 13vw, 160px);
+    align-items: center;
+    gap: clamp(8px, 1.2vw, 14px);
+    margin-bottom: clamp(8px, 1.2vw, 13px);
+    font-size: clamp(13px, 1.5vw, 17px);
+  }
+  .share-bar-row .bar-label { font-weight: 700; color: #1A1A1A; text-align: right; }
+  .share-bar-row .bar-label.primary { color: #C2410C; }
+  .share-bar-row .bar-track { background: #FFEDD5; border-radius: 4px; height: clamp(16px, 2.1vw, 22px); overflow: hidden; }
+  .share-bar-row .bar-fill-apple { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #EA580C 0%, #C2410C 100%); }
+  .share-bar-row .bar-fill-other { height: 100%; border-radius: 4px; background: #D6D3D1; }
+  .share-bar-row .bar-value { font-weight: 700; color: #C2410C; }
+  .share-bar-row .bar-value.other-val { color: #57534E; }
+  .aside-card {
+    background: #FFF7ED;
+    border-radius: 12px;
+    padding: clamp(10px, 1.4vw, 16px) clamp(14px, 2vw, 20px);
+    border-left: 4px solid #C2410C;
+  }
+  .aside-card.dark { border-left-color: #9A3412; }
+  .aside-title { font-size: clamp(11px, 1.2vw, 14px); font-weight: 700; color: #9A3412; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .aside-val { font-size: clamp(20px, 2.8vw, 34px); font-weight: 900; color: #C2410C; line-height: 1; }
+  .aside-card.dark .aside-val { color: #9A3412; }
+  .aside-note { font-size: clamp(11px, 1.2vw, 14px); color: #57534E; margin-top: 4px; font-weight: 400; line-height: 1.4; }
+
+  /* ===== Sheet 6: キーテイクアウェイ ===== */
+  .key-list {
+    list-style: none;
+    padding: 0;
+    margin-top: clamp(10px, 1.5vw, 18px);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+  }
+  .key-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: clamp(12px, 1.6vw, 20px);
+    padding: clamp(7px, 1vw, 11px) 0;
+    font-size: clamp(13px, 1.6vw, 19px);
+    line-height: 1.55;
+    border-bottom: 1px solid #FFEDD5;
+  }
+  .key-list li:last-child { border-bottom: none; }
+  .key-ico {
+    flex-shrink: 0;
+    width: clamp(30px, 3.8vw, 46px);
+    height: clamp(30px, 3.8vw, 46px);
+    background: linear-gradient(135deg, #C2410C 0%, #EA580C 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(13px, 1.6vw, 18px);
+    font-weight: 900;
+    color: #FFFFFF;
+    letter-spacing: -0.02em;
+  }
+  .key-txt { color: #1A1A1A; }
+  .key-txt strong { color: #C2410C; }
+
+  /* 印刷用 */
+  @media print {
+    body { background: white; padding: 0; }
+    .nav { display: none; }
+    .sheet { box-shadow: none; page-break-after: always; margin: 0; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== ナビゲーション ===== -->
+<nav class="nav">
+  <span class="nav-title">iPhoneの売り上げ — インフォグラフィック</span>
+  <a href="#sheet-1">01 表紙</a>
+  <a href="#sheet-2">02 最高記録</a>
+  <a href="#sheet-3">03 売上推移</a>
+  <a href="#sheet-4">04 地域・製品</a>
+  <a href="#sheet-5">05 市場シェア</a>
+  <a href="#sheet-6">06 まとめ</a>
+</nav>
+
+<!-- ===== Sheet 1: タイトルカバー ===== -->
+<section class="sheet cover" id="sheet-1">
+  <div class="cover-eyebrow">Research Infographic · 2026</div>
+  <h1>iPhoneの売り上げ</h1>
+  <p class="cover-subtitle">
+    最新動向・市場シェア・地域別分析・今後の展望<br>
+    iPhone 17が牽引した過去最高更新と、2026年以降の成長シナリオ
+  </p>
+  <div class="cover-meta">出典: IDC / Apple公式 / DemandSage / Bullfincher（2026年4月時点）</div>
+</section>
+
+<!-- ===== Sheet 2: キーナンバー ===== -->
+<section class="sheet" id="sheet-2">
+  <span class="sheet-num">2 / 6</span>
+  <span class="kicker">Key Figure · Q1 FY2026</span>
+  <h2 class="sheet-heading">四半期・全地域で同時過去最高を達成</h2>
+  <div class="hero-wrap">
+    <div class="hero-main-row">
+      <div class="hero-number">853</div>
+      <div class="hero-unit">億ドル</div>
+    </div>
+    <p class="hero-label">Q1 FY2026（2025年10〜12月）iPhone単体 四半期売上高 — 前年比 +23%</p>
+    <div class="hero-sub-row">
+      <div class="hero-sub-item">
+        <div class="hero-sub-value">1,438億ドル</div>
+        <div class="hero-sub-label">Apple 総売上高<br>前年比 +16%</div>
+      </div>
+      <div class="hero-sub-item">
+        <div class="hero-sub-value">421億ドル</div>
+        <div class="hero-sub-label">四半期純利益<br>前年比 +19%</div>
+      </div>
+      <div class="hero-sub-item">
+        <div class="hero-sub-value">300億ドル</div>
+        <div class="hero-sub-label">サービス部門売上高<br>前年比 +14%</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-note">出典: Apple Newsroom "Apple reports first quarter results"（2026年1月）/ MacRumors</div>
+</section>
+
+<!-- ===== Sheet 3: 年次売上推移 ===== -->
+<section class="sheet" id="sheet-3">
+  <span class="sheet-num">3 / 6</span>
+  <span class="kicker">Annual Revenue Trend · FY2020–FY2025</span>
+  <h2 class="sheet-heading">iPhone 年次売上高の推移（億ドル）</h2>
+  <div class="bar-chart">
+    <div class="bar-row sheet-3-grid">
+      <div class="bar-label">FY2020</div>
+      <div class="bar-track"><div class="bar-fill muted" style="width:65.7%"></div></div>
+      <div class="bar-value muted-val">1,378<span class="bar-delta">販売台数 約1.97億台</span></div>
+    </div>
+    <div class="bar-row sheet-3-grid">
+      <div class="bar-label">FY2021</div>
+      <div class="bar-track"><div class="bar-fill muted" style="width:91.6%"></div></div>
+      <div class="bar-value muted-val">1,920<span class="bar-delta">販売台数 約2.42億台</span></div>
+    </div>
+    <div class="bar-row sheet-3-grid">
+      <div class="bar-label">FY2022</div>
+      <div class="bar-track"><div class="bar-fill" style="width:98.0%"></div></div>
+      <div class="bar-value">2,055<span class="bar-delta">販売台数 約2.33億台</span></div>
+    </div>
+    <div class="bar-row sheet-3-grid">
+      <div class="bar-label">FY2023</div>
+      <div class="bar-track"><div class="bar-fill muted" style="width:95.7%"></div></div>
+      <div class="bar-value muted-val">2,006<span class="bar-delta">販売台数 約2.32億台</span></div>
+    </div>
+    <div class="bar-row sheet-3-grid">
+      <div class="bar-label">FY2024</div>
+      <div class="bar-track"><div class="bar-fill muted" style="width:95.9%"></div></div>
+      <div class="bar-value muted-val">2,011<span class="bar-delta">販売台数 約2.32億台</span></div>
+    </div>
+    <div class="bar-row sheet-3-grid">
+      <div class="bar-label" style="color:#C2410C; font-weight:700;">FY2025</div>
+      <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+      <div class="bar-value" style="color:#9A3412; font-weight:900;">2,097<span class="bar-delta" style="color:#C2410C; font-weight:700;">販売台数 約2.48億台 — 過去最高</span></div>
+    </div>
+  </div>
+  <div class="footer-note">出典: DemandSage / IDC / Business of Apps ※棒グラフは最大値2,097億ドルを100%として正規化</div>
+</section>
+
+<!-- ===== Sheet 4: 地域別売上 + モデル別シェア ===== -->
+<section class="sheet" id="sheet-4">
+  <span class="sheet-num">4 / 6</span>
+  <span class="kicker">Regional &amp; Product Mix · Q1 FY2026</span>
+  <h2 class="sheet-heading">地域別売上 ＋ iPhone 17 モデル別早期販売シェア</h2>
+  <div class="region-model-grid">
+    <!-- 左: 地域別 -->
+    <div class="region-col">
+      <div class="col-label">地域別売上（Q1 FY2026）</div>
+      <div class="region-bar-wrap">
+        <div class="region-item">
+          <div class="region-name-row">
+            <span class="region-name">米州</span>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span class="region-delta">+11%</span>
+              <span class="region-value">585億ドル</span>
+            </div>
+          </div>
+          <div class="region-track"><div class="region-fill" style="width:100%"></div></div>
+        </div>
+        <div class="region-item">
+          <div class="region-name-row">
+            <span class="region-name">欧州</span>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span class="region-delta">+13%</span>
+              <span class="region-value">381億ドル</span>
+            </div>
+          </div>
+          <div class="region-track"><div class="region-fill" style="width:65.1%"></div></div>
+        </div>
+        <div class="region-item">
+          <div class="region-name-row">
+            <span class="region-name">中国</span>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span class="region-delta strong">+38%</span>
+              <span class="region-value" style="color:#9A3412;">255億ドル</span>
+            </div>
+          </div>
+          <div class="region-track"><div class="region-fill strong" style="width:43.6%"></div></div>
+        </div>
+      </div>
+      <p class="region-note">米州・欧州・中国・日本・アジア太平洋の<strong>全5地域が同時過去最高</strong>を達成。中国は前年比+38%と全地域中最大の伸び率を記録。</p>
+    </div>
+    <!-- 右: モデル別 -->
+    <div class="region-col">
+      <div class="col-label">iPhone 17 モデル別早期販売シェア</div>
+      <div class="model-share">
+        <div class="model-card">
+          <div class="model-pct large">52%</div>
+          <div>
+            <div class="model-name">Pro / Pro Max（合計）</div>
+            <div class="model-note">プレミアム2機種が過半。Pro Maxのみで約27%</div>
+          </div>
+        </div>
+        <div class="model-card">
+          <div class="model-pct">22%</div>
+          <div>
+            <div class="model-name">iPhone 17（標準）</div>
+            <div class="model-note">スタンダードモデル</div>
+          </div>
+        </div>
+        <div class="model-card">
+          <div class="model-pct small">6%</div>
+          <div>
+            <div class="model-name">iPhone Air</div>
+            <div class="model-note">新フォームファクター、当初期待値を下回る</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-note">出典: Apple決算 / Bullfincher / Apple Insider / MacRumors</div>
+</section>
+
+<!-- ===== Sheet 5: 市場シェア比較 ===== -->
+<section class="sheet" id="sheet-5">
+  <span class="sheet-num">5 / 6</span>
+  <span class="kicker">Global Market Share · 2025 Full Year</span>
+  <h2 class="sheet-heading">世界スマートフォン出荷台数シェア（2025年通年 / 合計 約12.6億台）</h2>
+  <div class="share-layout">
+    <!-- 棒グラフ -->
+    <div class="share-main">
+      <div class="share-bar-row">
+        <div class="bar-label primary">Apple</div>
+        <div class="bar-track"><div class="bar-fill-apple" style="width:100%"></div></div>
+        <div class="bar-value">2.48億台 / 19.7%</div>
+      </div>
+      <div class="share-bar-row">
+        <div class="bar-label">Samsung</div>
+        <div class="bar-track"><div class="bar-fill-other" style="width:97.3%"></div></div>
+        <div class="bar-value other-val">2.41億台 / 19.1%</div>
+      </div>
+      <div class="share-bar-row">
+        <div class="bar-label">Xiaomi</div>
+        <div class="bar-track"><div class="bar-fill-other" style="width:66.7%"></div></div>
+        <div class="bar-value other-val">1.65億台 / 13.1%</div>
+      </div>
+      <div class="share-bar-row">
+        <div class="bar-label">Vivo</div>
+        <div class="bar-track"><div class="bar-fill-other" style="width:41.9%"></div></div>
+        <div class="bar-value other-val">1.04億台 / 8.2%</div>
+      </div>
+      <div class="share-bar-row">
+        <div class="bar-label">OPPO</div>
+        <div class="bar-track"><div class="bar-fill-other" style="width:41.1%"></div></div>
+        <div class="bar-value other-val">1.02億台 / 8.1%</div>
+      </div>
+    </div>
+    <!-- サイドカード -->
+    <div class="share-aside">
+      <div class="aside-card">
+        <div class="aside-title">14年ぶり首位奪取</div>
+        <div class="aside-val">+0.6pt</div>
+        <div class="aside-note">2025年通年でApple（19.7%）がSamsung（19.1%）を上回り首位。世界出荷合計 約12.6億台。</div>
+      </div>
+      <div class="aside-card dark">
+        <div class="aside-title">2026年Q1は再逆転</div>
+        <div class="aside-val">Samsung 1位</div>
+        <div class="aside-note">差は約170万台（0.6pt）と僅差。両社のデッドヒートは継続。</div>
+      </div>
+      <div class="aside-card">
+        <div class="aside-title">市場全体成長率</div>
+        <div class="aside-val">+1.5%</div>
+        <div class="aside-note">2025年通年スマートフォン出荷台数前年比（IDC）</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-note">出典: IDC Worldwide Smartphone Market Report / Android Headlines / PhoneArena ※棒グラフはApple台数を100%として正規化</div>
+</section>
+
+<!-- ===== Sheet 6: キーテイクアウェイ ===== -->
+<section class="sheet" id="sheet-6">
+  <span class="sheet-num">6 / 6</span>
+  <span class="kicker">Key Takeaways</span>
+  <h2 class="sheet-heading">押さえておくべき5つのポイント</h2>
+  <ul class="key-list">
+    <li>
+      <span class="key-ico">01</span>
+      <span class="key-txt"><strong>過去最高を更新し続けるiPhone</strong> — 2025年暦年に2億4,780万台を出荷。FY2025売上高2,097億ドル、Q1 FY2026に四半期最高853億ドルを達成。</span>
+    </li>
+    <li>
+      <span class="key-ico">02</span>
+      <span class="key-txt"><strong>14年ぶりの世界シェア首位</strong> — 2025年通年でApple（19.7%）がSamsung（19.1%）を抜いて首位に。2026年Q1はSamsungが僅差で逆転し、競争は続く。</span>
+    </li>
+    <li>
+      <span class="key-ico">03</span>
+      <span class="key-txt"><strong>中国が+38%で急反発</strong> — Q1 FY2026の中国は前年比+38%と全地域中最大の伸び率。政府補助策とiPhone 17の相乗効果が主因。</span>
+    </li>
+    <li>
+      <span class="key-ico">04</span>
+      <span class="key-txt"><strong>Pro比率52%が平均単価を押し上げ</strong> — iPhone 17のうちPro / Pro Maxが早期販売の過半を占め、プレミアム化による収益性向上が加速。</span>
+    </li>
+    <li>
+      <span class="key-ico">05</span>
+      <span class="key-txt"><strong>成長ドライバーと関税リスクが並存</strong> — Apple Intelligence・フォルダブルiPhone・年間サービス売上1,200億ドル超が中期成長エンジン。FY2026の追加関税コストは推計約33億ドル。</span>
+    </li>
+  </ul>
+  <div class="footer-note">出典: IDC / Apple公式 / DemandSage / Bullfincher / Morgan Stanley / 各アナリストレポート（2026年4月時点）</div>
+</section>
+
+</body>
+</html>
