@@ -41,8 +41,13 @@ description: X（旧Twitter）からClaudeの最新情報・エージェント�
 5. 一般枠は上位2〜4件に厳選。指定アカウント枠は各アカウントの直近投稿から見るべきものがあれば全部出す（無ければ「今週投稿なし」と明記）
 
 ### Routine実行時の前提（初回セットアップ時に一度だけ）
-- Routineの環境変数に `X_API_BEARER_TOKEN` を登録
-- Allowed domainsに `api.x.com` を追加（開発者ポータルで現行ベースURLを確認、`api.twitter.com`が生きていればそちらでも可）
+- **環境（Environment）の環境変数**に登録する（セッション内での`export`は毎回消えるので不可）：
+  - `X_API_BEARER_TOKEN` … X API v2のBearerトークン
+  - `SLACK_WEBHOOK_URL` … `#cro-reports` に紐づいたSlack Incoming WebhookのURL
+- Allowed domainsに以下を追加：
+  - `api.x.com`（開発者ポータルで現行ベースURLを確認。`api.twitter.com`は本環境では遮断されているため使わない）
+  - `hooks.slack.com`（Incoming Webhookの投稿先）
+- この方式はSlack MCPコネクタに依存しない。無人Routineセッションに`mcp__Slack__`が無くても、Bash+curl+上記2つの環境変数だけで完結する。
 
 ## 出力（一般枠・指定アカウント枠とも1件ずつ、採用可否コメント付きでまとめる）
 - 投稿リンク／投稿者（フォロワー数）
@@ -50,8 +55,21 @@ description: X（旧Twitter）からClaudeの最新情報・エージェント�
 - Crossactorのskill体系にどう活きるか
 - 推奨度：採用 / 様子見 / 不要
 
-## Slack配信
-上記の出力をまとめて `#cro-reports`（channel_id: C0B1VMF5D6G）に `slack_send_message` で投稿する。Routineは無人実行なのでその場での承認待ちはせず、投稿して終了。採用可否はユーザーが後からSlackスレッド返信 or 別途Claudeとのセッションで指示する。
+## Slack配信（Incoming Webhook / curl方式）
+上記の出力をまとめて `#cro-reports` に **Slack Incoming Webhook** で投稿する。無人Routineでも確実に届くよう、MCPコネクタではなくBash+curlで叩く。Webhookは作成時に投稿先チャンネル（`#cro-reports`）が固定されるので、`SLACK_WEBHOOK_URL` にそのURLを入れておけば宛先指定は不要。
+
+手順：
+1. レポート本文を作ってファイルに書き出す（例：`/tmp/report.txt`）。
+2. 本文を安全にJSONへ包む。`jq` があれば `jq -Rs '{text: .}'` が確実（改行・引用符のエスケープを自動処理）：
+   ```bash
+   jq -Rs '{text: .}' /tmp/report.txt > /tmp/payload.json
+   curl -s -X POST -H 'Content-Type: application/json' \
+     --data @/tmp/payload.json "$SLACK_WEBHOOK_URL"
+   ```
+   `jq`が無い環境では、本文を組み立てる段階で改行を`\n`・`"`を`\"`にエスケープした文字列を作り、`-d '{"text":"...本文..."}'` で送る。
+3. curlの応答が `ok` かつHTTP 200なら成功。それ以外（`invalid_token`, `no_service` 等）はWebhookのURL失効か未設定なので、ほせもやんに通知する。
+
+Routineは無人実行なのでその場での承認待ちはせず、投稿して終了。採用可否はユーザーが後からSlackスレッド返信 or 別途Claudeとのセッションで指示する。
 
 ## 承認後
 承認された件のみ、該当skillの新規作成 or 既存skill（cro-mini配下等）への反映案を出す。未承認分は次週以降も再提示しない（週次ログとして扱う）。
