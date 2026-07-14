@@ -43,7 +43,7 @@ description: X（旧Twitter）からClaudeの最新情報・エージェント�
 ### Routine実行時の前提（初回セットアップ時に一度だけ）
 - **環境（Environment）の環境変数**に登録する（セッション内での`export`は毎回消えるので不可）：
   - `X_API_BEARER_TOKEN` … X API v2のBearerトークン
-  - `SLACK_WEBHOOK_URL` … `#cro-reports` に紐づいたSlack Incoming WebhookのURL
+  - `SLACK_WEBHOOK_URL` … `#ai` に紐づいたSlack Incoming WebhookのURL（現行の配信先。Webhookのチャンネル差し替えはURL再発行で行う）
 - Allowed domainsに以下を追加：
   - `api.x.com`（開発者ポータルで現行ベースURLを確認。`api.twitter.com`は本環境では遮断されているため使わない）
   - `hooks.slack.com`（Incoming Webhookの投稿先）
@@ -56,7 +56,7 @@ description: X（旧Twitter）からClaudeの最新情報・エージェント�
 - 推奨度：採用 / 様子見 / 不要
 
 ## Slack配信（Incoming Webhook / curl方式）
-上記の出力をまとめて `#cro-reports` に **Slack Incoming Webhook** で投稿する。無人Routineでも確実に届くよう、MCPコネクタではなくBash+curlで叩く。Webhookは作成時に投稿先チャンネル（`#cro-reports`）が固定されるので、`SLACK_WEBHOOK_URL` にそのURLを入れておけば宛先指定は不要。
+上記の出力をまとめて `#ai` に **Slack Incoming Webhook** で投稿する。無人Routineでも確実に届くよう、MCPコネクタではなくBash+curlで叩く。Webhookは作成時に投稿先チャンネルが固定されるので（現行は`#ai`紐付け）、`SLACK_WEBHOOK_URL` にそのURLを入れておけば宛先指定は不要。配信先を変えたい場合は目的チャンネル宛のWebhookを再発行し、`SLACK_WEBHOOK_URL` を差し替える。
 
 手順：
 1. レポート本文を作ってファイルに書き出す（例：`/tmp/report.txt`）。
