@@ -1,0 +1,20 @@
+{
+  "//": "Supabase MCP 接続テンプレート。<...> を実際の project_ref に置き換えて .mcp.json にコピーする。",
+  "//方針": "read_only=true をデフォルトとし、案件(=Supabaseプロジェクト)ごとに接続を分離する。書き込みは別名接続を明示指定するときだけ。",
+  "//都度確認": "サーバー名は .claude/settings.json の permissions.ask と一致させること。新しい案件を足したら ask にも同名を追加する（そうしないと自動承認になる）。",
+
+  "mcpServers": {
+    "supabase-fujihisa": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=<PROJECT_REF>&read_only=true"
+    },
+
+    "//将来用": "Crossactor自社DBなど別案件を足すときはここに read_only=true でもう1接続。ask にも supabase-<案件名> を追加する。",
+
+    "//書き込み用": "read_only を付けない。デフォルトでは使わず、書き込みが必要なときだけ明示的に指定する。settings.json で ask 扱い。",
+    "supabase-write": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=<PROJECT_REF>"
+    }
+  }
+}

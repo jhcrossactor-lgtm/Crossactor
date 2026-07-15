@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "ask": [
+      "mcp__supabase",
+      "mcp__supabase-fujihisa",
+      "mcp__supabase-write"
+    ]
+  }
+}
