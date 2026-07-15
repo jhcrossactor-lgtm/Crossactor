@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# new-skill: 新規スキルの雛形を作成する
+# 使い方: scripts/new-skill <skill-name>
+set -euo pipefail
+
+NAME="${1:?使い方: scripts/new-skill <skill-name>}"
+DIR="skills/$NAME"
+
+if [ -d "$DIR" ]; then
+  echo "既に存在します: $DIR" >&2
+  exit 1
+fi
+
+mkdir -p "$DIR/scripts"
+
+cat > "$DIR/SKILL.md" <<INNER
+---
+name: $NAME
+description: "TODO: いつ起動するか、短いトリガー句で書く"
+---
+
+TODO: 手順 or 参照情報を書く
+INNER
+
+echo "作成しました: $DIR/SKILL.md"

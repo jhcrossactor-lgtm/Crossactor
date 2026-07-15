@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# validate-skills: SKILL.md の YAML frontmatter (name/description) を検証する
+# 使い方: scripts/validate-skills [skills_dir]
+set -euo pipefail
+
+SKILLS_DIR="${1:-skills}"
+ERRORS=0
+
+if [ ! -d "$SKILLS_DIR" ]; then
+  echo "skills dir not found: $SKILLS_DIR" >&2
+  exit 1
+fi
+
+for f in "$SKILLS_DIR"/*/SKILL.md; do
+  [ -e "$f" ] || continue
+
+  first_line=$(head -n1 "$f")
+  if [ "$first_line" != "---" ]; then
+    echo "❌ $f: YAML frontmatterが見つかりません（1行目が --- でない）"
+    ERRORS=$((ERRORS+1))
+    continue
+  fi
+
+  fm=$(awk '/^---$/{n++; next} n==1' "$f")
+
+  if ! echo "$fm" | grep -qE '^name:[[:space:]]*\S+'; then
+    echo "❌ $f: name フィールドがありません"
+    ERRORS=$((ERRORS+1))
+  fi
+
+  if ! echo "$fm" | grep -qE '^description:[[:space:]]*\S+'; then
+    echo "❌ $f: description フィールドがありません"
+    ERRORS=$((ERRORS+1))
+  fi
+
+  desc_line=$(echo "$fm" | grep -E '^description:' || true)
+  if [ -n "$desc_line" ] && ! echo "$desc_line" | grep -qE '^description:[[:space:]]*"'; then
+    echo "⚠️  $f: description が \"\" で囲まれていません（推奨）"
+  fi
+done
+
+if [ "$ERRORS" -gt 0 ]; then
+  echo ""
+  echo "$ERRORS 件のエラー"
+  exit 1
+fi
+
+echo "✅ すべてのSKILL.mdが検証を通過しました"

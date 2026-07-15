@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# hooks/pre-commit: コミット前にSKILL.mdを検証する
+# 有効化: git config core.hooksPath hooks
+set -euo pipefail
+
+if [ -x scripts/validate-skills ]; then
+  scripts/validate-skills || {
+    echo "スキル検証に失敗しました。修正してから再コミットしてください。" >&2
+    exit 1
+  }
+fi
