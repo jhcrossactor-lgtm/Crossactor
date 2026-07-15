@@ -1,0 +1,22 @@
+{
+  "//": "Supabase MCP 接続テンプレート。<...> を実際の project_ref に置き換え、",
+  "//読み方": "このファイルを .mcp.json にコピーして使う。read_only=true をデフォルトとし、案件ごとに接続を分離する。",
+  "//都度確認": "サーバー名は .claude/settings.json の permissions.ask と一致させること。新しい案件を足したら ask にも同名を追加する（そうしないと自動承認になる）。",
+
+  "mcpServers": {
+    "supabase-cro": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=<CRO_PROJECT_REF>&read_only=true"
+    },
+    "supabase-client-a": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=<CLIENT_A_PROJECT_REF>&read_only=true"
+    },
+
+    "//書き込み用": "read_only を付けない。デフォルトでは使わず、書き込みが必要なときだけ明示的に指定する。settings.json で ask 扱いにしてある。",
+    "supabase-write": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=<WRITE_TARGET_PROJECT_REF>"
+    }
+  }
+}

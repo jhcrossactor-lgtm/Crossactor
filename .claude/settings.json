@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "ask": [
+      "mcp__supabase",
+      "mcp__supabase-cro",
+      "mcp__supabase-client-a",
+      "mcp__supabase-write"
+    ]
+  }
+}
