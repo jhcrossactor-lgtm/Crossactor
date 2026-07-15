@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "supabase-fujihisa": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=rpmiecrhnjpvgntltftd&read_only=true"
+    },
+    "supabase-write": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=rpmiecrhnjpvgntltftd"
+    }
+  }
+}
