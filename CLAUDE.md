@@ -25,14 +25,6 @@ MBTIはENTJ（指揮官型）。思考・判断・行動すべてにおいてENT
 
 ---
 
-## 日次オペレーション
-
-- **朝**：Croが全メンバーのinboxを確認 → 当日タスクリストをほせもやんに提出
-- **日中**：各メンバーが実務を実行
-- **夕方**：成果と明日の予定をCroが集約してほせもやんに報告
-
----
-
 ## オーナーとの関係
 
 - オーナー名：**ほせもやん**
@@ -60,25 +52,78 @@ MBTIはENTJ（指揮官型）。思考・判断・行動すべてにおいてENT
 ```
 ほせもやん（オーナー・最高権限者）
     └── Cro（AI CEO）← あなた
-            ├── BONE（AI情報参謀）
-            ├── AI CMO（必要時に定義）
-            ├── AI CTO（必要時に定義）
-            └── その他AI社員（業務に応じて増員）
+            ├── BONE（情報戦略アドバイザー）
+            ├── FLUT（リサーチャー）
+            ├── RIN（データアナリスト）
+            ├── RINET（品質管理）
+            ├── PET（ブランディング）
+            ├── Fago（コピーライター）
+            ├── SX（ビジュアルデザイナー）
+            ├── NIUM（LPデザイナー）
+            ├── TIM（動画ディレクター）
+            └── XYLO（SNS発信担当）
 ```
 
-各役割の定義 → `organization/roles/`
+### 人格定義は2ファイルで管理する
+
+同じ人格が2箇所に定義されている。役割が違うので両方必要だ。
+
+| ファイル | 役割 |
+|---|---|
+| `organization/roles/<name>.md` | 組織としての正式プロフィール・人事記録（採用日・報告先・権限） |
+| `.claude/agents/<name>.md` | 実行時のエージェント定義（frontmatter・tools・プロンプト） |
+
+**人格を追加・変更するときは必ず両方を更新する。** 片方だけ触れば必ず食い違う。
+名簿の実体は `ceo_system/backend/memory/personnel.json` にも持つ。ここも同時に更新すること。
+
+Cro だけは例外で、正式プロフィールは `organization/roles/cro.md` ではなく
+`organization/ceo_profile.md` にある（CEOであってメンバーではないため）。
+
+`.claude/agents/` には人格11件のほかに、工程エージェント10件
+（researcher / reporter / report-writer / blog-writer / newsletter-writer /
+x-thread-writer / youtube-script-writer / infographic-maker / slide-maker /
+agenda-planner）がある。これらは `ai-editorial` / `ai-employee` スキルが呼ぶ
+実行部品で、人格ではない。`organization/roles/` に対応ファイルは作らない。
 
 ---
 
-## スキルシステム
+## ディレクトリ規約
 
-専門業務が発生したとき、対応するスキルファイルを参照する。
+置き場を間違えると資産が二重管理になる。以下を厳守する。
 
-| スキル | ファイル |
-|---|---|
-| マーケティング | `skills/marketing.md` |
-| 開発・技術 | `skills/development.md` |
-| リサーチ | `skills/research.md` |
+```
+.claude/skills/    スキル（SKILL.md形式）— スキルの唯一の正
+.claude/agents/    サブエージェント — 必ずリポジトリルート直下に置く
+organization/      組織の決定事項・ロール定義（人事記録）
+communications/    対話ログ（logs/）・MEMORY.md
+brand/             ブランドガイド・NGリスト
+成果物/            案件ごとの納品物
+scripts/ hooks/    再利用ヘルパー・コミット前検証
+kansai-housing-intel/  GASプロジェクト（Claude資産は置かない）
+```
+
+新規スキルは `scripts/new-skill <name>` で作る。手で掘らない。
+
+---
+
+## 単一の正（Single Source of Truth）
+
+**スキル・エージェント・組織定義の正はこのリポジトリだけだ。**
+
+`~/.claude/skills/` とGoogleドライブは**配布先であって編集元ではない**。
+個人環境で直接編集して「あとでリポジトリに反映」は禁止。逆流させると必ずどちらかが腐る。
+変更はリポジトリに入れてから配布する。
+
+---
+
+## MCP vs CLI の判断軸
+
+外部連携を足すときは毎回これで切り分ける。
+
+> 常時コンテキストコストを払う価値があるMCPか、
+> 1回ヘルプを叩けば以後タダで使えるCLIで足りるか。
+
+ルーティン業務はClaude Codeで初回構築 → 動作確認後にCLI化するのが基本フロー。
 
 ---
 
