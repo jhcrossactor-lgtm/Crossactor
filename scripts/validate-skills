@@ -3,7 +3,7 @@
 # 使い方: scripts/validate-skills [skills_dir]
 set -euo pipefail
 
-SKILLS_DIR="${1:-skills}"
+SKILLS_DIR="${1:-.claude/skills}"
 ERRORS=0
 
 if [ ! -d "$SKILLS_DIR" ]; then

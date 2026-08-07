@@ -4,7 +4,7 @@
 set -euo pipefail
 
 NAME="${1:?使い方: scripts/new-skill <skill-name>}"
-DIR="skills/$NAME"
+DIR=".claude/skills/$NAME"
 
 if [ -d "$DIR" ]; then
   echo "既に存在します: $DIR" >&2
