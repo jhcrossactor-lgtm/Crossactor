@@ -1,28 +1,63 @@
 {
   "version": 1,
   "timezone": "Asia/Tokyo",
-  "_comment": "ほせもやん承認前の初期案。channels/calendars は要確認",
+  "_comment": "Slackチャンネルは2026-09-16にほせもやん承認済み。カレンダーは hello@crossactor.com（primaryの実体）と祝日のみ確定",
   "slack_channels": [
-    { "id": "C0ALUHH867R", "name": "general" },
-    { "id": "C0AN4997C8G", "name": "ai" },
-    { "id": "C0B3NCVJ0Q5", "name": "task" },
-    { "id": "C0B9U2877C2", "name": "関西住宅市場インテル" }
+    {
+      "id": "C0ALUHH867R",
+      "name": "general"
+    },
+    {
+      "id": "C0AN4997C8G",
+      "name": "ai"
+    },
+    {
+      "id": "C0B3NCVJ0Q5",
+      "name": "task"
+    },
+    {
+      "id": "C0B9U2877C2",
+      "name": "関西住宅市場インテル"
+    }
   ],
-  "slack_channels_excluded": [
-    { "id": "C0AN498BW00", "name": "random", "reason": "雑談チャンネル。要約価値が低い" },
-    { "id": "C0B1VMF5D6G", "name": "cro-reports", "reason": "Cro自身の出力先。取り込むと自分の報告を要約するエコーになる" }
-  ],
-  "calendars": ["primary"],
-  "calendars_available": [
-    "hello@crossactor.com",
-    "nice.hosevian@gmail.com (会社)",
-    "fujihisahousing.hosokawa@gmail.com",
-    "community@10xc.jp (SHIFTAI予定表)",
-    "gcvh3gd92jjt8vrtbu6mhlpgv8@group.calendar.google.com (プライベート)",
-    "ja.japanese#holiday@group.v.calendar.google.com (日本の祝日)"
+  "calendars": [
+    {
+      "id": "hello@crossactor.com",
+      "note": "primary の実体。実測で確認済み（owner / self:true）"
+    },
+    {
+      "id": "ja.japanese#holiday@group.v.calendar.google.com",
+      "note": "翌営業日の判定に必要"
+    }
   ],
   "gmail_query": "is:unread in:inbox",
-  "limits": { "gmail_threads": 20, "slack_channels": 10 },
+  "limits": {
+    "gmail_threads": 20,
+    "slack_channels": 10
+  },
   "allow_destructive": false,
-  "allow_slack_send": false
+  "allow_slack_send": false,
+  "slack_channels_excluded_note": "#random（雑談）と #cro-reports（Cro自身の出力先＝エコー）は対象外",
+  "calendars_pending_approval": [
+    {
+      "id": "nice.hosevian@gmail.com",
+      "summary": "会社",
+      "note": "仕事用か確認待ち"
+    },
+    {
+      "id": "fujihisahousing.hosokawa@gmail.com",
+      "summary": "(未命名)",
+      "note": "フジヒサ案件か確認待ち"
+    },
+    {
+      "id": "community@10xc.jp",
+      "summary": "SHIFTAI予定表",
+      "note": "外部コミュニティ。ノイズになる可能性"
+    },
+    {
+      "id": "gcvh3gd92jjt8vrtbu6mhlpgv8@group.calendar.google.com",
+      "summary": "プライベート",
+      "note": "私用。対象にするか確認待ち"
+    }
+  ]
 }
