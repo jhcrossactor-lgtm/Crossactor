@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# check-x-token: X API v2 の Bearer トークンが有効か確認する
+# 使い方: scripts/check-x-token [--verbose]
+#
+# 前提: 環境変数 X_API_BEARER_TOKEN に X API v2 の App-only Bearer トークンを設定しておく
+#       （x-skill-scout の週次Routineが使うのと同じトークン）
+#
+# 終了コード:
+#   0 … トークン有効（API疎通OK）
+#   1 … トークン未設定
+#   2 … トークン無効・権限不足（401 / 403）
+#   3 … レート制限（429）
+#   4 … その他のエラー（ネットワーク・5xx等）
+set -euo pipefail
+
+VERBOSE=0
+case "${1:-}" in
+  --verbose|-v) VERBOSE=1 ;;
+  "") ;;
+  *) echo "使い方: scripts/check-x-token [--verbose]" >&2; exit 4 ;;
+esac
+
+API_HOST="${X_API_HOST:-api.x.com}"
+ENDPOINT="https://${API_HOST}/2/tweets/search/recent?query=claude%20-is%3Aretweet&max_results=10"
+
+if [ -z "${X_API_BEARER_TOKEN:-}" ]; then
+  cat >&2 <<'MSG'
+❌ X_API_BEARER_TOKEN が未設定です
+   Routineで使うなら「環境（Environment）の環境変数」に登録すること。
+   セッション内での export は毎回消えるので恒久設定にはならない。
+MSG
+  exit 1
+fi
+
+echo "🔑 トークン検出（長さ: ${#X_API_BEARER_TOKEN} 文字、値は表示しない）"
+echo "🌐 疎通先: https://${API_HOST}/2/tweets/search/recent"
+
+TMPDIR_RUN=$(mktemp -d)
+trap 'rm -rf "$TMPDIR_RUN"' EXIT
+BODY="$TMPDIR_RUN/body.json"
+HEADERS="$TMPDIR_RUN/headers.txt"
+
+HTTP_CODE=$(curl -sS \
+  -H "Authorization: Bearer ${X_API_BEARER_TOKEN}" \
+  -D "$HEADERS" \
+  -o "$BODY" \
+  -w '%{http_code}' \
+  --max-time 20 \
+  "$ENDPOINT") || {
+    echo "❌ 接続失敗: ${API_HOST} に到達できない（Allowed domains か ネットワークを確認）" >&2
+    exit 4
+  }
+
+# レート制限ヘッダ（あれば表示）
+REMAINING=$(grep -i '^x-rate-limit-remaining:' "$HEADERS" | tr -d '\r' | awk '{print $2}' || true)
+RESET=$(grep -i '^x-rate-limit-reset:' "$HEADERS" | tr -d '\r' | awk '{print $2}' || true)
+
+show_error_detail() {
+  if command -v jq >/dev/null 2>&1; then
+    jq -r '(.title // .error // "") + " " + (.detail // .error_description // "")' "$BODY" 2>/dev/null || cat "$BODY"
+  else
+    head -c 500 "$BODY"
+  fi
+}
+
+case "$HTTP_CODE" in
+  200)
+    if command -v jq >/dev/null 2>&1; then
+      COUNT=$(jq -r '.meta.result_count // 0' "$BODY" 2>/dev/null || echo 0)
+      echo "✅ トークン有効（HTTP 200 / 取得件数: ${COUNT}）"
+    else
+      echo "✅ トークン有効（HTTP 200）"
+    fi
+    if [ -n "$REMAINING" ]; then echo "   残りリクエスト数: ${REMAINING}${RESET:+（リセット: $(date -d "@$RESET" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo "$RESET")）}"; fi
+    if [ "$VERBOSE" -eq 1 ]; then echo "--- レスポンス ---"; head -c 2000 "$BODY"; echo; fi
+    exit 0
+    ;;
+  401)
+    echo "❌ トークン無効（HTTP 401）— 失効・誤設定。開発者ポータルで再発行して環境変数を更新する" >&2
+    show_error_detail >&2
+    exit 2
+    ;;
+  403)
+    echo "❌ 権限不足（HTTP 403）— プラン/アクセスレベルが search/recent に足りていない可能性" >&2
+    show_error_detail >&2
+    exit 2
+    ;;
+  429)
+    echo "⚠️  レート制限（HTTP 429）— トークン自体は生きている。時間を置いて再実行する" >&2
+    if [ -n "$RESET" ]; then echo "   リセット: $(date -d "@$RESET" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo "$RESET")" >&2; fi
+    exit 3
+    ;;
+  *)
+    echo "❌ 想定外の応答（HTTP ${HTTP_CODE}）" >&2
+    show_error_detail >&2
+    exit 4
+    ;;
+esac
