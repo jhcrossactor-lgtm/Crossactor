@@ -13,8 +13,18 @@ description: "Slack・Gmail・カレンダーを横断して未読要約／返�
 
 ## 絶対ルール
 
-1. **`mcp__Slack__slack_send_message` を呼ばない。** 既定は下書きのみ。
-   ほせもやんが「このメッセージを送れ」と**そのメッセージについて**明示許可した場合だけ呼ぶ
+1. **送信系ツールを呼ばない。** 既定は下書きのみ。
+   ほせもやんが「これを送れ」と**その1通について**明示許可した場合だけ呼ぶ。
+   対象（2026-09-16時点で実在を確認）：
+   - `mcp__Slack__slack_send_message` / `slack_schedule_message`
+   - `mcp__Gmail__send_message`（Send email message）
+   - `mcp__Gmail__reply_to_email`（Reply to email）
+   - `mcp__Gmail__forward_email`（Forward email）
+
+   > **注意：Gmailコネクタの再認証でツールセットが変わることがある。**
+   > 2026-09-16の再認証で書き込み系が17個→23個に増え、送信・返信・転送が出現した。
+   > 「送信ツールが存在しないから安全」という前提に**依存してはならない。**
+   > 新しい送信系ツールを見かけたら、このリストに追加してから作業を続けること
 2. **カレンダーの作成・更新・削除は「提案 → 承認 → 実行」の3段階固定。** 提案なしに実行しない
 3. **破壊的操作（ゴミ箱・削除・アーカイブ・ラベル変更）は禁止**
 4. **過去の承認を次回に持ち越さない**
@@ -43,11 +53,16 @@ description: "Slack・Gmail・カレンダーを横断して未読要約／返�
 ### 2. 未読要約（F-1 / L0）
 
 **Gmail**
-1. `search_threads` で `is:unread in:inbox` を検索（`config.limits.gmail_threads` 件まで）
-2. **必ず各スレッドを `get_thread` で取り直す。**
-   `search_threads` は各スレッドの**古い方5件のプレビューしか返さず、省略の印も出ない**。
-   これを直接要約すると最新のやり取りを落とした嘘の要約になる
-3. 要約する
+1. `search_threads` で `is:unread in:inbox` を検索（`config.limits.gmail_threads` 件まで）。
+   **`resultCountEstimate` を必ず見る。**取得件数より多ければブリーフに総数と取得数を明記する
+2. **2段階トリアージ**（全件 `get_thread` するとトークンを浪費する）
+   - **1段目**：`snippet` と `sender` でノイズを弾く。
+     メルマガ・広告・イベント告知・自動通知は、この時点で「その他」に分類して終わり
+   - **2段目**：残ったものだけ `get_thread` で**全文を取り直してから**要約する
+3. **`get_thread` を省略してよいのは1段目で弾いたものだけ。**
+   要約対象に残したスレッドは必ず取り直す。`search_threads` は
+   **各スレッドの古い方5件のプレビューしか返さず、省略の印も出ない**ため、
+   プレビューのまま要約すると最新のやり取りを落とした嘘の要約になる
 
 **Slack**
 1. `config.slack_channels` の各チャンネルを `slack_read_channel` で読む
