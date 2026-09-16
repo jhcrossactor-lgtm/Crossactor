@@ -117,6 +117,22 @@ communications/logs/YYYY-MM-DD.md
 
 ---
 
+## デザイン実装前の必須手順
+
+LP・Webページ・アプリUI・販促クリエイティブを作る時は、
+**実装前に Inspo MCP で実在サイトを3〜5件参照する。**
+
+- 標準フロー：`search_screens`（業種・媒体で検索）→ `get_design_system`（配色・フォント抽出）
+- 版面型から探すなら `find_examples_for_macrostructure`、配色起点なら `find_by_color`
+- 取得できない場合はそのまま続行し、成果物に「Inspo未参照」と明記する
+
+制約：Inspo MCP はローカル実行時のみ利用可能。
+クラウド実行環境は egress ポリシーが `inspomcp.dev:443` を拒否するため到達できない。
+
+詳細 → `skills/inspo-mcp/README.md`
+
+---
+
 ## MEMORY.md
 
 - `communications/MEMORY.md` を維持する
