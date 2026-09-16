@@ -41,6 +41,7 @@
       justify-content: space-between;
       padding: 1.4rem 3rem;
       background: rgba(245, 242, 236, 0.92);
+      -webkit-backdrop-filter: blur(14px);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--rule);
     }
@@ -112,12 +113,12 @@
       color: var(--white);
       position: relative;
       z-index: 1;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.022em;
     }
     .hero-h1 em { font-style: italic; color: var(--accent-light); }
     .hero-sub {
       margin-top: 1.5rem;
-      font-size: 0.85rem;
+      font-size: 0.95rem;
       color: rgba(250,249,246,0.5);
       max-width: 40rem;
       line-height: 1.9;
@@ -204,7 +205,7 @@
       font-size: clamp(2rem, 3.5vw, 3rem);
       font-weight: 300;
       color: var(--ink);
-      letter-spacing: -0.01em;
+      letter-spacing: -0.015em;
       line-height: 1.2;
     }
 
@@ -222,11 +223,9 @@
     .usecase-item {
       padding: 3.5rem 2.8rem;
       border-right: 1px solid var(--rule);
-      transition: background 0.3s;
       position: relative;
     }
     .usecase-item:last-child { border-right: none; }
-    .usecase-item:hover { background: var(--white); }
 
     .usecase-num {
       font-family: 'Cormorant Garamond', serif;
@@ -247,7 +246,7 @@
       line-height: 1.6;
     }
     .usecase-body {
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       color: var(--ink-muted);
       line-height: 2;
     }
@@ -277,10 +276,8 @@
     .strength-item {
       padding: 3.5rem 3rem;
       border-right: 1px solid var(--rule);
-      transition: background 0.3s;
     }
     .strength-item:last-child { border-right: none; }
-    .strength-item:hover { background: var(--paper-warm); }
     .strength-num {
       font-family: 'Cormorant Garamond', serif;
       font-size: 4rem;
@@ -297,7 +294,7 @@
       margin-bottom: 1rem;
       line-height: 1.6;
     }
-    .strength-body { font-size: 0.8rem; color: var(--ink-muted); line-height: 2; }
+    .strength-body { font-size: 0.9rem; color: var(--ink-muted); line-height: 2; }
 
     /* ─── PROFILE ─── */
     .section-profile {
@@ -351,7 +348,7 @@
       margin-top: 0.3rem;
     }
     .profile-right { padding: 4rem; background: var(--white); }
-    .profile-text { font-size: 0.85rem; color: var(--ink-mid); line-height: 2.1; font-weight: 300; }
+    .profile-text { font-size: 0.95rem; color: var(--ink-mid); line-height: 2.1; font-weight: 300; }
     .profile-tags { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 2.5rem; }
     .tag {
       font-family: 'Space Mono', monospace;
@@ -384,10 +381,10 @@
       color: var(--white);
       line-height: 1.15;
       margin-bottom: 1.5rem;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.022em;
     }
     .cta-sub {
-      font-size: 0.82rem;
+      font-size: 0.95rem;
       color: rgba(250,249,246,0.48);
       line-height: 2;
       max-width: 34rem;
@@ -404,7 +401,7 @@
       background: var(--accent-light);
       padding: 1.1rem 3rem;
       text-decoration: none;
-      transition: background 0.25s, transform 100ms ease-out;
+      transition: background 150ms ease-out, transform 100ms ease-out;
     }
     .btn-primary:hover { background: var(--white); transform: translateY(-2px); }
     /* 押した瞬間に反応する。タッチデバイスでは :hover が効かないため必須 */
@@ -448,7 +445,7 @@
       html { scroll-behavior: auto; }
       .hero-eyebrow, .hero-h1, .hero-sub, .hero-embeds { animation: none; }
       .btn-primary, .btn-primary:hover { transition: none; transform: none; }
-      .usecase-item, .strength-item, .nav-links a { transition: none; }
+      .nav-links a { transition: none; }
     }
 
     /* ─── RESPONSIVE ─── */
@@ -457,6 +454,7 @@
       .nav-links { display: flex; width: 100%; gap: 0; justify-content: space-between; }
       .nav-links a { font-size: 0.62rem; letter-spacing: 0.06em; }
       .hero { padding-top: 7.5rem; }
+      .hero-h1, .cta-headline { letter-spacing: -0.008em; }
       .hero-copy { padding: 3rem 1.5rem 2.5rem; }
       .hero-embeds { grid-template-columns: 1fr; }
       .embed-col { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
@@ -502,6 +500,7 @@
       </div>
       <div class="embed-wrap">
         <iframe src="https://kuula.co/share/collection/79K9l?logo=1&info=1&fs=1&vr=0&sd=1&thumbs=1"
+          title="360度VRパースのサンプル。ドラッグまたはスワイプで視点を操作できます"
           allowfullscreen allow="xr-spatial-tracking"></iframe>
       </div>
       <div class="embed-hint">画面をドラッグ（スマホはスワイプ）して操作できます</div>
@@ -513,7 +512,7 @@
         <span class="embed-label-text">Walkthrough — ウォークスルー動画</span>
       </div>
       <div class="embed-wrap">
-        <video controls autoplay loop muted playsinline>
+        <video controls autoplay loop muted playsinline preload="metadata">
           <source src="hosomeyan-sample-video.mp4" type="video/mp4">
         </video>
       </div>

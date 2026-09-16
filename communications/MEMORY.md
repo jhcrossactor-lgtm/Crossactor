@@ -20,7 +20,7 @@ Croの長期記憶。**セッション開始時に必ずここを読む。**
 | 使用モデル | Claude Opus 5 / エフォート High |
 | スキル | `skills/`（4件：marketing / development / research / _example）<br>`.claude/skills/`（6件：自社4＋emilkowalski製2） |
 | AI秘書 | **設計のみ**（`design/ai-secretary.md`）。実装は質問Q1〜Q10の回答待ち |
-| LP（`index.html`） | 🔴指摘5件すべて修正済み。CTAは `lancers.jp/profile/Crossactor` |
+| LP（`index.html`） | apple-design指摘 🔴5件・🟡7件すべて対応済み（`video poster` のみ素材待ち） |
 | `.claude/settings.json` | 未作成（既定の権限設定で稼働） |
 | `.claude/agents/` | 未作成（サブエージェント定義ゼロ） |
 
@@ -68,5 +68,5 @@ Croの長期記憶。**セッション開始時に必ずここを読む。**
 
 1. **AI秘書 Q1〜Q10**（`design/ai-secretary.md` §9）— 回答が出るまで実装しない
 2. **`design/` ディレクトリの採否**（Q10）— 未確定のため `AGENTS.md` のディレクトリ規約に未追記
-3. **LPの🟡指摘7件** — 本文サイズ・tracking固定値・非リンクカードのhover・`-webkit-backdrop-filter`・CTAのhover速度・iframe title・video poster
+3. **`<video>` の `poster` 画像** — `hosemeyan-sample-video.mp4` がリポジトリに存在せずフレーム抽出不可。素材またはポスター画像が要る
 4. **`ceo_system` のモデルID `claude-sonnet-4-6`** — 3ファイルで使用中。現行の有効なIDか**未検証**。要確認
