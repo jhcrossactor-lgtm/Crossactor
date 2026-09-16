@@ -19,7 +19,7 @@ Croの長期記憶。**セッション開始時に必ずここを読む。**
 | 共通ルールの正本 | `AGENTS.md`（CLAUDE.mdは `@AGENTS.md` を読み込み、Claude固有のみ記載） |
 | 使用モデル | Claude Opus 5 / エフォート High |
 | スキル | `skills/`（4件：marketing / development / research / _example）<br>`.claude/skills/`（6件：自社4＋emilkowalski製2） |
-| AI秘書 | **Phase 1 実装済み**。`.claude/skills/secretary/`。`config.json` の対象は初回実行前に要承認 |
+| AI秘書 | **Phase 1 稼働中**。初回実行済み（`communications/secretary/2026-09-16.md`）。**Gmailは認証切れで未接続** |
 | LP（`index.html`） | apple-design指摘 🔴5件・🟡7件すべて対応済み（`video poster` のみ素材待ち） |
 | `.claude/settings.json` | 未作成（既定の権限設定で稼働） |
 | `.claude/agents/` | 未作成（サブエージェント定義ゼロ） |
@@ -83,7 +83,8 @@ Croの長期記憶。**セッション開始時に必ずここを読む。**
 
 ## 保留中の判断（ほせもやんの回答待ち）
 
-1. **AI秘書のカレンダー追加判断** — 会社／フジヒサ／SHIFTAI／プライベートの4つを対象に含めるか。Slackと主カレンダーは確定済み
-2. **`design/` ディレクトリの採否**（Q10）— 未確定のため `AGENTS.md` のディレクトリ規約に未追記
-3. **`<video>` の `poster` 画像** — `hosemeyan-sample-video.mp4` がリポジトリに存在せずフレーム抽出不可。素材またはポスター画像が要る
-4. **`ceo_system` の Sonnet 5 移行** — `claude-sonnet-4-6` は**有効なIDで、壊れていない**（検証済）。Sonnet 5 へ移すと33%安くなるが `content[0].text` の作り直しが要る。実施するかは未決
+1. **Gmail MCPの再認証** — 認証切れで秘書がメールを一切読めない。claude.ai のコネクタ設定から再接続が要る
+2. **X API の bearer token 再発行** — `X_API_BEARER_TOKEN` 失効で x-skill-scout が401停止中。今週の水曜定例はすでに落ちている
+3. **`design/` ディレクトリの採否**（Q10）— 未確定のため `AGENTS.md` のディレクトリ規約に未追記
+4. **`<video>` の `poster` 画像** — `hosemeyan-sample-video.mp4` がリポジトリに存在せずフレーム抽出不可。素材またはポスター画像が要る
+5. **`ceo_system` の Sonnet 5 移行** — `claude-sonnet-4-6` は**有効なIDで、壊れていない**（検証済）。Sonnet 5 へ移すと33%安くなるが `content[0].text` の作り直しが要る。実施するかは未決

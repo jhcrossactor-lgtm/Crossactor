@@ -1,7 +1,7 @@
 {
   "version": 1,
   "timezone": "Asia/Tokyo",
-  "_comment": "Slackチャンネルは2026-09-16にほせもやん承認済み。カレンダーは hello@crossactor.com（primaryの実体）と祝日のみ確定",
+  "_comment": "2026-09-16 ほせもやん承認済み（Slack4ch・カレンダー4件）",
   "slack_channels": [
     {
       "id": "C0ALUHH867R",
@@ -23,7 +23,15 @@
   "calendars": [
     {
       "id": "hello@crossactor.com",
-      "note": "primary の実体。実測で確認済み（owner / self:true）"
+      "note": "primary の実体。実測で確認済み"
+    },
+    {
+      "id": "nice.hosevian@gmail.com",
+      "note": "会社"
+    },
+    {
+      "id": "fujihisahousing.hosokawa@gmail.com",
+      "note": "フジヒサ案件"
     },
     {
       "id": "ja.japanese#holiday@group.v.calendar.google.com",
@@ -38,26 +46,5 @@
   "allow_destructive": false,
   "allow_slack_send": false,
   "slack_channels_excluded_note": "#random（雑談）と #cro-reports（Cro自身の出力先＝エコー）は対象外",
-  "calendars_pending_approval": [
-    {
-      "id": "nice.hosevian@gmail.com",
-      "summary": "会社",
-      "note": "仕事用か確認待ち"
-    },
-    {
-      "id": "fujihisahousing.hosokawa@gmail.com",
-      "summary": "(未命名)",
-      "note": "フジヒサ案件か確認待ち"
-    },
-    {
-      "id": "community@10xc.jp",
-      "summary": "SHIFTAI予定表",
-      "note": "外部コミュニティ。ノイズになる可能性"
-    },
-    {
-      "id": "gcvh3gd92jjt8vrtbu6mhlpgv8@group.calendar.google.com",
-      "summary": "プライベート",
-      "note": "私用。対象にするか確認待ち"
-    }
-  ]
+  "calendars_excluded_note": "community@10xc.jp（SHIFTAI予定表）とプライベートは対象外"
 }
