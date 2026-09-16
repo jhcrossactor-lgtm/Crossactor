@@ -2,3 +2,6 @@
 *.bak
 *.bak/
 .claude.bak/
+
+# AI秘書の実行状態（最終チェック時刻・処理済みID）。環境ごとに変わるためコミットしない
+communications/secretary/state.json

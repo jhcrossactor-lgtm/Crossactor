@@ -19,7 +19,7 @@ Croの長期記憶。**セッション開始時に必ずここを読む。**
 | 共通ルールの正本 | `AGENTS.md`（CLAUDE.mdは `@AGENTS.md` を読み込み、Claude固有のみ記載） |
 | 使用モデル | Claude Opus 5 / エフォート High |
 | スキル | `skills/`（4件：marketing / development / research / _example）<br>`.claude/skills/`（6件：自社4＋emilkowalski製2） |
-| AI秘書 | **設計のみ**（`design/ai-secretary.md`）。実装は質問Q1〜Q10の回答待ち |
+| AI秘書 | **Phase 1 実装済み**。`.claude/skills/secretary/`。`config.json` の対象は初回実行前に要承認 |
 | LP（`index.html`） | apple-design指摘 🔴5件・🟡7件すべて対応済み（`video poster` のみ素材待ち） |
 | `.claude/settings.json` | 未作成（既定の権限設定で稼働） |
 | `.claude/agents/` | 未作成（サブエージェント定義ゼロ） |
@@ -27,6 +27,15 @@ Croの長期記憶。**セッション開始時に必ずここを読む。**
 ---
 
 ## 決定ログ
+
+### 2026-09-16｜AI秘書 Phase 1 は「Cro推奨＝最も保守的な選択肢」で実装した
+- **決定**：Q1〜Q10をすべてCro推奨で暫定確定し実装。`allow_slack_send: false` / `allow_destructive: false` を既定に
+- **理由**：全推奨が保守側（外部に何も送らない）なので、承認を待たずに作っても損失が出ない。対象チャンネル・カレンダーだけは実データに触れるため初回実行前に承認を取る
+- **却下した選択肢**：Q1〜Q10の回答を待って着手 → 待ち時間の分だけ遅れるだけで、安全性は変わらない
+- **設定と状態を分離**：`config.json`（コミットする・レビュー対象）と `state.json`（gitignore・毎回書き換わる）
+- **Slack対象の初期案**：#general / #ai / #task / #関西住宅市場インテル の4本。
+  **#random は雑談で価値が低いため除外。#cro-reports はCro自身の出力先で、取り込むと自分の報告を要約するエコーになるため除外**
+- **未確定**：カレンダーは6つ存在し、どれがprimaryか不明。暫定で `primary` を指定している
 
 ### 2026-09-16｜`claude-sonnet-4-6` は有効。ceo_system は壊れていない
 - **決定**：モデルIDは**現状維持**。移行は別途判断する
@@ -73,7 +82,7 @@ Croの長期記憶。**セッション開始時に必ずここを読む。**
 
 ## 保留中の判断（ほせもやんの回答待ち）
 
-1. **AI秘書 Q1〜Q10**（`design/ai-secretary.md` §9）— 回答が出るまで実装しない
+1. **AI秘書 `config.json` の承認** — 対象Slackチャンネル4本とカレンダー指定。**承認まで初回実行しない**
 2. **`design/` ディレクトリの採否**（Q10）— 未確定のため `AGENTS.md` のディレクトリ規約に未追記
 3. **`<video>` の `poster` 画像** — `hosemeyan-sample-video.mp4` がリポジトリに存在せずフレーム抽出不可。素材またはポスター画像が要る
 4. **`ceo_system` の Sonnet 5 移行** — `claude-sonnet-4-6` は**有効なIDで、壊れていない**（検証済）。Sonnet 5 へ移すと33%安くなるが `content[0].text` の作り直しが要る。実施するかは未決

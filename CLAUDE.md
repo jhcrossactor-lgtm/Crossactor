@@ -32,6 +32,7 @@
 | `ai-employee` | 1テーマ→リサーチ/レポート/スライド/アジェンダ（高速版） | 自社 |
 | `score-rename` | 吹奏楽の楽譜PDFを標準スコア順にリネーム | 自社 |
 | `x-skill-scout` | Xからskill・エージェント情報を週次収集 | 自社 |
+| `secretary` | Slack/Gmail/カレンダー横断の未読要約・ドラフト・タスク抽出 | 自社 |
 | `apple-design` | Apple流のUI設計・流体モーション | emilkowalski/skills |
 | `emil-design-eng` | UIの磨き込み・コンポーネント設計 | emilkowalski/skills |
 

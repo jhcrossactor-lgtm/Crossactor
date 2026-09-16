@@ -2,7 +2,7 @@
 
 - 版：v0.1（設計のみ・実装なし）
 - 作成：2026-09-16 / Cro
-- 状態：**ほせもやんの承認待ち**。質問リスト（§9）の回答が出るまで実装に入らない
+- 状態：**Phase 1 実装済み**（2026-09-16）。Q1〜Q10はCro推奨で暫定確定。`config.json` の対象チャンネル・カレンダーは初回実行前に要承認
 
 ---
 
@@ -187,13 +187,17 @@ AGENTS.md の日次オペレーション（朝＝タスクリスト提出／夕�
 
 AGENTS.md 運用ルール「ルーティンタスクはClaude Codeで初回構築→動作確認後にCLI化」に従う。
 
-### Phase 1：Claude Codeスキルとして構築
+### Phase 1：Claude Codeスキルとして構築（実装済み）
 
 ```
 .claude/skills/secretary/SKILL.md      # 手順・承認ゲート・出力フォーマット
-communications/secretary/state.json    # 最終チェック時刻・処理済みID
+communications/secretary/config.json   # 対象チャンネル・カレンダー・上限（versioned）
+communications/secretary/state.json    # 最終チェック時刻・処理済みID（gitignore）
 communications/secretary/YYYY-MM-DD.md # 日次ブリーフ
 ```
+
+設定と状態は分離した。`config.json` はレビュー対象なのでコミットし、
+毎回書き換わる `state.json` はコミットしない（差分ノイズを避ける）。
 
 - 起動：手動（「秘書」と言う）／Routineで毎朝
 - ここで**精度と承認フローを固めきる**。CLI化はその後
@@ -214,17 +218,18 @@ AGENTS.md「MCP接続は常時コンテキストコストを払う価値があ�
 
 ## 8. 状態管理
 
-`communications/secretary/state.json`（案）
+**`config.json`**（versioned）— 対象チャンネル・カレンダー・Gmailクエリ・上限・許可フラグ
+**`state.json`**（gitignore）— 実行状態のみ
 
 ```json
 {
   "version": 1,
   "last_check": { "gmail": "2026-09-16T08:00:00+09:00", "slack": "2026-09-16T08:00:00+09:00" },
-  "slack_channels": ["C0123ABCD"],
-  "processed": { "gmail_thread_ids": [], "slack_message_ts": [] },
-  "limits": { "gmail_threads": 20, "slack_channels": 10 }
+  "processed": { "gmail_thread_ids": [], "slack_message_ts": [] }
 }
 ```
+
+`processed` は各1000件で古い方から切り捨てる。
 
 **秘密情報は書かない。** アクセストークン・パスワードの類は一切保存しない（認証はMCP側が保持する）。
 メール本文もここには残さない。ブリーフ側にのみ要約を書く。

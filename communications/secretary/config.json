@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "timezone": "Asia/Tokyo",
+  "_comment": "ほせもやん承認前の初期案。channels/calendars は要確認",
+  "slack_channels": [
+    { "id": "C0ALUHH867R", "name": "general" },
+    { "id": "C0AN4997C8G", "name": "ai" },
+    { "id": "C0B3NCVJ0Q5", "name": "task" },
+    { "id": "C0B9U2877C2", "name": "関西住宅市場インテル" }
+  ],
+  "slack_channels_excluded": [
+    { "id": "C0AN498BW00", "name": "random", "reason": "雑談チャンネル。要約価値が低い" },
+    { "id": "C0B1VMF5D6G", "name": "cro-reports", "reason": "Cro自身の出力先。取り込むと自分の報告を要約するエコーになる" }
+  ],
+  "calendars": ["primary"],
+  "calendars_available": [
+    "hello@crossactor.com",
+    "nice.hosevian@gmail.com (会社)",
+    "fujihisahousing.hosokawa@gmail.com",
+    "community@10xc.jp (SHIFTAI予定表)",
+    "gcvh3gd92jjt8vrtbu6mhlpgv8@group.calendar.google.com (プライベート)",
+    "ja.japanese#holiday@group.v.calendar.google.com (日本の祝日)"
+  ],
+  "gmail_query": "is:unread in:inbox",
+  "limits": { "gmail_threads": 20, "slack_channels": 10 },
+  "allow_destructive": false,
+  "allow_slack_send": false
+}
