@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# check-x-token: X API v2 の Bearer トークン（$X_API_BEARER_TOKEN）が
+#                実際に使えるかを疎通確認する。
+#                x-skill-scout スキルが叩く search/recent エンドポイントで検証するので、
+#                ここが通ればスキル本体も動く。
+#
+# 使い方: scripts/check-x-token
+#
+# 終了コード:
+#   0 … 正常（トークン有効）
+#   1 … $X_API_BEARER_TOKEN が未設定
+#   2 … 認証エラー（401 / 403）＝トークンが無効・失効・権限不足
+#   3 … レート制限（429）＝トークン自体は有効の可能性が高いが今は叩けない
+#   4 … 通信失敗（egressポリシー遮断 / DNS / タイムアウト）
+#   5 … その他のHTTPエラー
+set -euo pipefail
+
+API_BASE="https://api.x.com/2"
+ENDPOINT="$API_BASE/tweets/search/recent"
+QUERY='claude -is:retweet'
+
+if [ -z "${X_API_BEARER_TOKEN:-}" ]; then
+  echo "❌ X_API_BEARER_TOKEN が未設定"
+  echo "   環境（Environment）の環境変数に登録すること。セッション内のexportは毎回消える。"
+  exit 1
+fi
+
+TOKEN_LEN=${#X_API_BEARER_TOKEN}
+echo "🔑 X_API_BEARER_TOKEN: 設定あり（${TOKEN_LEN}文字 / 先頭 ${X_API_BEARER_TOKEN:0:4}…）"
+echo "🌐 疎通先: $ENDPOINT"
+
+BODY_FILE=$(mktemp)
+HEADER_FILE=$(mktemp)
+trap 'rm -f "$BODY_FILE" "$HEADER_FILE"' EXIT
+
+set +e
+HTTP_CODE=$(curl -sS --max-time 20 \
+  -o "$BODY_FILE" -D "$HEADER_FILE" -w '%{http_code}' \
+  -G "$ENDPOINT" \
+  --data-urlencode "query=$QUERY" \
+  --data-urlencode "max_results=10" \
+  --data-urlencode "tweet.fields=public_metrics,created_at" \
+  -H "Authorization: Bearer $X_API_BEARER_TOKEN" 2>"$BODY_FILE.err")
+CURL_RC=$?
+set -e
+
+if [ "$CURL_RC" -ne 0 ]; then
+  echo "❌ 通信失敗（curl rc=$CURL_RC）"
+  sed 's/^/   /' "$BODY_FILE.err" 2>/dev/null || true
+  echo "   api.x.com が egress ポリシーで許可されているか確認すること。"
+  rm -f "$BODY_FILE.err"
+  exit 4
+fi
+rm -f "$BODY_FILE.err"
+
+# レート制限ヘッダ（あれば残数を出す）
+RL_REMAINING=$(grep -i '^x-rate-limit-remaining:' "$HEADER_FILE" | tr -d '\r' | awk '{print $2}' || true)
+RL_LIMIT=$(grep -i '^x-rate-limit-limit:' "$HEADER_FILE" | tr -d '\r' | awk '{print $2}' || true)
+RL_RESET=$(grep -i '^x-rate-limit-reset:' "$HEADER_FILE" | tr -d '\r' | awk '{print $2}' || true)
+
+print_rate_limit() {
+  if [ -n "$RL_REMAINING" ]; then
+    local reset_human="$RL_RESET"
+    if [ -n "$RL_RESET" ]; then
+      reset_human=$(date -u -d "@$RL_RESET" '+%Y-%m-%d %H:%M:%S UTC' 2>/dev/null || echo "$RL_RESET")
+    fi
+    echo "📊 レート制限: 残り ${RL_REMAINING}/${RL_LIMIT:-?}（リセット: ${reset_human:-不明}）"
+  fi
+}
+
+case "$HTTP_CODE" in
+  200)
+    echo "✅ トークン有効（HTTP 200）"
+    print_rate_limit
+    if command -v jq >/dev/null 2>&1; then
+      COUNT=$(jq -r '.meta.result_count // 0' "$BODY_FILE")
+      echo "🔎 テスト検索ヒット数: ${COUNT}件"
+    fi
+    exit 0
+    ;;
+  401|403)
+    echo "❌ 認証エラー（HTTP $HTTP_CODE）＝トークンが無効・失効・権限不足"
+    if command -v jq >/dev/null 2>&1; then
+      jq -r '.title // .detail // .errors[0].message // empty' "$BODY_FILE" 2>/dev/null | sed 's/^/   /'
+    else
+      head -c 400 "$BODY_FILE" | sed 's/^/   /'
+    fi
+    echo "   開発者ポータルでトークンを再発行し、環境変数を更新すること。"
+    exit 2
+    ;;
+  429)
+    echo "⚠️  レート制限（HTTP 429）＝トークン自体は有効の可能性が高い"
+    print_rate_limit
+    exit 3
+    ;;
+  *)
+    echo "❌ 想定外のHTTPエラー（HTTP $HTTP_CODE）"
+    head -c 400 "$BODY_FILE" | sed 's/^/   /'
+    echo ""
+    exit 5
+    ;;
+esac
