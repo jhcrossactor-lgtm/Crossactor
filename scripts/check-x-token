@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# check-x-token: X API の認証が通るか確認する
+# 使い方: scripts/check-x-token
+# 前提: 環境変数 X_API_BEARER_TOKEN が設定されていること
+set -uo pipefail
+
+if [ -z "${X_API_BEARER_TOKEN:-}" ]; then
+  echo "❌ X_API_BEARER_TOKEN が未設定です"
+  echo "   設定先: claude.ai/code → 環境（Environments）→ 環境変数"
+  exit 1
+fi
+
+TOKEN="$X_API_BEARER_TOKEN"
+echo "トークンの形: ${#TOKEN}文字 / 末尾 ...${TOKEN: -4}"
+
+BODY=$(mktemp)
+CODE=$(curl -sS -o "$BODY" -w "%{http_code}" \
+  -H "Authorization: Bearer $TOKEN" \
+  "https://api.x.com/2/tweets/search/recent?query=claude&max_results=10")
+
+echo "HTTP $CODE"
+case "$CODE" in
+  200) echo "✅ 認証成功。x-skill-scout は動く" ;;
+  401) echo "❌ 401 Unauthorized — トークンが無効。環境変数が古いか、再生成が必要"
+       echo "   ※ 再生成すると保存済みの値も無効になる。先に保存値との照合を"
+       head -c 300 "$BODY"; echo ;;
+  403) echo "❌ 403 Forbidden — トークンは有効だがこのエンドポイントの権限がない。プランを確認"
+       head -c 300 "$BODY"; echo ;;
+  429) echo "⚠️  429 — レート制限。認証自体は通っている可能性が高い" ;;
+  *)   echo "⚠️  想定外の応答"; head -c 300 "$BODY"; echo ;;
+esac
+rm -f "$BODY"
+[ "$CODE" = "200" ]
