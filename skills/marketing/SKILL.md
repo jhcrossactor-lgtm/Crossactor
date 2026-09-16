@@ -1,3 +1,8 @@
+---
+name: marketing
+description: "施策立案・SNS運用・訴求メッセージ・KPI設計を検討するとき"
+---
+
 # スキル：マーケティング
 
 Crossactorのマーケティング業務で活用する専門ノウハウ。

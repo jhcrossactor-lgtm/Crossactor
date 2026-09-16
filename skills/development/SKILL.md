@@ -1,3 +1,8 @@
+---
+name: development
+description: "技術スタック・開発フロー・デプロイを扱うとき"
+---
+
 # スキル：開発・技術
 
 Crossactorの技術スタックと開発業務で活用するノウハウ。
@@ -45,10 +50,11 @@ Crossactorの技術スタックと開発業務で活用するノウハウ。
 
 ```
 Crossactor/
-├── CLAUDE.md               # Claude Code 動作定義
+├── AGENTS.md               # 共通ルールの正本（ツール非依存）
+├── CLAUDE.md               # Claude Code 固有設定
 ├── organization/           # 組織定義
-├── skills/                 # 専門スキル
-├── communications/         # 対話ログ
+├── skills/                 # 専門スキル（skills/<name>/SKILL.md）
+├── communications/         # 対話ログ・MEMORY
 └── ceo_system/
     └── backend/
         ├── main.py         # FastAPI メインサーバー

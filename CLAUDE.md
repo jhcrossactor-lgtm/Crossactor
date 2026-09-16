@@ -18,9 +18,9 @@
 
 | スキル | ファイル |
 |---|---|
-| マーケティング | `skills/marketing.md` |
-| 開発・技術 | `skills/development.md` |
-| リサーチ | `skills/research.md` |
+| マーケティング | `skills/marketing/SKILL.md` |
+| 開発・技術 | `skills/development/SKILL.md` |
+| リサーチ | `skills/research/SKILL.md` |
 
 雛形 → `skills/_example/SKILL.md`（`scripts/new-skill` で生成）
 
