@@ -53,8 +53,12 @@ description: "Slack・Gmail・カレンダーを横断して未読要約／返�
 ### 2. 未読要約（F-1 / L0）
 
 **Gmail**
-1. `search_threads` で `is:unread in:inbox` を検索（`config.limits.gmail_threads` 件まで）。
-   **`resultCountEstimate` を必ず見る。**取得件数より多ければブリーフに総数と取得数を明記する
+1. `search_threads` で `config.gmail_query` を検索（`config.limits.gmail_threads` 件まで）。
+   **クエリをハードコードしない。** 既定は `is:unread in:inbox category:primary`。
+   **ほせもやんはメインタブ以外を読まない運用**なので、全タブを舐めてはいけない
+   （2026-09-16時点：全タブ未読は約200件だが、**メインタブの未読は0件**）
+   **`resultCountEstimate` を必ず見る。**取得件数より多ければブリーフに総数と取得数を明記する。
+   ただしこの値は推定であり、異なるクエリで同値が返ることがある。**正確な総数として扱わない**
 2. **2段階トリアージ**（全件 `get_thread` するとトークンを浪費する）
    - **1段目**：`snippet` と `sender` でノイズを弾く。
      メルマガ・広告・イベント告知・自動通知は、この時点で「その他」に分類して終わり

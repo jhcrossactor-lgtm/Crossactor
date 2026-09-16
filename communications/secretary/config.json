@@ -38,7 +38,7 @@
       "note": "翌営業日の判定に必要"
     }
   ],
-  "gmail_query": "is:unread in:inbox",
+  "gmail_query": "is:unread in:inbox category:primary",
   "limits": {
     "gmail_threads": 20,
     "slack_channels": 10
@@ -46,5 +46,6 @@
   "allow_destructive": false,
   "allow_slack_send": false,
   "slack_channels_excluded_note": "#random（雑談）と #cro-reports（Cro自身の出力先＝エコー）は対象外",
-  "calendars_excluded_note": "community@10xc.jp（SHIFTAI予定表）とプライベートは対象外"
+  "calendars_excluded_note": "community@10xc.jp（SHIFTAI予定表）とプライベートは対象外",
+  "gmail_query_note": "ほせもやんはメインタブ以外を読まない運用。全タブを舐めると販促メールで埋まり、メインの重要メールが相対的に埋もれる"
 }
