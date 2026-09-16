@@ -43,6 +43,10 @@ description: X（旧Twitter）からClaudeの最新情報・エージェント�
 ### Routine実行時の前提（初回セットアップ時に一度だけ）
 - **環境（Environment）の環境変数**に登録する（セッション内での`export`は毎回消えるので不可）：
   - `X_API_BEARER_TOKEN` … X API v2のBearerトークン
+    - **設定後・トークン更新後は `scripts/check-x-token` で疎通を確認する**（終了コード0で有効）
+    - ⚠️ **トークンを再発行したら、それを使っている全ての場所を更新すること。**
+      2026-09-07にX自動投稿用で再発行した際、この環境変数の更新が漏れ、
+      週次Routineが9日間401で落ち続けた
   - `SLACK_WEBHOOK_URL` … `#cro-reports` に紐づいたSlack Incoming WebhookのURL
 - Allowed domainsに以下を追加：
   - `api.x.com`（開発者ポータルで現行ベースURLを確認。`api.twitter.com`は本環境では遮断されているため使わない）
