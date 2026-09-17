@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>三ツ島 街並みパース</title>
+<style>
+  :root{ --ui-bg:rgba(18,20,24,.82); --ui-fg:#f2f4f7; --ui-line:rgba(255,255,255,.16); --accent:#6fb1ff; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; overflow:hidden; background:#0d0f12;
+    font-family:"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif; }
+  canvas{ display:block; }
+  #ui{ position:fixed; top:14px; left:14px; z-index:10; display:flex; flex-direction:column; gap:10px; max-width:calc(100vw - 28px); }
+  .panel{ background:var(--ui-bg); color:var(--ui-fg); border:1px solid var(--ui-line);
+    border-radius:12px; padding:10px 12px; backdrop-filter:blur(8px); }
+  .row{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .label{ font-size:11px; letter-spacing:.08em; opacity:.6; margin-right:4px; }
+  button{ font:inherit; font-size:13px; color:var(--ui-fg); background:rgba(255,255,255,.07);
+    border:1px solid var(--ui-line); border-radius:8px; padding:6px 12px; cursor:pointer; }
+  button:hover{ background:rgba(255,255,255,.15); }
+  button[aria-pressed="true"]{ background:var(--accent); border-color:var(--accent); color:#0d1420; font-weight:700; }
+  #title{ font-size:13px; font-weight:700; letter-spacing:.02em; }
+  #meta{ font-size:11px; line-height:1.6; opacity:.75; margin-top:4px; }
+  #hint{ font-size:11px; line-height:1.6; opacity:.75; margin-top:6px; }
+  #legend{ position:fixed; right:14px; bottom:14px; z-index:10; font-size:11px; line-height:1.7; opacity:.8; }
+  @media(max-width:640px){ #legend{ display:none; } }
+</style>
+</head>
+<body>
+<div id="ui">
+  <div class="panel">
+    <div id="title">門真市三ツ島　区画割り（採用案）　2階建て街並み</div>
+    <div id="meta"></div>
+  </div>
+  <div class="panel">
+    <div class="row"><span class="label">視点</span>
+      <button id="b-aerial" aria-pressed="true">鳥瞰</button>
+      <button id="b-walk" aria-pressed="false">歩行目線 1.6m</button>
+    </div>
+    <div class="row" style="margin-top:8px"><span class="label">時間</span>
+      <button id="b-day" aria-pressed="true">昼</button>
+      <button id="b-dusk" aria-pressed="false">夕景</button>
+    </div>
+    <div id="hint"></div>
+  </div>
+</div>
+<div id="legend" class="panel"></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const SCENE = /*__SCENE__*/null;
+const P = new URLSearchParams(location.search);
+
+/* ---------------- renderer / scene ---------------- */
+const renderer = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 2000);
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0x60705a, 0.55);
+scene.add(hemi);
+const fill = new THREE.DirectionalLight(0xffffff, 0.45);   // 影側が黒く潰れないための補助光
+scene.add(fill);
+const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+const sc = sun.shadow.camera;
+sc.left = -80; sc.right = 80; sc.top = 80; sc.bottom = -80; sc.near = 1; sc.far = 400;
+sun.shadow.bias = -0.0006;
+sun.shadow.normalBias = 0.03;
+scene.add(sun, sun.target);
+
+/* ---------------- materials ---------------- */
+const mats = {};
+for (const [name, hex] of Object.entries(SCENE.materials)) {
+  const o = { color: new THREE.Color(hex), roughness: 0.95, metalness: 0.0 };
+  if (name === 'glass' || name === 'car_glass') { o.roughness = 0.12; o.metalness = 0.25; }
+  else if (name.startsWith('car_')) { o.roughness = 0.35; o.metalness = 0.3; }
+  else if (name === 'asphalt') { o.roughness = 0.98; }
+  mats[name] = new THREE.MeshStandardMaterial(o);
+}
+
+/* ---------------- geometry builders ---------------- */
+function pushFace(arr, verts, ref){
+  const a = [verts[1][0]-verts[0][0], verts[1][1]-verts[0][1], verts[1][2]-verts[0][2]];
+  const b = [verts[2][0]-verts[0][0], verts[2][1]-verts[0][1], verts[2][2]-verts[0][2]];
+  const n = [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+  const v = (n[0]*ref[0]+n[1]*ref[1]+n[2]*ref[2] < 0) ? verts.slice().reverse() : verts;
+  for (let i=1; i<v.length-1; i++) arr.push(...v[0], ...v[i], ...v[i+1]);
+}
+function geomFrom(arr){
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+  g.computeVertexNormals();
+  return g;
+}
+function rotY(p, ang, cx, cz){
+  const s = Math.sin(ang), c = Math.cos(ang);
+  const x = p[0]-cx, z = p[2]-cz;
+  return [cx + x*c + z*s, p[1], cz - x*s + z*c];
+}
+
+const groups = {};
+function groupOf(name){
+  if (!groups[name]) { groups[name] = new THREE.Group(); groups[name].name = name; scene.add(groups[name]); }
+  return groups[name];
+}
+
+for (const o of SCENE.objects) {
+  let mesh = null;
+  if (o.kind === 'poly') {
+    const arr = [];
+    for (const t of o.tris) pushFace(arr, t.map(i => [o.pts[i][0], o.y, o.pts[i][1]]), [0,1,0]);
+    mesh = new THREE.Mesh(geomFrom(arr), mats[o.mat]);
+    mesh.receiveShadow = true;
+  } else if (o.kind === 'box') {
+    mesh = new THREE.Mesh(new THREE.BoxGeometry(o.s[0], o.s[1], o.s[2]), mats[o.mat]);
+    mesh.position.set(o.c[0], o.c[1], o.c[2]);
+    if (o.rot) mesh.rotation.y = o.rot;
+    mesh.castShadow = true; mesh.receiveShadow = true;
+  } else if (o.kind === 'gable') {
+    const cx = o.c[0], cz = o.c[1];
+    const hw = o.w/2 + o.oh, hd = o.d/2 + o.oh;
+    const ye = o.base_y - o.oh*o.slope, yr = o.base_y + (o.w/2)*o.slope;
+    let pts = [[cx-hw,ye,cz-hd],[cx+hw,ye,cz-hd],[cx+hw,ye,cz+hd],[cx-hw,ye,cz+hd],[cx,yr,cz-hd],[cx,yr,cz+hd]];
+    if (o.rot) pts = pts.map(p => rotY(p, o.rot, cx, cz));
+    const [A,B,C,D,R0,R1] = pts;
+    const roof = [], ends = [];
+    pushFace(roof, [A,D,R1,R0], [-1,1,0]);
+    pushFace(roof, [B,C,R1,R0], [ 1,1,0]);
+    pushFace(roof, [A,B,C,D],   [ 0,-1,0]);
+    pushFace(ends, [A,B,R0],    [ 0,0,-1]);
+    pushFace(ends, [D,C,R1],    [ 0,0, 1]);
+    const g = geomFrom(roof.concat(ends));
+    g.addGroup(0, roof.length/3, 0);
+    g.addGroup(roof.length/3, ends.length/3, 1);
+    mesh = new THREE.Mesh(g, [mats[o.mat], mats[o.mat_end]]);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+  } else if (o.kind === 'cyl' || o.kind === 'cone') {
+    const g = o.kind === 'cyl'
+      ? new THREE.CylinderGeometry(o.r, o.r, o.h, 10)
+      : new THREE.ConeGeometry(o.r, o.h, 10);
+    mesh = new THREE.Mesh(g, mats[o.mat]);
+    mesh.position.set(o.c[0], o.c[1] + o.h/2, o.c[2]);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+  }
+  if (mesh) groupOf(o.group).add(mesh);
+}
+
+/* ---------------- light presets ---------------- */
+const PRESET = {
+  day: { sky:0xaecbe8, sun:0xfff4e2, sunPos:[62,86,58], intensity:2.2, hemi:0.85,
+         hemiSky:0xdcebff, hemiGround:0x6f7f62, fill:0.45, fillPos:[-60,34,-46],
+         fillColor:0xcfe0f2, fog:[0xc9dcee, 180, 520], exposure:1.0 },
+  dusk:{ sky:0x3a2f45, sun:0xff9a4d, sunPos:[-88,22,34], intensity:2.3, hemi:0.42,
+         hemiSky:0xffb277, hemiGround:0x3a3040, fill:0.3, fillPos:[70,30,-40],
+         fillColor:0x8fa6d8, fog:[0x5a4358, 90, 380], exposure:1.12 }
+};
+function applyLight(k){
+  const p = PRESET[k];
+  scene.background = new THREE.Color(p.sky);
+  scene.fog = new THREE.Fog(p.fog[0], p.fog[1], p.fog[2]);
+  sun.color.setHex(p.sun); sun.intensity = p.intensity;
+  sun.position.set(...p.sunPos); sun.target.position.set(0,0,0);
+  hemi.intensity = p.hemi; hemi.color.setHex(p.hemiSky); hemi.groundColor.setHex(p.hemiGround);
+  fill.intensity = p.fill; fill.color.setHex(p.fillColor); fill.position.set(...p.fillPos);
+  renderer.toneMappingExposure = p.exposure;
+  document.getElementById('b-day').setAttribute('aria-pressed', k==='day');
+  document.getElementById('b-dusk').setAttribute('aria-pressed', k==='dusk');
+}
+
+/* ---------------- camera modes ---------------- */
+const V = SCENE.view;
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.enableDamping = true;
+orbit.maxPolarAngle = Math.PI/2 - 0.03;
+orbit.minDistance = 8; orbit.maxDistance = 320;
+
+const walk = { on:false, yaw:V.walk.yaw, pitch:-0.04, keys:{}, drag:false, px:0, py:0 };
+function setMode(m){
+  walk.on = (m === 'walk');
+  orbit.enabled = !walk.on;
+  if (walk.on) {
+    camera.position.set(V.walk.position[0], V.walk.eye_height_m, V.walk.position[2]);
+    walk.yaw = V.walk.yaw; walk.pitch = -0.04;
+    document.getElementById('hint').textContent = 'WASD / 矢印キーで移動、画面ドラッグで視線。Shiftで加速。';
+  } else {
+    camera.position.set(...V.aerial.position);
+    orbit.target.set(...V.aerial.target);
+    orbit.update();
+    document.getElementById('hint').textContent = 'ドラッグで回転、ホイールでズーム、右ドラッグで平行移動。';
+  }
+  document.getElementById('b-aerial').setAttribute('aria-pressed', !walk.on);
+  document.getElementById('b-walk').setAttribute('aria-pressed', walk.on);
+}
+addEventListener('keydown', e => { walk.keys[e.code] = true; if (walk.on && e.code.startsWith('Arrow')) e.preventDefault(); });
+addEventListener('keyup', e => { walk.keys[e.code] = false; });
+renderer.domElement.addEventListener('pointerdown', e => { if (!walk.on) return; walk.drag = true; walk.px = e.clientX; walk.py = e.clientY; });
+addEventListener('pointerup', () => walk.drag = false);
+addEventListener('pointermove', e => {
+  if (!walk.on || !walk.drag) return;
+  walk.yaw -= (e.clientX - walk.px) * 0.0042;
+  walk.pitch = Math.max(-0.9, Math.min(0.7, walk.pitch - (e.clientY - walk.py) * 0.0035));
+  walk.px = e.clientX; walk.py = e.clientY;
+});
+
+document.getElementById('b-aerial').onclick = () => setMode('aerial');
+document.getElementById('b-walk').onclick = () => setMode('walk');
+document.getElementById('b-day').onclick = () => applyLight('day');
+document.getElementById('b-dusk').onclick = () => applyLight('dusk');
+
+/* ---------------- info ---------------- */
+const m = SCENE.meta, c = SCENE.config;
+document.getElementById('meta').innerHTML =
+  `区画 ${m.plots} / 建物 ${m.buildings}　敷地 ${m.site_area_m2.toLocaleString()}㎡<br>` +
+  `軒高 ${c.building.eave_height_m}m・切妻${Math.round(c.building.roof_slope*10)}寸・` +
+  `隣地離隔 ${c.setback.side_m}m・道路側 ${c.setback.road_parking_depth_m}m`;
+document.getElementById('legend').innerHTML =
+  `<b>凡例</b><br>白〜ベージュ系＝外壁（4色ランダム）<br>濃灰・茶系＝屋根（4色ランダム）<br>` +
+  `灰色の箱＝隣接既存街区<br>灰白の土間＝各区画の駐車場`;
+
+/* ---------------- loop ---------------- */
+const clock = new THREE.Clock();
+function tick(){
+  const dt = Math.min(clock.getDelta(), 0.1);
+  if (walk.on) {
+    const sp = (walk.keys['ShiftLeft'] || walk.keys['ShiftRight'] ? 2.2 : 1) * V.walk.speed_mps * dt;
+    const f = (walk.keys['KeyW']||walk.keys['ArrowUp']?1:0) - (walk.keys['KeyS']||walk.keys['ArrowDown']?1:0);
+    const s = (walk.keys['KeyD']||walk.keys['ArrowRight']?1:0) - (walk.keys['KeyA']||walk.keys['ArrowLeft']?1:0);
+    camera.position.x += (-Math.sin(walk.yaw)*f + Math.cos(walk.yaw)*s) * sp;
+    camera.position.z += (-Math.cos(walk.yaw)*f - Math.sin(walk.yaw)*s) * sp;
+    camera.position.y = V.walk.eye_height_m;
+    camera.rotation.set(walk.pitch, walk.yaw, 0, 'YXZ');
+  } else {
+    orbit.update();
+  }
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+
+applyLight(P.get('light') === 'dusk' ? 'dusk' : 'day');
+setMode(P.get('view') === 'walk' ? 'walk' : 'aerial');
+if (P.get('ui') === '0') document.querySelectorAll('#ui,#legend').forEach(e => e.style.display='none');
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+tick();
+requestAnimationFrame(() => { window.__SCENE_READY = true; });
+</script>
+</body>
+</html>

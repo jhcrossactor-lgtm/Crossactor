@@ -1,0 +1,120 @@
+{
+  "plots": 10,
+  "buildings": 10,
+  "count_match": true,
+  "all_inside": true,
+  "violations": [],
+  "rows": [
+    {
+      "plot": 1,
+      "inside": true,
+      "min_setback_m": 0.6,
+      "front_open_m": 5.554,
+      "area_m2": 54.76,
+      "plot_area_m2": 112.24,
+      "coverage_%": 48.8,
+      "ridge": "道路と直交(東西)",
+      "ok": true
+    },
+    {
+      "plot": 2,
+      "inside": true,
+      "min_setback_m": 0.58,
+      "front_open_m": 5.554,
+      "area_m2": 52.54,
+      "plot_area_m2": 112.23,
+      "coverage_%": 46.8,
+      "ridge": "道路と平行(南北)",
+      "ok": true
+    },
+    {
+      "plot": 3,
+      "inside": true,
+      "min_setback_m": 0.58,
+      "front_open_m": 5.554,
+      "area_m2": 52.54,
+      "plot_area_m2": 112.23,
+      "coverage_%": 46.8,
+      "ridge": "道路と平行(南北)",
+      "ok": true
+    },
+    {
+      "plot": 4,
+      "inside": true,
+      "min_setback_m": 0.59,
+      "front_open_m": 5.554,
+      "area_m2": 52.54,
+      "plot_area_m2": 112.36,
+      "coverage_%": 46.8,
+      "ridge": "道路と平行(南北)",
+      "ok": true
+    },
+    {
+      "plot": 5,
+      "inside": true,
+      "min_setback_m": 0.58,
+      "front_open_m": 5.554,
+      "area_m2": 52.54,
+      "plot_area_m2": 112.23,
+      "coverage_%": 46.8,
+      "ridge": "道路と直交(東西)",
+      "ok": true
+    },
+    {
+      "plot": 6,
+      "inside": true,
+      "min_setback_m": 0.554,
+      "front_open_m": 5.554,
+      "area_m2": 59.2,
+      "plot_area_m2": 112.22,
+      "coverage_%": 52.8,
+      "ridge": "道路と平行(南北)",
+      "ok": true
+    },
+    {
+      "plot": 7,
+      "inside": true,
+      "min_setback_m": 0.554,
+      "front_open_m": 5.554,
+      "area_m2": 55.5,
+      "plot_area_m2": 112.25,
+      "coverage_%": 49.4,
+      "ridge": "道路と直交(東西)",
+      "ok": true
+    },
+    {
+      "plot": 8,
+      "inside": true,
+      "min_setback_m": 0.58,
+      "front_open_m": 5.554,
+      "area_m2": 52.54,
+      "plot_area_m2": 112.23,
+      "coverage_%": 46.8,
+      "ridge": "道路と平行(南北)",
+      "ok": true
+    },
+    {
+      "plot": 9,
+      "inside": true,
+      "min_setback_m": 0.59,
+      "front_open_m": 5.554,
+      "area_m2": 52.54,
+      "plot_area_m2": 112.36,
+      "coverage_%": 46.8,
+      "ridge": "道路と平行(南北)",
+      "ok": true
+    },
+    {
+      "plot": 10,
+      "inside": true,
+      "min_setback_m": 0.568,
+      "front_open_m": 5.554,
+      "area_m2": 51.06,
+      "plot_area_m2": 115.92,
+      "coverage_%": 44.0,
+      "ridge": "道路と平行(南北)",
+      "ok": true
+    }
+  ],
+  "issues": []
+}
