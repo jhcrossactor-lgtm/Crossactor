@@ -20,7 +20,7 @@ $ErrorActionPreference = "Stop"
 $From = (Resolve-Path $From).Path
 
 $destDrive = (Split-Path -Qualifier $To)
-if ($destDrive -and -not (Test-Path $destDrive)) {
+if ($destDrive -and -not (Test-Path ($destDrive + "\"))) {
     throw "$destDrive が見つからない。外付けドライブが接続されているか確認すること。"
 }
 

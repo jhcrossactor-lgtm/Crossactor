@@ -255,6 +255,21 @@ delivery:
 コピー先には `<コピー先>\<project_name>\stage1\...` の形で置かれる。
 中身が変わっていないファイルは触らないので、Drive の再同期は起きない。
 
+### 作業は外付けドライブ、成果物は Google Drive（推奨）
+
+Cドライブを使わず、成果物だけ Drive に上げる構成。1コマンドで設定できる。
+
+```powershell
+.\scripts\setup_drives.ps1 -WorkDir 'G:\pv\villa_test' -DeliverTo 'G:\<同期フォルダ>\villa_pv'
+```
+
+作業一式を `-WorkDir` へ移し、`PVP_PROJECT` と `PVP_DELIVER_TO` をユーザー環境変数に保存する。
+以降は `python run.py --stage 1` だけで、工程が終わるたびに成果物が Drive 側へコピーされる。
+
+**作業フォルダは同期フォルダの外に置くこと。** 同じ場所にすると `stage2/_raw/`
+（動画APIが返した原本）まで同期対象になって容量を食うし、ffmpeg が書いている最中の
+ファイルを Drive が掴んで事故ることがある。スクリプトは同一パスを指定すると止める。
+
 ### 作業ディレクトリごと別ドライブに置く（Cドライブを使いたくないとき）
 
 容量を食うのは素材と `stage2/_raw/`（動画APIが返した原本）。丸ごと移せる。
