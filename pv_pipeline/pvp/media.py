@@ -203,8 +203,11 @@ def assemble(
     music: Path | None = None,
     keep_clip_audio: bool = False,
     logger: RunLogger | None = None,
+    transitions: list[dict] | None = None,
+    default_transition: str = "fade",
+    fade_in_duration: float = 0.0,
 ) -> tuple[Path, float]:
-    """xfade（クロスディゾルブ）で連結し、最後をフェードアウトして書き出す。
+    """xfade で連結し、最後をフェードアウトして書き出す。
 
     戻り値は (出力パス, 完成尺)。
     """
@@ -230,14 +233,24 @@ def assemble(
         current = "[v0]"
         total = durations[0]
         for idx in range(1, len(clips)):
-            offset = total - xfade_duration
+            # 境目ごとの種類・長さ（transitions[idx-1]）。無ければ既定のなめらかなクロスフェード。
+            # ※ xfade の "dissolve" はノイズ状に入れ替わる方式で安っぽく見えるため既定にしない
+            tr = (transitions[idx - 1] if transitions and idx - 1 < len(transitions) else None) or {}
+            kind = tr.get("type", default_transition)
+            dur = float(tr.get("duration", xfade_duration))
+            dur = min(dur, durations[idx - 1] * 0.45, durations[idx] * 0.45)
+            offset = total - dur
             label = f"[x{idx}]"
             parts.append(
-                f"{current}[v{idx}]xfade=transition=dissolve:"
-                f"duration={xfade_duration:.3f}:offset={offset:.3f}{label}"
+                f"{current}[v{idx}]xfade=transition={kind}:"
+                f"duration={dur:.3f}:offset={offset:.3f}{label}"
             )
             current = label
-            total = total + durations[idx] - xfade_duration
+            total = total + durations[idx] - dur
+
+    if fade_in_duration > 0:
+        parts.append(f"{current}fade=t=in:st=0:d={fade_in_duration:.3f}[fin]")
+        current = "[fin]"
 
     if fade_out_duration > 0:
         fade_start = max(0.0, total - fade_out_duration)

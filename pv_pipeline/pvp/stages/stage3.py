@@ -49,6 +49,19 @@ def resolve_music(project: Project, logger: RunLogger) -> Path | None:
     return None
 
 
+def transition_kwargs(project: Project) -> dict:
+    """つなぎの設定を集める。cuts.yaml の transition_in（そのカットに入るときの切り替え）と、
+    config の assemble.default_transition / fade_in_duration。"""
+    cfg = project.config.get("assemble") or {}
+    cuts = load_cuts(project)
+    transitions = [(c.raw.get("transition_in") or {}) for c in cuts[1:]]
+    return {
+        "transitions": transitions,
+        "default_transition": cfg.get("default_transition", "fade"),
+        "fade_in_duration": float(cfg.get("fade_in_duration", 0.0)),
+    }
+
+
 def _assemble_with_end_card(clips, dst, xfade, fade_out, width, height, fps,
                             end_card: dict, music, project: Project, logger: RunLogger):
     """本編を黒へフェードアウトさせたあと、黒地に施設名を出すエンドカードをつなぐ。"""
@@ -58,10 +71,18 @@ def _assemble_with_end_card(clips, dst, xfade, fade_out, width, height, fps,
     work = project.output_dir / "_work"
     work.mkdir(parents=True, exist_ok=True)
     main, main_total = media.assemble(clips, work / "main.mp4", xfade, fade_out,
-                                      width, height, fps, music=None, logger=logger)
+                                      width, height, fps, music=None, logger=logger,
+                                      **transition_kwargs(project))
     card_dur = float(end_card.get("duration", 4.0))
-    card = black_card(work / "end_card.mp4", list(end_card.get("overlays") or []),
-                      width, height, fps, card_dur, logger)
+    if end_card.get("style") == "bull_shine":
+        from ..endcard import render_bull_shine_card
+
+        card = render_bull_shine_card(work / "end_card.mp4", end_card,
+                                      _resolve_path(project, end_card["background"]),
+                                      width, height, fps, logger)
+    else:
+        card = black_card(work / "end_card.mp4", list(end_card.get("overlays") or []),
+                          width, height, fps, card_dur, logger)
     total = main_total + card_dur
 
     cmd = [ffmpeg_bin(), "-y", "-i", str(main), "-i", str(card)]
@@ -122,6 +143,7 @@ def run_stage3(project: Project, logger: RunLogger, music_override: Path | None 
             music=music,
             keep_clip_audio=bool((config.get("music") or {}).get("keep_clip_audio", False)),
             logger=logger,
+            **transition_kwargs(project),
         )
     else:
         out, total = _assemble_with_end_card(

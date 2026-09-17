@@ -72,17 +72,23 @@ assemble:
   width: 1920
   height: 1080
   fps: 24
-  xfade_duration: 0.5           # クロスディゾルブ
   fade_out_duration: 2.0        # 最後のフェードアウト
   output: pv_16x9.mp4
-  # 本編を黒へフェードアウトしたあとにつなぐ、黒地に施設名のエンドカード
+  # つなぎ：既定はなめらかなクロスフェード（xfade の dissolve はノイズ状で安っぽいので使わない）
+  default_transition: fade
+  xfade_duration: 0.8
+  fade_in_duration: 1.0         # 冒頭は黒からゆっくり明ける
+  # 本編を黒へフェードアウトしたあとにつなぐエンドカード
   end_card:
-    duration: 4.5
-    overlays:
-      - {text: "F HEAVENS", font: TrajanPro-Regular.otf, size: 0.06, tracking: 0.32,
-         x: 0.5, y: 0.47, anchor: center, start: 0.6, fade: 1.8, rise: 0.01, shadow: 0}
-      - {text: "TOKUNOSHIMA", font: TrajanPro-Regular.otf, size: 0.021, tracking: 0.85,
-         x: 0.5, y: 0.565, anchor: center, start: 1.4, fade: 1.8, rise: 0.008, shadow: 0}
+    style: bull_shine           # 闘牛のシルエット → タイトル → 光が走って反射 → ぎりぎり見える暗さに沈む
+    duration: 9.0
+    background: endcard_bull.png
+    bg_scale: 0.95                # 角がタイトルに重ならないよう、闘牛を上・左へ寄せる
+    bg_offset: [-0.07, -0.15]
+    shine_width: 0.11             # 光の帯の太さ（タイトル幅に対する比）
+    shine_gain: 1.0
+    title: {text: "F HEAVENS", font: TrajanPro-Regular.otf, size: 0.058, tracking: 0.28, x: 0.5, y: 0.52}
+    subtitle: {text: "TOKUNOSHIMA", font: TrajanPro-Regular.otf, size: 0.021, tracking: 0.85, x: 0.5, y: 0.61}
 
 music:
   enabled: true

@@ -26,6 +26,7 @@ cuts:
       instruction: 海上を前進するドローンショット。
 
   - id: "02"
+    transition_in: {type: fadewhite, duration: 0.9}   # 海のまぶしさから芝生へ、光で満たして切り替える
     source: IMG_8613.jpg
     duration: 4
     image:
@@ -93,6 +94,7 @@ cuts:
         窓は閉まっていて風は無い。カーテン・植物・布は一切動かさない。画面に無いカーテンを足さない。
 
   - id: "06"
+    transition_in: {type: fadeblack, duration: 1.2}   # 昼から夜へ。いったん闇に沈めて時間の経過を見せる
     source: IMG_8557.jpg     # 実写MOV(IMG_5625)は画質が落ちるため、夜のプールの写真に差し替え
     duration: 4
     image:
@@ -169,6 +171,7 @@ cuts:
       start_crop: {center: [0.68, 0.56], size: 0.6}
 
   - id: "10"
+    transition_in: {type: fadeblack, duration: 1.2}   # 室内の昼から外の夜景へ
     source: IMG_5577.JPG
     duration: 9              # 文字がゆっくり現れる時間を取るため倍に
     image:
@@ -201,5 +204,6 @@ cuts:
       overlays:
         - {text: "海と、何もしない贅沢を。", font: KozMinPro-Light.otf, size: 0.052, tracking: 0.14,
            x: 0.06, y: 0.14, start: 1.5, fade: 2.2, rise: 0.012}
-        - {text: "F HEAVENS TOKUNOSHIMA", font: TrajanPro-Regular.otf, size: 0.019, tracking: 0.55,
-           x: 0.062, y: 0.235, start: 3.2, fade: 2.0, rise: 0.008}
+        # 施設名はエンドカードだけに出す。ここはキャッチコピーの英訳
+        - {text: "The sea, and the luxury of doing nothing.", font: GaramondPremrPro-It.otf, size: 0.03, tracking: 0.06,
+           x: 0.062, y: 0.232, start: 3.2, fade: 2.0, rise: 0.008}
