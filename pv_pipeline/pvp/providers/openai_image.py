@@ -122,8 +122,10 @@ class OpenAIImageProvider(ImageProvider):
         timeout_sec: int = 600,
         max_retries: int = 3,
         output_format: str = "png",
+        max_input_edge: int = 2048,
         **_: object,
     ) -> None:
+        self.max_input_edge = max_input_edge
         self.model = model
         self.size = size
         self.endpoint = endpoint
@@ -156,6 +158,11 @@ class OpenAIImageProvider(ImageProvider):
         dst.parent.mkdir(parents=True, exist_ok=True)
         headers = self.headers()
         data = self.form_data(prompt)
+
+        # 送る前に全画像を RGB PNG にそろえる（iPhone写真の色モード・EXIF回転対策）
+        from ..imageprep import prepare_images
+
+        images = prepare_images(images, dst.parent / "_prepared", self.max_input_edge, logger)
 
         logger.log(
             f"cut{cut_id} 画像編集を依頼 model={self.model} size={self.size} "

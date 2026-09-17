@@ -18,6 +18,10 @@ image:
   # response_format と input_fidelity は送らない。
   # 前者は gpt-image 系では400、後者は gpt-image-2 以降は常に高忠実度で処理されるため不要。
   max_reference_images: 16      # 1枚目=編集対象を含めた上限
+  # 送信前に全画像を RGB PNG に正規化し、長辺をこの値以下に縮小する。
+  # iPhone写真の色モード(CMYK等)・EXIF回転・巨大サイズで API に弾かれるのを防ぐ。
+  # 入力トークン（画素数/1024）も抑えられる。
+  max_input_edge: 2048
   timeout_sec: 600
   max_retries: 3
 

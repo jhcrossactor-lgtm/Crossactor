@@ -108,10 +108,18 @@ def cmd_check(project) -> int:
         print(f"  人物設定シート {sheet}: {'OK' if found else 'NG (input/ に無い)'}")
         problems += 0 if found else 1
 
+    from pvp.imageprep import describe_image
+
     for cut in load_cuts(project):
         try:
             path = cut.source_path()
-            print(f"  cut{cut.id} 素材 {path.name}: OK")
+            if path.suffix.lower() in {".mov", ".mp4"}:
+                print(f"  cut{cut.id} 素材 {path.name}: OK (動画)")
+            else:
+                desc = describe_image(path)
+                print(f"  cut{cut.id} 素材 {path.name}: {desc}")
+                if desc.startswith("NG"):
+                    problems += 1
         except Exception as exc:
             print(f"  cut{cut.id} 素材: NG — {exc}")
             problems += 1
