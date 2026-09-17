@@ -67,7 +67,11 @@ class Cut:
         if not self.use_person_reference:
             base = (prompts.get("image_common_no_person") or base).strip()
         attach = (prompts.get("image_attachment_note") or "").strip()
+        wardrobe = (prompts.get("wardrobe") or "").strip()
         parts = [base]
+        # 服装指定は人物が出るカットだけに差し込む
+        if wardrobe and self.use_person_reference:
+            parts.append(wardrobe)
         if attach and self.use_person_reference:
             parts.append(attach)
         if self.image_instruction:
