@@ -55,7 +55,8 @@ MAT_JA = {
 def ja_mat(name):
     if name in MAT_JA:
         return MAT_JA[name]
-    for pre, ja in (("wall_", "外壁"), ("roof_", "屋根"), ("car_", "車体"), ("leaf_", "樹木_葉")):
+    for pre, ja in (("wall_", "外壁"), ("accent_", "外壁アクセント"), ("roof_", "屋根"),
+                    ("car_", "車体"), ("leaf_", "樹木_葉")):
         if name.startswith(pre):
             return "%s_%s" % (ja, name.split("_")[1])
     return name
@@ -167,6 +168,38 @@ def gable_mesh(o):
     return verts, faces, slots
 
 
+def wedge_mesh(o):
+    """上端が片流れに傾いた躯体。"""
+    cx, cz = o["c"]
+    hw, hd = o["w"] / 2.0, o["d"] / 2.0
+    yl = o["y_low"]
+    yh = yl + o["w"] * o["slope"]
+    y0 = o["y0"]
+    verts = [(cx - hw, y0, cz - hd), (cx + hw, y0, cz - hd),
+             (cx + hw, y0, cz + hd), (cx - hw, y0, cz + hd),
+             (cx - hw, yl, cz - hd), (cx + hw, yh, cz - hd),
+             (cx + hw, yh, cz + hd), (cx - hw, yl, cz + hd)]
+    faces = [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4),
+             (2, 3, 7, 6), (1, 2, 6, 5), (3, 0, 4, 7)]
+    return verts, faces
+
+
+def shed_mesh(o):
+    """片流れ屋根スラブ。道路側（+X）が高い。"""
+    cx, cz = o["c"]
+    hw, hd = o["w"] / 2.0 + o["oh"], o["d"] / 2.0 + o["oh"]
+    th = o["th"]
+    yl = o["y_low"] + (-hw + o["w"] / 2.0) * o["slope"]
+    yh = o["y_low"] + (hw + o["w"] / 2.0) * o["slope"]
+    base = [(cx - hw, yl, cz - hd), (cx + hw, yh, cz - hd),
+            (cx + hw, yh, cz + hd), (cx - hw, yl, cz + hd)]   # 壁天端の面
+    top = [(x, y + th, z) for x, y, z in base]
+    verts = list(top) + list(base)
+    faces = [(0, 1, 2, 3), (7, 6, 5, 4), (0, 4, 5, 1),
+             (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)]
+    return verts, faces
+
+
 def cyl_cone_mesh(o, seg=16):
     cx, cy, cz = o["c"]
     r, h = o["r"], o["h"]
@@ -190,7 +223,9 @@ def role_of(o):
     """マテリアル名から部材名を決める。"""
     m = o["mat"]
     if m.startswith("wall_"):
-        return "外壁"
+        return "外壁" if o["kind"] == "wedge" else "外壁付属"
+    if m.startswith("accent_"):
+        return "外壁アクセント"
     if m.startswith("roof_"):
         return "屋根"
     if m == "glass":
@@ -242,6 +277,12 @@ def build(scene_data):
             new_mesh_object(name, verts, faces, [mats[o["mat"]]], [0], col)
         elif o["kind"] == "box":
             v, f = box_mesh(o["c"], o["s"], o.get("rot"))
+            new_mesh_object(name, v, f, [mats[o["mat"]]], [0] * len(f), col)
+        elif o["kind"] == "wedge":
+            v, f = wedge_mesh(o)
+            new_mesh_object(name, v, f, [mats[o["mat"]]], [0] * len(f), col)
+        elif o["kind"] == "shed":
+            v, f = shed_mesh(o)
             new_mesh_object(name, v, f, [mats[o["mat"]]], [0] * len(f), col)
         elif o["kind"] == "gable":
             v, f, slots = gable_mesh(o)

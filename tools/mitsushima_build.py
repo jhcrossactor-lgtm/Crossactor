@@ -287,6 +287,8 @@ def build_scene(cfg):
     }
     for i, c in enumerate(pal["walls"]):
         mats["wall_%d" % i] = c
+    for i, c in enumerate(pal["accents"]):
+        mats["accent_%d" % i] = c
     for i, c in enumerate(pal["roofs"]):
         mats["roof_%d" % i] = c
     for i, c in enumerate(pal["cars"]):
@@ -339,25 +341,10 @@ def build_scene(cfg):
         wx, wz = W((cxp, cyp))
 
         wall = "wall_%d" % rng.randrange(len(pal["walls"]))
+        accent = "accent_%d" % rng.randrange(len(pal["accents"]))
         roof = "roof_%d" % rng.randrange(len(pal["roofs"]))
-        # three.js空間では w_x が X方向、w_y が Z方向のサイズになる
-        eave = b["eave_height_m"]
-        add_box(gid, wall, wx, eave / 2.0, wz, w_x, eave, w_y)
-
-        # 棟の向き：基本は道路と平行（道路は南北＝Z方向）→ 棟はZ軸方向。一部を90°回転。
-        rot90 = rng.random() < b["ridge_rotate_ratio"]
-        if rot90:
-            span, length, rot = w_y, w_x, math.pi / 2.0
-        else:
-            span, length, rot = w_x, w_y, 0.0
-        objs.append({"kind": "gable", "group": gid, "mat": roof, "mat_end": wall,
-                     "c": [round(wx, 4), round(wz, 4)], "base_y": eave,
-                     "w": round(span, 4), "d": round(length, 4),
-                     "rot": round(rot, 5), "slope": b["roof_slope"],
-                     "oh": b["roof_overhang_m"]})
-
-        # 窓・玄関（面に貼る簡易表現）
-        add_openings(objs, gid, wx, wz, w_x, w_y, b, rng)
+        # 片流れ（道路側＝+Xが高い）の2階建て一式。w_xが奥行、w_yが間口。
+        add_house(objs, add_box, gid, wx, wz, w_x, w_y, wall, accent, roof, b, rng)
 
         # 駐車場土間（道路側）と車
         px0, px1 = x1 + 0.1, road_x - 0.1
@@ -392,8 +379,11 @@ def build_scene(cfg):
             "size_m": [round(w_x, 3), round(w_y, 3)],
             "area_m2": round(w_x * w_y, 2),
             "plot_area_m2": round(polygon_area(plot), 2),
-            "wall": mats[wall], "roof": mats[roof],
-            "ridge": "道路と平行(南北)" if not rot90 else "道路と直交(東西)",
+            "wall": mats[wall], "accent": mats[accent], "roof": mats[roof],
+            "eave_low_m": b["eave_height_m"],
+            "eave_road_m": round(b["eave_height_m"] + w_x * b["roof_slope"], 3),
+            "top_m": round(b["eave_height_m"] + w_x * b["roof_slope"] + b["roof_thickness_m"], 3),
+            "roof": "片流れ%d寸（道路側が高く裏へ流す）" % round(b["roof_slope"] * 10),
         })
 
     # --- 街路樹
@@ -428,28 +418,70 @@ def build_scene(cfg):
     return scene, plots_raw, ref_bld, W
 
 
-def add_openings(objs, gid, wx, wz, w_x, w_y, b, rng):
-    """窓と玄関を面に貼る。東（道路側）＝+X面に玄関。"""
+def add_house(objs, add_box, gid, wx, wz, dx, dz, wall, accent, roof, b, rng):
+    """片流れ屋根の2階建て一式。
+
+    道路は+X側。屋根は道路側を高くして裏（-X）へ流すので、道路から見ると
+    水平ラインが通ってフラットに見える。
+    dx=奥行(X)、dz=間口(Z)。
+    """
+    slope = b["roof_slope"]
+    y_low = b["eave_height_m"]                     # 裏（-X）の壁天端
+    y_high = y_low + dx * slope                    # 道路側（+X）の壁天端
+    hx, hz = dx / 2.0, dz / 2.0
+    fh = b["floor_height_m"]
     t = 0.06
-    lv = [1.15, 1.15 + b["floor_height_m"]]
-    hx, hz = w_x / 2.0, w_y / 2.0
-    for y0 in lv:
-        for i, off in enumerate((-0.28, 0.28)):
-            objs.append({"kind": "box", "group": gid, "mat": "glass",
-                         "c": [round(wx + hx + t / 2, 4), round(y0 + 0.65, 4), round(wz + off * w_y, 4)],
-                         "s": [t, 1.3, round(min(1.7, w_y * 0.3), 3)], "rot": 0.0})
-            objs.append({"kind": "box", "group": gid, "mat": "glass",
-                         "c": [round(wx - hx - t / 2, 4), round(y0 + 0.65, 4), round(wz + off * w_y, 4)],
-                         "s": [t, 1.3, round(min(1.7, w_y * 0.3), 3)], "rot": 0.0})
-            objs.append({"kind": "box", "group": gid, "mat": "glass",
-                         "c": [round(wx + off * w_x, 4), round(y0 + 0.65, 4), round(wz - hz - t / 2, 4)],
-                         "s": [round(min(1.7, w_x * 0.3), 3), 1.3, t], "rot": 0.0})
-            objs.append({"kind": "box", "group": gid, "mat": "glass",
-                         "c": [round(wx + off * w_x, 4), round(y0 + 0.65, 4), round(wz + hz + t / 2, 4)],
-                         "s": [round(min(1.7, w_x * 0.3), 3), 1.3, t], "rot": 0.0})
-    objs.append({"kind": "box", "group": gid, "mat": "door",
-                 "c": [round(wx + hx + t / 2, 4), 1.0, round(wz + w_y * 0.34, 4)],
-                 "s": [t, 2.0, 0.9], "rot": 0.0})
+
+    # 躯体（上端が片流れに傾いた箱）と屋根スラブ
+    objs.append({"kind": "wedge", "group": gid, "mat": wall,
+                 "c": [round(wx, 4), round(wz, 4)], "w": round(dx, 4), "d": round(dz, 4),
+                 "y0": 0.0, "y_low": y_low, "slope": slope})
+    objs.append({"kind": "shed", "group": gid, "mat": roof,
+                 "c": [round(wx, 4), round(wz, 4)], "w": round(dx, 4), "d": round(dz, 4),
+                 "y_low": y_low, "slope": slope,
+                 "oh": b["roof_overhang_m"], "th": b["roof_thickness_m"]})
+
+    # 道路面の張り分け（アクセントパネル）。バルコニー側の1スパンを濃色にする。
+    aw = dz * b["accent_width_ratio"]
+    side = 1 if rng.random() < 0.5 else -1         # 張り分けを左右どちらに寄せるか
+    az = wz - side * (hz - aw / 2.0)               # アクセント帯の中心
+    add_box(gid, accent, wx + hx + 0.025, y_high / 2.0, az, 0.05, y_high, aw)
+
+    # バルコニー（道路面・アクセント帯の中）
+    bal = b["balcony"]
+    bw = min(bal["width_m"], aw - 0.3)
+    bd, ph, st = bal["depth_m"], bal["parapet_h_m"], bal["slab_t_m"]
+    add_box(gid, wall, wx + hx + bd / 2.0, fh - st / 2.0, az, bd, st, bw)          # 床スラブ
+    add_box(gid, accent, wx + hx + bd - 0.06, fh + ph / 2.0, az, 0.12, ph, bw)     # 前面手すり壁
+    for sgn in (-1, 1):
+        add_box(gid, accent, wx + hx + bd / 2.0, fh + ph / 2.0,
+                az + sgn * (bw / 2.0 - 0.06), bd, ph, 0.12)                        # 側面手すり壁
+
+    # 玄関（アクセント帯の反対側）とポーチ庇・ステップ
+    dz_door = wz + side * (hz - 1.15)              # 玄関はアクセント帯の反対側
+    add_box(gid, "door", wx + hx + t / 2.0, 1.05, dz_door, t, 2.1, 0.9)
+    po = b["porch"]
+    add_box(gid, accent, wx + hx + po["canopy_d_m"] / 2.0, po["height_m"],
+            dz_door, po["canopy_d_m"], po["thickness_m"], po["canopy_w_m"])
+    add_box(gid, "concrete", wx + hx + 0.55, 0.075, dz_door, 1.1, 0.15, 1.5)
+
+    def win(cx, cy, cz, w, h, d):
+        add_box(gid, "glass", cx, cy, cz, w, h, d)
+
+    # 道路面：1F 掃き出し窓（バルコニー下）／2F バルコニー内の掃き出し窓＋玄関上の小窓
+    win(wx + hx + 0.045, 1.55, az, 0.09, 1.9, min(2.2, bw * 0.75))
+    win(wx + hx + 0.045, fh + 1.05, az, 0.09, 2.0, min(2.2, bw * 0.75))
+    win(wx + hx + t / 2.0, fh + 1.35, dz_door, t, 1.1, 0.8)
+
+    # 妻側（±Z）：各階1枚
+    for sgn in (-1, 1):
+        for lv in (0, 1):
+            win(wx - hx * 0.15, 1.35 + lv * fh, wz + sgn * (hz + t / 2.0), 1.3, 1.25, t)
+
+    # 裏面（-X）：各階2枚
+    for off in (-0.26, 0.26):
+        for lv in (0, 1):
+            win(wx - hx - t / 2.0, 1.35 + lv * fh, wz + off * dz, t, 1.2, 1.0)
 
 
 def add_tree(objs, group, pos, cfg, rng, pal, scale=1.0):
@@ -564,6 +596,46 @@ def obj_triangles(o):
                 s, c = math.sin(o["rot"]), math.cos(o["rot"])
                 n2 = [nrm[0] * c + nrm[2] * s, nrm[1], -nrm[0] * s + nrm[2] * c]
             out.extend(face([P[i] for i in ids], n2))
+        return [(o["mat"], out)]
+    if k == "wedge":
+        cx, cz = o["c"]
+        hw, hd = o["w"] / 2.0, o["d"] / 2.0
+        yl = o["y_low"]
+        yh = yl + o["w"] * o["slope"]
+        y0 = o["y0"]
+        A = [cx - hw, y0, cz - hd]
+        Bv = [cx + hw, y0, cz - hd]
+        C = [cx + hw, y0, cz + hd]
+        D = [cx - hw, y0, cz + hd]
+        E = [cx - hw, yl, cz - hd]
+        F = [cx + hw, yh, cz - hd]
+        G = [cx + hw, yh, cz + hd]
+        H = [cx - hw, yl, cz + hd]
+        out = []
+        out.extend(face([A, Bv, C, D], [0, -1, 0]))
+        out.extend(face([E, F, G, H], [0, 1, 0]))
+        out.extend(face([A, Bv, F, E], [0, 0, -1]))
+        out.extend(face([D, C, G, H], [0, 0, 1]))
+        out.extend(face([Bv, C, G, F], [1, 0, 0]))
+        out.extend(face([A, D, H, E], [-1, 0, 0]))
+        return [(o["mat"], out)]
+    if k == "shed":
+        cx, cz = o["c"]
+        hw, hd = o["w"] / 2.0 + o["oh"], o["d"] / 2.0 + o["oh"]
+        th = o["th"]
+        yl = o["y_low"] + (-hw + o["w"] / 2.0) * o["slope"]      # 裏端（低い側）
+        yh = o["y_low"] + (hw + o["w"] / 2.0) * o["slope"]       # 道路端（高い側）
+        # 壁天端の面に載せる（同一平面にするとZファイティングするため上へ積む）
+        Bt = [[cx - hw, yl, cz - hd], [cx + hw, yh, cz - hd],
+              [cx + hw, yh, cz + hd], [cx - hw, yl, cz + hd]]
+        T = [[v[0], v[1] + th, v[2]] for v in Bt]
+        out = []
+        out.extend(face(list(T), [0, 1, 0]))
+        out.extend(face(list(Bt), [0, -1, 0]))
+        out.extend(face([T[0], T[1], Bt[1], Bt[0]], [0, 0, -1]))
+        out.extend(face([T[3], T[2], Bt[2], Bt[3]], [0, 0, 1]))
+        out.extend(face([T[1], T[2], Bt[2], Bt[1]], [1, 0, 0]))
+        out.extend(face([T[0], T[3], Bt[3], Bt[0]], [-1, 0, 0]))
         return [(o["mat"], out)]
     if k == "gable":
         cx, cz = o["c"]
@@ -750,7 +822,7 @@ def verify(scene, plots, cfg):
                "min_setback_m": round(clear, 3), "front_open_m": round(front, 3),
                "area_m2": b["area_m2"], "plot_area_m2": b["plot_area_m2"],
                "coverage_%": round(100 * b["area_m2"] / b["plot_area_m2"], 1),
-               "ridge": b["ridge"], "ok": ok}
+               "roof": b["roof"], "top_m": b["top_m"], "ok": ok}
         rows.append(row)
         if not ok:
             bad.append(row)
@@ -792,11 +864,12 @@ def main():
     print("区画数=%d 建物数=%d 一致=%s 全建物が区画内=%s"
           % (check["plots"], check["buildings"], check["count_match"], check["all_inside"]))
     print("GLB: %(triangles)d三角形 / %(nodes)dノード / %(materials)dマテリアル / %(bytes)dbytes" % stats)
-    print("%-4s %-9s %-9s %-8s %-8s %-7s %s" % ("区画", "建築面積", "敷地面積", "建蔽率", "離隔", "道路空地", "棟向き"))
+    print("%-4s %-9s %-9s %-8s %-8s %-8s %-7s %s"
+          % ("区画", "建築面積", "敷地面積", "建蔽率", "離隔", "道路空地", "最高高さ", "屋根"))
     for r in check["rows"]:
-        print("%-4d %8.2f㎡ %8.2f㎡ %6.1f%% %6.2fm %7.2fm %s%s"
+        print("%-4d %8.2f㎡ %8.2f㎡ %6.1f%% %6.2fm %7.2fm %7.2fm %s%s"
               % (r["plot"], r["area_m2"], r["plot_area_m2"], r["coverage_%"],
-                 r["min_setback_m"], r["front_open_m"], r["ridge"],
+                 r["min_setback_m"], r["front_open_m"], r["top_m"], r["roof"],
                  "" if r["ok"] else "  ← NG"))
     if check["violations"] or check["issues"]:
         print("例外:", json.dumps(check["violations"] + check["issues"], ensure_ascii=False))

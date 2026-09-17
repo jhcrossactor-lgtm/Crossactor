@@ -135,6 +135,36 @@ for (const o of SCENE.objects) {
     mesh.position.set(o.c[0], o.c[1], o.c[2]);
     if (o.rot) mesh.rotation.y = o.rot;
     mesh.castShadow = true; mesh.receiveShadow = true;
+  } else if (o.kind === 'wedge') {         // 上端が片流れに傾いた躯体
+    const cx = o.c[0], cz = o.c[1], hw = o.w/2, hd = o.d/2;
+    const yl = o.y_low, yh = o.y_low + o.w*o.slope, y0 = o.y0;
+    const A=[cx-hw,y0,cz-hd], Bv=[cx+hw,y0,cz-hd], C=[cx+hw,y0,cz+hd], D=[cx-hw,y0,cz+hd];
+    const E=[cx-hw,yl,cz-hd], F=[cx+hw,yh,cz-hd], G=[cx+hw,yh,cz+hd], H=[cx-hw,yl,cz+hd];
+    const arr = [];
+    pushFace(arr, [A,Bv,C,D], [0,-1,0]);
+    pushFace(arr, [E,F,G,H],  [0, 1,0]);
+    pushFace(arr, [A,Bv,F,E], [0,0,-1]);
+    pushFace(arr, [D,C,G,H],  [0,0, 1]);
+    pushFace(arr, [Bv,C,G,F], [ 1,0,0]);
+    pushFace(arr, [A,D,H,E],  [-1,0,0]);
+    mesh = new THREE.Mesh(geomFrom(arr), mats[o.mat]);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+  } else if (o.kind === 'shed') {          // 片流れ屋根スラブ
+    const cx = o.c[0], cz = o.c[1];
+    const hw = o.w/2 + o.oh, hd = o.d/2 + o.oh, th = o.th;
+    const yl = o.y_low + (-hw + o.w/2)*o.slope;
+    const yh = o.y_low + ( hw + o.w/2)*o.slope;
+    const Bt = [[cx-hw,yl,cz-hd],[cx+hw,yh,cz-hd],[cx+hw,yh,cz+hd],[cx-hw,yl,cz+hd]];
+    const T = Bt.map(v => [v[0], v[1]+th, v[2]]);   // 壁天端の上に載せる
+    const arr = [];
+    pushFace(arr, T,  [0, 1,0]);
+    pushFace(arr, Bt, [0,-1,0]);
+    pushFace(arr, [T[0],T[1],Bt[1],Bt[0]], [0,0,-1]);
+    pushFace(arr, [T[3],T[2],Bt[2],Bt[3]], [0,0, 1]);
+    pushFace(arr, [T[1],T[2],Bt[2],Bt[1]], [ 1,0,0]);
+    pushFace(arr, [T[0],T[3],Bt[3],Bt[0]], [-1,0,0]);
+    mesh = new THREE.Mesh(geomFrom(arr), mats[o.mat]);
+    mesh.castShadow = true; mesh.receiveShadow = true;
   } else if (o.kind === 'gable') {
     const cx = o.c[0], cz = o.c[1];
     const hw = o.w/2 + o.oh, hd = o.d/2 + o.oh;
@@ -230,11 +260,11 @@ document.getElementById('b-dusk').onclick = () => applyLight('dusk');
 const m = SCENE.meta, c = SCENE.config;
 document.getElementById('meta').innerHTML =
   `区画 ${m.plots} / 建物 ${m.buildings}　敷地 ${m.site_area_m2.toLocaleString()}㎡<br>` +
-  `軒高 ${c.building.eave_height_m}m・切妻${Math.round(c.building.roof_slope*10)}寸・` +
+  `軒高 ${c.building.eave_height_m}m・片流れ${Math.round(c.building.roof_slope*10)}寸（裏へ流す）・` +
   `隣地離隔 ${c.setback.side_m}m・道路側 ${c.setback.road_parking_depth_m}m`;
 document.getElementById('legend').innerHTML =
-  `<b>凡例</b><br>白〜ベージュ系＝外壁（4色ランダム）<br>濃灰・茶系＝屋根（4色ランダム）<br>` +
-  `灰色の箱＝隣接既存街区<br>灰白の土間＝各区画の駐車場`;
+  `<b>凡例</b><br>白〜ベージュ系＝外壁ベース（4色）<br>濃色の面＝道路側の張り分け＋バルコニー手すり壁<br>` +
+  `屋根＝片流れ1寸・裏（西）へ流す<br>灰色の箱＝隣接既存街区／灰白の土間＝各区画の駐車場`;
 
 /* ---------------- loop ---------------- */
 const clock = new THREE.Clock();

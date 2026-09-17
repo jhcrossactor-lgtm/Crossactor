@@ -1,7 +1,6 @@
 {
   "_comment": "三ツ島 区画割り→2階建て街並み3Dパース 生成パラメータ。すべてここで変更可能。",
   "seed": 20260917,
-
   "source": {
     "dxf": "data/mitsushima/mitsushima_採用案_東辺沿い10区画.dxf",
     "unit_to_meter": 0.001,
@@ -10,14 +9,12 @@
     "layer_site": "敷地",
     "layer_building_ref": "建物"
   },
-
   "setback": {
     "side_m": 0.5,
     "road_parking_depth_m": 5.5,
     "road_frontage_x_mm": 13554,
     "_frontage_note": "全区画が東側の開発道路（x=13,554mm）に接道。この線から road_parking_depth_m を駐車場として空ける。"
   },
-
   "building": {
     "max_area_m2": 60.0,
     "max_width_m": 8.0,
@@ -25,38 +22,107 @@
     "min_area_m2": 30.0,
     "eave_height_m": 6.0,
     "floor_height_m": 3.0,
-    "roof_slope": 0.4,
-    "roof_overhang_m": 0.45,
-    "ridge_rotate_ratio": 0.3,
-    "grid_step_m": 0.1
+    "roof_slope": 0.1,
+    "roof_overhang_m": 0.25,
+    "ridge_rotate_ratio": 0.0,
+    "grid_step_m": 0.1,
+    "roof_type": "shed",
+    "_roof_note": "片流れ。道路側（東）を高くして裏（西）へ流す。道路から見ると水平ラインでフラットに見える。",
+    "roof_thickness_m": 0.25,
+    "_eave_note": "低い側＝裏（西）の壁天端。道路側は 6.0＋奥行×勾配 で約6.76m、最高高さ約7.0m。",
+    "accent_width_ratio": 0.5,
+    "balcony": {
+      "width_m": 3.4,
+      "depth_m": 1.15,
+      "parapet_h_m": 1.1,
+      "slab_t_m": 0.12
+    },
+    "porch": {
+      "canopy_w_m": 2.0,
+      "canopy_d_m": 1.05,
+      "thickness_m": 0.14,
+      "height_m": 2.45
+    }
   },
-
   "palette": {
-    "walls": ["#efe7d8", "#d9d2c6", "#cfc2ae", "#e3e5e4"],
-    "roofs": ["#3c4550", "#4a4034", "#5a5f5a", "#2f3438"],
-    "cars": ["#2f3640", "#b8bcc0", "#7d1f2a", "#26415e"],
+    "walls": [
+      "#f3f0ea",
+      "#e9e4db",
+      "#dcd6cb",
+      "#d2d6d7"
+    ],
+    "roofs": [
+      "#31363b",
+      "#2a2e32",
+      "#3d4347",
+      "#453e37"
+    ],
+    "cars": [
+      "#2f3640",
+      "#b8bcc0",
+      "#7d1f2a",
+      "#26415e"
+    ],
     "trunk": "#6b5a45",
-    "foliage": ["#4f7a3a", "#5e8b44", "#3f6b33"],
+    "foliage": [
+      "#4f7a3a",
+      "#5e8b44",
+      "#3f6b33"
+    ],
     "asphalt": "#4a4c50",
     "concrete": "#b9b6ae",
     "ground": "#8a9b6e",
     "plot_ground": "#9aa87a",
-    "neighbor": "#9b9b98"
+    "neighbor": "#9b9b98",
+    "accents": [
+      "#3a4048",
+      "#4b443d",
+      "#2f3b45",
+      "#6f6a63"
+    ]
   },
-
   "props": {
     "car_ratio": 0.7,
-    "car_size_m": [1.75, 1.45, 4.4],
+    "car_size_m": [
+      1.75,
+      1.45,
+      4.4
+    ],
     "tree_per_plot": 1,
     "street_tree_interval_m": 12.0,
-    "tree_height_m": [3.2, 4.6],
+    "tree_height_m": [
+      3.2,
+      4.6
+    ],
     "neighbor_blocks": 22,
-    "neighbor_height_m": [4.5, 8.5],
+    "neighbor_height_m": [
+      4.5,
+      8.5
+    ],
     "neighbor_margin_m": 4.0
   },
-
   "view": {
-    "aerial": { "position": [44, 38, 46], "target": [0, 3, 2] },
-    "walk": { "position": [7.2, 1.6, 31.0], "yaw": 0.30, "eye_height_m": 1.6, "speed_mps": 4.5 }
+    "aerial": {
+      "position": [
+        44,
+        38,
+        46
+      ],
+      "target": [
+        0,
+        3,
+        2
+      ]
+    },
+    "walk": {
+      "position": [
+        7.2,
+        1.6,
+        31.0
+      ],
+      "yaw": 0.3,
+      "eye_height_m": 1.6,
+      "speed_mps": 4.5
+    }
   }
 }
