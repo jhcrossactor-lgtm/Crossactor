@@ -91,12 +91,28 @@ def video_center_16x9(
     height: int,
     fps: int,
     logger: RunLogger | None = None,
+    start: float = 0.0,
+    crop_x: float = 0.5,
+    crop_y: float = 0.5,
 ) -> Path:
-    """実写素材（MOV等）の中央を 16:9 で切り出し、指定尺に詰める。AIは使わない。"""
+    """実写素材（MOV等）を 16:9 で切り出し、指定尺に詰める。AIは使わない。
+
+    start で使い始める秒、crop_x / crop_y（0〜1）で切り出す位置を指定できる。
+    0.5 が中央。縦長の素材で下の方を使いたいときは crop_y を大きくする。
+    回転メタデータ付きの素材は ffmpeg が自動で正しい向きに戻してから切り出す。
+    """
     dst.parent.mkdir(parents=True, exist_ok=True)
-    vf = f"{CENTER_16X9_CROP},scale={width}:{height},setsar=1,fps={fps},format=yuv420p"
+    crop = (
+        "crop="
+        "w='floor(min(iw\\,ih*16/9)/2)*2':"
+        "h='floor(min(iw*9/16\\,ih)/2)*2':"
+        f"x='(iw-ow)*{crop_x}':"
+        f"y='(ih-oh)*{crop_y}'"
+    )
+    vf = f"{crop},scale={width}:{height}:flags=lanczos,setsar=1,fps={fps},format=yuv420p"
     cmd = [
         ffmpeg_bin(), "-y",
+        "-ss", f"{start:.3f}",
         "-i", str(src),
         "-t", f"{duration:.3f}",
         "-vf", vf,

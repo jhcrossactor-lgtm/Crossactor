@@ -29,6 +29,12 @@ class Cut:
         self.video_instruction: str = (raw.get("video") or {}).get("instruction", "")
         # 仕上げで足すズーム。{to: 1.3, center: [x, y], start: 秒, end: 秒}（x,y は 0〜1）
         self.video_zoom: dict | None = (raw.get("video") or {}).get("zoom") or None
+        # このカットだけ服装を上書きする（config の prompts.wardrobe の代わりに入る）
+        self.wardrobe_override: str = (raw.get("image") or {}).get("wardrobe", "") or ""
+        # 動画化の前に最初のコマを寄せて切り出す。{center: [x, y], size: 0.6}（size は元に対する幅の比）
+        self.video_start_crop: dict | None = (raw.get("video") or {}).get("start_crop") or None
+        # 仕上げで重ねる文字。[{text, font, size, x, y, start, fade, color, tracking, anchor}]
+        self.video_overlays: list[dict] = list((raw.get("video") or {}).get("overlays") or [])
 
     # -- パス ------------------------------------------------------------- #
     def source_path(self) -> Path:
@@ -88,7 +94,7 @@ class Cut:
         if not self.use_person_reference:
             base = (prompts.get("image_common_no_person") or base).strip()
         attach = (prompts.get("image_attachment_note") or "").strip()
-        wardrobe = (prompts.get("wardrobe") or "").strip()
+        wardrobe = (self.wardrobe_override or prompts.get("wardrobe") or "").strip()
         parts = [base]
         # 服装指定は人物が出るカットだけに差し込む
         if wardrobe and self.use_person_reference:

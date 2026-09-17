@@ -49,6 +49,37 @@ def resolve_music(project: Project, logger: RunLogger) -> Path | None:
     return None
 
 
+def _assemble_with_end_card(clips, dst, xfade, fade_out, width, height, fps,
+                            end_card: dict, music, project: Project, logger: RunLogger):
+    """本編を黒へフェードアウトさせたあと、黒地に施設名を出すエンドカードをつなぐ。"""
+    from ..overlay import black_card
+    from ..util import ffmpeg_bin, run_cmd
+
+    work = project.output_dir / "_work"
+    work.mkdir(parents=True, exist_ok=True)
+    main, main_total = media.assemble(clips, work / "main.mp4", xfade, fade_out,
+                                      width, height, fps, music=None, logger=logger)
+    card_dur = float(end_card.get("duration", 4.0))
+    card = black_card(work / "end_card.mp4", list(end_card.get("overlays") or []),
+                      width, height, fps, card_dur, logger)
+    total = main_total + card_dur
+
+    cmd = [ffmpeg_bin(), "-y", "-i", str(main), "-i", str(card)]
+    filt = "[0:v][1:v]concat=n=2:v=1:a=0[v]"
+    maps = ["-map", "[v]"]
+    if music is not None:
+        cmd += ["-i", str(music)]
+        filt += (f";[2:a]aloop=loop=-1:size=2e9,atrim=0:{total:.3f},afade=t=in:st=0:d=1.0,"
+                 f"afade=t=out:st={max(total - 2.5, 0):.3f}:d=2.5[a]")
+        maps += ["-map", "[a]", "-c:a", "aac", "-b:a", "192k"]
+    else:
+        maps += ["-an"]
+    run_cmd(cmd + ["-filter_complex", filt] + maps +
+            ["-c:v", "libx264", "-crf", "18", "-preset", "slow", "-pix_fmt", "yuv420p", str(dst)], logger)
+    logger.log(f"エンドカードを追加 {card_dur}s", stage="3", end_card=end_card)
+    return dst, total
+
+
 def run_stage3(project: Project, logger: RunLogger, music_override: Path | None = None) -> Path:
     config = project.config
     assemble_cfg = config.get("assemble") or {}
@@ -84,12 +115,17 @@ def run_stage3(project: Project, logger: RunLogger, music_override: Path | None 
         f"結合開始 clips={len(clips)} xfade={xfade}s fadeout={fade_out}s",
         stage="3", clips=[str(c) for c in clips],
     )
-    out, total = media.assemble(
-        clips, dst, xfade, fade_out, width, height, fps,
-        music=music,
-        keep_clip_audio=bool((config.get("music") or {}).get("keep_clip_audio", False)),
-        logger=logger,
-    )
+    end_card = assemble_cfg.get("end_card") or None
+    if not end_card:
+        out, total = media.assemble(
+            clips, dst, xfade, fade_out, width, height, fps,
+            music=music,
+            keep_clip_audio=bool((config.get("music") or {}).get("keep_clip_audio", False)),
+            logger=logger,
+        )
+    else:
+        out, total = _assemble_with_end_card(
+            clips, dst, xfade, fade_out, width, height, fps, end_card, music, project, logger)
     logger.log(
         f"完成: {out} 尺={total:.2f}秒 音声={'あり' if music else 'なし(無音)'}",
         stage="3", output=str(out), duration=round(total, 2), has_music=bool(music),
