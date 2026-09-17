@@ -22,6 +22,9 @@ class Cut:
         self.image_instruction: str = (raw.get("image") or {}).get("instruction", "")
         self.use_person_reference: bool = bool((raw.get("image") or {}).get("person_reference", True))
         self.indoor: bool = bool((raw.get("image") or {}).get("indoor", False))
+        # 建物の構成をそろえるための追加参考画像。"stage1:03" / "input:xxx.jpg" / 相対パス
+        self.extra_references: list[str] = list((raw.get("image") or {}).get("references") or [])
+        self.reference_note: str = (raw.get("image") or {}).get("reference_note", "")
         self.video_mode: str = (raw.get("video") or {}).get("mode", "ai")
         self.video_instruction: str = (raw.get("video") or {}).get("instruction", "")
 
@@ -52,6 +55,21 @@ class Cut:
             f"cut{self.id}: 素材 {self.source} が {self.project.input_dir} に無い"
         )
 
+    def resolve_reference(self, spec: str) -> Path:
+        """references の1項目をパスに解決する。"""
+        spec = str(spec).strip()
+        if spec.startswith("stage1:"):
+            other = cut_by_id(self.project, spec.split(":", 1)[1])
+            path = other.stage1_path()
+            if not path.exists():
+                raise FileNotFoundError(
+                    f"cut{self.id}: 参考画像に指定した cut{other.id} の stage1 画像がまだ無い。先に作ること")
+            return path
+        if spec.startswith("input:"):
+            return self.project.input_dir / spec.split(":", 1)[1]
+        path = Path(spec)
+        return path if path.is_absolute() else self.project.root / path
+
     def stage1_path(self) -> Path:
         return self.project.stage1_dir / f"cut{self.id}.png"
 
@@ -78,6 +96,10 @@ class Cut:
         indoor_note = (prompts.get("indoor_note") or "").strip()
         if indoor_note and self.indoor and self.use_person_reference:
             parts.append(indoor_note)
+        if self.extra_references:
+            n = len(self.extra_references)
+            note = self.reference_note.strip() or "同じ建物を別の角度・時刻で撮った参考画像。建物の構成をそろえるために使う。"
+            parts.append(f"添付の最後の{n}枚は建物の参考画像：{note} 構図・時刻・天候・人物は取り込まない。")
         if self.image_instruction:
             parts.append("このカットの指示：" + self.image_instruction.strip())
         return "\n\n".join(p for p in parts if p)

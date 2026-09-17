@@ -94,6 +94,9 @@ def run_stage1(
                 [p for p in [_character_sheet(project)] if p]
             )
             images += refs
+        # 建物の参考画像は最後に付ける（プロンプト側で「最後のN枚」と指している）
+        images += [cut.resolve_reference(r) for r in cut.extra_references]
+        images = images[:max_refs]
 
         prompt = cut.image_prompt(config)
         prompt_file = logger.save_prompt(
