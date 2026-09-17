@@ -312,7 +312,7 @@ def build_world():
     bg_light = nt.nodes.new("ShaderNodeBackground")
     bg_light.inputs["Strength"].default_value = 0.34
     bg_cam = nt.nodes.new("ShaderNodeBackground")
-    bg_cam.inputs["Strength"].default_value = 0.075
+    bg_cam.inputs["Strength"].default_value = 0.15
     lp = nt.nodes.new("ShaderNodeLightPath")
     mix = nt.nodes.new("ShaderNodeMixShader")
     out = nt.nodes.new("ShaderNodeOutputWorld")
@@ -373,7 +373,7 @@ def build_cameras(scene_data, root):
     fwd = (-math.sin(w["yaw"]), -math.cos(w["yaw"]))              # three.js平面の前方向
     look = B([w["position"][0] + fwd[0] * 22, 2.4, w["position"][2] + fwd[1] * 22])
     cams.append(add_camera("02_歩行目線", eye, look, 32, root))
-    cams.append(add_camera("03_玄関アプローチ", (6.0, 8.0, 1.55), (-3.0, 12.5, 2.2), 35, root))
+    cams.append(add_camera("03_玄関アプローチ", (7.5, 21.0, 1.55), (-2.5, 12.0, 2.8), 35, root))
     cams.append(add_camera("04_俯瞰45", (34.0, 34.0, 22.0), (-1.0, 6.0, 3.0), 45, root))
     bpy.context.scene.camera = cams[0]
     return cams
