@@ -96,6 +96,23 @@ python run.py connect --smoke
 
 `config.yaml` は `auth: bearer` のままでよい。
 
+Windows (PowerShell) の場合:
+
+```powershell
+git clone https://github.com/jhcrossactor-lgtm/Crossactor.git
+cd Crossactor
+git checkout claude/eager-dijkstra-mpf7fg
+cd pv_pipeline
+Copy-Item .env.example .env
+notepad .env                 # OPENAI_API_KEY=sk-... を書いて保存
+pip install -r requirements.txt
+python run.py connect
+```
+
+`.env` と `config.yaml` は BOM 付きで保存されても読めるようにしてある
+（メモ帳や `Out-File` は BOM を付けることがある）。
+ffmpeg は別途入れること（`winget install Gyan.FFmpeg` など）。
+
 ### クラウドセッション（claude.ai/code）で実行する場合
 
 クラウド環境は既定で `api.openai.com` への通信を拒否する。環境設定を変える必要がある。

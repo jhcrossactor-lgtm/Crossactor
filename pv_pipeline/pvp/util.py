@@ -112,8 +112,8 @@ def load_project(root: Path) -> Project:
         raise SystemExit(f"config.yaml が見つからない: {config_path}")
     if not cuts_path.exists():
         raise SystemExit(f"cuts.yaml が見つからない: {cuts_path}")
-    config = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
-    cuts = yaml.safe_load(cuts_path.read_text(encoding="utf-8")) or {}
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8-sig")) or {}
+    cuts = yaml.safe_load(cuts_path.read_text(encoding="utf-8-sig")) or {}
     project = Project(root=root, config=config, cuts=cuts)
     project.ensure_dirs()
     return project
@@ -124,7 +124,7 @@ def load_dotenv(paths: list[Path]) -> None:
     for path in paths:
         if not path.exists():
             continue
-        for raw in path.read_text(encoding="utf-8").splitlines():
+        for raw in path.read_text(encoding="utf-8-sig").splitlines():
             line = raw.strip()
             if not line or line.startswith("#") or "=" not in line:
                 continue
