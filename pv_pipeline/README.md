@@ -46,6 +46,8 @@ python run.py --stage 1 --resume     # 合格済みは飛ばして続きから
 python run.py --stage 2              # 動画化（stage1が全部合格していないと止まる）
 python run.py --stage 3              # 結合して output/pv_16x9.mp4 を書き出す
 python run.py status                 # 進み具合
+python run.py approve 03 05          # 画像を見てから合格にする（--yes で回したあと用）
+python run.py reject 04              # 不合格にする。参照チェーンから外れる
 ```
 
 カット単位でのやり直し:

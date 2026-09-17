@@ -8,6 +8,8 @@
   python run.py --stage 2                 # 動画化（stage1の合格が前提）
   python run.py --stage 3                 # 結合して output/ に書き出し
   python run.py --stage all               # 1 -> 目視確認で停止
+  python run.py approve 03 05             # 画像を見てから合格にする（--yes で回したあと）
+  python run.py reject 04                 # 不合格にする（参照チェーンから外れる）
   python run.py status                    # 各工程の進み具合
   python run.py check                     # 素材と環境の事前チェック
   python run.py connect                   # 画像API・動画APIの疎通確認
@@ -33,7 +35,7 @@ sys.path.insert(0, str(HERE))
 
 from pvp.connect import run_connect  # noqa: E402
 from pvp.delivery import deliver, deliver_if_auto, delivery_dir  # noqa: E402
-from pvp.cuts import load_cuts, stage1_order  # noqa: E402
+from pvp.cuts import cut_by_id, load_cuts, stage1_order  # noqa: E402
 from pvp.stages.stage1 import run_stage1, stage1_status  # noqa: E402
 from pvp.stages.stage2 import run_stage2  # noqa: E402
 from pvp.stages.stage3 import run_stage3  # noqa: E402
@@ -60,8 +62,11 @@ def build_parser() -> argparse.ArgumentParser:
         epilog=__doc__,
     )
     parser.add_argument("command", nargs="?", default="run",
-                        choices=["run", "status", "check", "connect", "publish"],
+                        choices=["run", "status", "check", "connect", "publish",
+                                 "approve", "reject"],
                         help="実行する内容")
+    parser.add_argument("cut_ids", nargs="*",
+                        help="approve / reject の対象カット（例: approve 03 05）")
     parser.add_argument("--project", default=None,
                         help="物件ディレクトリ。省略時は環境変数 PVP_PROJECT、"
                              "それも無ければ projects/villa_test")
@@ -169,6 +174,20 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_check(project)
     if args.command == "status":
         return cmd_status(project)
+    if args.command in ("approve", "reject"):
+        # 非対話で回したあと、画像を見てから合否を付け直すためのもの
+        ids = [c.zfill(2) for c in args.cut_ids] or (
+            [c.strip().zfill(2) for c in args.cut.split(",")] if args.cut else [])
+        if not ids:
+            raise SystemExit("対象カットを指定すること（例: python run.py approve 03 05）")
+        for cid in ids:
+            cut = cut_by_id(project, cid)
+            approved = args.command == "approve"
+            if approved and not cut.stage1_path().exists():
+                raise SystemExit(f"cut{cid} の stage1 画像が無いので合格にできない")
+            project.save_approval(cid, approved, "手動で" + ("合格" if approved else "不合格"))
+            print(f"cut{cid}: {'合格' if approved else '不合格'} に設定した")
+        return 0
     if args.command == "publish":
         logger = RunLogger(project.log_dir, "publish")
         dest = delivery_dir(project, args.deliver_to)
