@@ -52,7 +52,7 @@ video:
     resolution: 2K                # H3 は 768P / 2K
     min_duration_sec: 4           # H3 は 4〜15秒の整数。短いカットは4秒で作って切りそろえる
     max_duration_sec: 15
-    prompt_expansion_mode: disabled   # プロンプトの自動書き換えを止める
+    prompt_expansion_mode: ''         # MiniMax-H3 は extra を受け付けない（400: param 'extra' incompatible）
     poll_interval_sec: 10
     poll_timeout_sec: 1200
 
