@@ -16,7 +16,7 @@ stage1_order: ["03", "05", "04", "07", "09"]
 cuts:
   - id: "01"
     source: 4446557_l.jpg
-    duration: 3
+    duration: 5              # 各パート+2秒（3秒から）
     image:
       mode: edit
       person_reference: false
@@ -28,7 +28,7 @@ cuts:
   - id: "02"
     transition_in: {type: fadewhite, duration: 0.9}   # 海のまぶしさから芝生へ、光で満たして切り替える
     source: IMG_8613.jpg
-    duration: 4
+    duration: 6              # 各パート+2秒（4秒から）
     image:
       mode: edit
       person_reference: false
@@ -45,7 +45,7 @@ cuts:
 
   - id: "03"
     source: ICED2685.JPEG
-    duration: 4
+    duration: 6              # 各パート+2秒（4秒から）
     image:
       mode: edit
       person_reference: true
@@ -64,7 +64,7 @@ cuts:
 
   - id: "04"
     source: GGBM1602.JPEG
-    duration: 3
+    duration: 5              # 各パート+2秒（3秒から）
     image:
       mode: edit
       indoor: true
@@ -79,7 +79,7 @@ cuts:
 
   - id: "05"
     source: IMG_5558.JPG
-    duration: 4
+    duration: 6              # 各パート+2秒（4秒から）
     image:
       mode: edit
       indoor: true
@@ -95,7 +95,7 @@ cuts:
 
   - id: "07"
     source: IMG_5565.JPG
-    duration: 3
+    duration: 5              # 各パート+2秒（3秒から）
     image:
       mode: edit
       indoor: true
@@ -111,7 +111,7 @@ cuts:
   - id: "06"
     transition_in: {type: fadeblack, duration: 1.2}   # 昼（リビングのソファ）から夜のプールへ。いったん闇に沈めて時間の経過を見せる
     source: IMG_8557.jpg     # 実写MOV(IMG_5625)は画質が落ちるため、夜のプールの写真に差し替え
-    duration: 4
+    duration: 6              # 各パート+2秒（4秒から）
     image:
       mode: edit
       person_reference: true
@@ -129,7 +129,7 @@ cuts:
 
   - id: "08"
     source: BIEV8282.JPEG
-    duration: 3
+    duration: 5              # 各パート+2秒（3秒から）
     image:
       mode: edit
       indoor: true
@@ -150,7 +150,7 @@ cuts:
 
   - id: "09"
     source: IMG_8628.jpg
-    duration: 3
+    duration: 5              # 各パート+2秒（3秒から）
     image:
       mode: edit
       indoor: true
@@ -173,7 +173,7 @@ cuts:
   - id: "10"
     transition_in: {type: fade, duration: 1.0}        # 夜の寝室から夜景へ
     source: IMG_5577.JPG
-    duration: 9              # 文字がゆっくり現れる時間を取るため倍に
+    duration: 11              # 各パート+2秒（9秒から）
     image:
       mode: edit
       person_reference: false

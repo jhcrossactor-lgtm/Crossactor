@@ -98,7 +98,8 @@ def run_stage2(
 
         media.normalize_clip(raw, cut.stage2_path(), cut.duration, width, height, fps,
                              keep_audio=keep_audio and generates_audio,
-                             zoom=cut.video_zoom, logger=logger)
+                             zoom=cut.video_zoom, logger=logger,
+                             stretch=bool(assemble_cfg.get("stretch_to_duration", False)))
         if cut.video_overlays:
             from ..overlay import apply_overlays
 

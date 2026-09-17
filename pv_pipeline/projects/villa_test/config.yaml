@@ -78,11 +78,13 @@ assemble:
   default_transition: fade
   xfade_duration: 0.8
   fade_in_duration: 1.0         # 冒頭は黒からゆっくり明ける
+  # 生成した原本を切り詰めずに使い、足りない分はスロー＋動き補間で目標秒数まで伸ばす
+  stretch_to_duration: true
   # 本編を黒へフェードアウトしたあとにつなぐエンドカード
   end_card:
     style: bull_shine           # 闇 → タイトル → 光が走り、通った所から闘牛の全身が薄暗く浮かぶ → 沈む
     duration: 9.0
-    background: endcard_bull_lit.png   # 体全体に弱い光が当たった闘牛（輪郭だけ光る逆光ではない）
+    background: endcard_bull_nohorn.png  # 体全体に弱い光が当たった闘牛。角は無し
     bg_reveal: true             # 闘牛は最初は見えず、光が通過した所から浮かび上がる
     bg_level: 1.0               # 浮かび上がった後の明るさ
     bg_gamma: 1.9               # シルエット感：中間調を沈めて暗い塊にし、光の当たる輪郭・筋だけ残す

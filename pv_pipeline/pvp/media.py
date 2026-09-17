@@ -161,23 +161,36 @@ def normalize_clip(
     keep_audio: bool = False,
     zoom: dict | None = None,
     logger: RunLogger | None = None,
+    stretch: bool = False,
 ) -> Path:
     """生成尺がカット定義とズレるので、解像度・fps・尺を強制的にそろえる。
 
-    長い場合は頭から切り、短い場合は最終フレームを複製して埋める。
+    既定では、長い場合は頭から切り、短い場合は最終フレームを複製して埋める。
+    stretch=True のときは、原本を切り詰めずに全部使い、足りない分をスローにして
+    目標秒数ちょうどに伸ばす。伸ばした分のコマは動き補間（minterpolate）で作る。
     zoom を渡すと、全景から指定点に向かってゆっくり寄る動きを足す
     （生成側でカメラが寄らなかったときの補正。原本が出力より大きければ画質は落ちない）。
     """
     dst.parent.mkdir(parents=True, exist_ok=True)
     src_duration = probe_duration(src)
-    pad = max(0.0, duration - src_duration)
+    slow = stretch and src_duration < duration - 0.02
+    pad = 0.0 if slow else max(0.0, duration - src_duration)
     if zoom:
-        vf = _zoom_filter(src, width, height, duration, zoom, logger) + f",setsar=1,fps={fps}"
+        vf = _zoom_filter(src, width, height, duration, zoom, logger) + ",setsar=1"
     else:
         vf = (
-            f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
-            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps}"
+            f"scale={width}:{height}:force_original_aspect_ratio=decrease:flags=lanczos,"
+            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1"
         )
+    if slow:
+        factor = duration / src_duration
+        vf += (f",setpts=PTS*{factor:.5f},"
+               f"minterpolate=fps={fps}:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1")
+        if logger:
+            logger.log(f"スローで尺を伸ばす {src_duration:.2f}s -> {duration:.2f}s（{1 / factor:.2f}倍速）",
+                       stretch=True, speed=round(1 / factor, 3))
+    else:
+        vf += f",fps={fps}"
     if pad > 0.01:
         vf += f",tpad=stop_mode=clone:stop_duration={pad + 0.5:.3f}"
     vf += ",format=yuv420p"
