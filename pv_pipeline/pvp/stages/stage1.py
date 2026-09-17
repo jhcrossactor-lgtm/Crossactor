@@ -53,6 +53,7 @@ def run_stage1(
     provider_override: str | None = None,
     interactive: bool = True,
     chain_references: bool = True,
+    resume: bool = False,
 ) -> list[Path]:
     config = project.config
     provider = build_image_provider(config, provider_override)
@@ -73,11 +74,19 @@ def run_stage1(
                 return []
         order = [target]
 
+    approvals = project.load_approvals()
     produced: list[Path] = []
     for cut_id in order:
         cut = cut_by_id(project, cut_id)
         if cut.image_mode != "edit":
             logger.log(f"cut{cut.id} は画像編集スキップ", cut=cut.id, stage="1")
+            continue
+
+        # --resume: 合格済みで画像も残っているカットは作り直さない
+        record = approvals.get(cut.id) or {}
+        if resume and record.get("approved") and cut.stage1_path().exists():
+            logger.log(f"cut{cut.id} は合格済みなので飛ばす（--resume）",
+                       cut=cut.id, stage="1", skipped=True)
             continue
 
         images = [cut.source_path()]

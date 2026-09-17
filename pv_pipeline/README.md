@@ -42,6 +42,7 @@ input/
 python run.py check                  # 素材・ffmpeg・APIキー・完成尺の事前チェック
 python run.py connect                # ChatGPT Image との疎通確認
 python run.py --stage 1              # 人物合成。1カットごとに合否を聞く
+python run.py --stage 1 --resume     # 合格済みは飛ばして続きから
 python run.py --stage 2              # 動画化（stage1が全部合格していないと止まる）
 python run.py --stage 3              # 結合して output/pv_16x9.mp4 を書き出す
 python run.py status                 # 進み具合
@@ -63,6 +64,7 @@ python run.py --stage 3              # 作り直したら結合だけ回す
 | `--video-provider minimax` | 動画プロバイダをその場で切り替える |
 | `--yes` | 目視確認を省いて自動合格にする（非対話実行用） |
 | `--no-chain` | 合格カットを人物参照に足さず、設定シートだけ使う |
+| `--resume` | stage1 で、合格済みのカットを作り直さずに続きから回す |
 | `--force` | stage1の合格チェックを飛ばして stage2 に進む |
 | `--music path.mp3` | BGMを載せて書き出す |
 | `--smoke` | `connect` で実際に1枚編集して確かめる |

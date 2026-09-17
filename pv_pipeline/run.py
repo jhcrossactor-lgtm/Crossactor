@@ -2,6 +2,7 @@
 """ヴィラPV生成パイプライン CLI。
 
   python run.py --stage 1                 # 人物合成（生成順に沿って1カットずつ確認）
+  python run.py --stage 1 --resume        # 合格済みは飛ばして続きから
   python run.py --cut 04 --stage 1        # カット単位で作り直し
   python run.py --stage 2                 # 動画化（stage1の合格が前提）
   python run.py --stage 3                 # 結合して output/ に書き出し
@@ -69,6 +70,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--image-provider", default=None, help="画像プロバイダを上書き")
     parser.add_argument("--video-provider", default=None, help="動画プロバイダを上書き")
     parser.add_argument("--yes", action="store_true", help="目視確認を省いて自動合格にする")
+    parser.add_argument("--resume", action="store_true",
+                        help="stage1 で、合格済みのカットを作り直さずに飛ばす")
     parser.add_argument("--no-chain", action="store_true",
                         help="合格カットを人物参照に足さない（設定シートのみ使う）")
     parser.add_argument("--force", action="store_true",
@@ -187,6 +190,7 @@ def main(argv: list[str] | None = None) -> int:
                 provider_override=image_provider,
                 interactive=not args.yes,
                 chain_references=not args.no_chain,
+                resume=args.resume,
             )
             ok, ng = stage1_status(project)
             logger.log(f"stage1 完了 合格={ok} 未合格={ng}")
