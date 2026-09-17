@@ -40,6 +40,7 @@ input/
 
 ```bash
 python run.py check                  # 素材・ffmpeg・APIキー・完成尺の事前チェック
+python run.py connect                # ChatGPT Image との疎通確認
 python run.py --stage 1              # 人物合成。1カットごとに合否を聞く
 python run.py --stage 2              # 動画化（stage1が全部合格していないと止まる）
 python run.py --stage 3              # 結合して output/pv_16x9.mp4 を書き出す
@@ -64,6 +65,7 @@ python run.py --stage 3              # 作り直したら結合だけ回す
 | `--no-chain` | 合格カットを人物参照に足さず、設定シートだけ使う |
 | `--force` | stage1の合格チェックを飛ばして stage2 に進む |
 | `--music path.mp3` | BGMを載せて書き出す |
+| `--smoke` | `connect` で実際に1枚編集して確かめる |
 | `--project projects/別物件` | 別物件で回す |
 
 APIを一切叩かない通しテスト:
@@ -71,6 +73,79 @@ APIを一切叩かない通しテスト:
 ```bash
 bash scripts/selftest.sh
 ```
+
+## ChatGPT Image と繋ぐ
+
+画像合成は ChatGPT Image（OpenAI画像API）を使う。繋がっているかは専用コマンドで確かめる。
+
+```bash
+python run.py connect           # キー・到達性・使えるモデルを順に切り分ける
+python run.py connect --smoke   # 実際に1枚編集して確かめる（課金が発生する）
+```
+
+`connect` はどこで止まっているかを切り分けて言い切る。キーが無いのか、ホストに
+到達できないのか、モデルが使えないのかが1回で分かる。
+
+### ローカルで実行する場合（いちばん速い）
+
+```bash
+cp .env.example .env
+# OPENAI_API_KEY=sk-... を書く
+python run.py connect --smoke
+```
+
+`config.yaml` は `auth: bearer` のままでよい。
+
+### クラウドセッション（claude.ai/code）で実行する場合
+
+クラウド環境は既定で `api.openai.com` への通信を拒否する。環境設定を変える必要がある。
+設定場所は claude.ai/code のメッセージボックス上にある**雲アイコン**
+→ 対象の環境にホバーして**歯車アイコン** → 環境ダイアログ。
+
+**方法A: API credentials（推奨 / Pro・Maxプランのみ）**
+
+キーがセッションのVMに入らない。エージェントプロキシが、セッションを出たあとの
+リクエストに `Authorization` を付ける。**このホストはネットワーク許可リストを迂回する**ので、
+ネットワークレベルの設定は別途不要。
+
+1. 環境ダイアログの **API credentials** → **Add credential**
+2. Credential type は既定の **Bearer** のまま
+   - Name: `OpenAI Images`
+   - Allowed websites: `api.openai.com`
+   - Custom headers: Name `Authorization` / Prefix `Bearer` / Value にキーを貼る
+3. **Connect** で保存（保存後は値を見られない）
+4. `config.yaml` を `auth: proxy` に変える ← **これを忘れると二重に認証ヘッダが付く**
+
+**方法B: ネットワーク許可リスト**
+
+1. 環境ダイアログの **Network access** を **Custom** にする
+2. **Allowed domains** に1行で `api.openai.com` を追加
+   （動画側もクラウドで回すなら `generativelanguage.googleapis.com` も足す）
+3. **Also include default list of common package managers** にチェックを入れる
+   （外すと pip なども通らなくなる）
+4. **Environment variables** に `OPENAI_API_KEY=sk-...` を書く
+5. `config.yaml` は `auth: bearer` のまま
+
+方法Bは環境変数がセッションから見える。キーを見せたくないなら方法Aにすること。
+
+### 送っているパラメータ
+
+| 項目 | 値 | 備考 |
+|---|---|---|
+| `model` | `gpt-image-2.5-sunburst` | `flare` は高速・低精度。`config.yaml` で変える |
+| `size` | `2048x1152` | 16:9ちょうど。幅・高さとも16の倍数という制約を満たす |
+| `quality` | `high` | 2.5系は `xhigh` / `max` も指定できる |
+| `output_format` | `png` | `webp` / `jpeg` も可 |
+| `image[]` | 最大16枚 | 1枚目＝編集対象、2枚目以降＝人物参照 |
+
+**送っていないもの**（送ると失敗する、または不要）:
+
+- `response_format` — gpt-image 系は400で弾く。出力は常にbase64
+- `input_fidelity` — gpt-image-2 以降は入力を常に高忠実度で処理する。
+  「建物は変更禁止」という要件はモデル既定の挙動で満たされるので指定しない
+
+`size` は実行前に検証している。16の倍数・総画素数・アスペクト比の制約に外れていれば
+API を叩く前に落とす（例: `1920x1080` は 1080 が16の倍数でないため不可）。
 
 ## 人物の一貫性
 
@@ -99,6 +174,7 @@ python run.py --project projects/新物件 check
 - **画像**: `POST https://api.openai.com/v1/images/edits`（multipart、`image[]` に最大16枚）。
   モデルは `gpt-image-2.5-sunburst`（2026-09-08 リリース。`flare` は高速版）。
   サイズ `2048x1152` は「16:9ちょうど」かつ「幅・高さとも16の倍数」という制約を満たす値。
+  詳細は上の「ChatGPT Image と繋ぐ」を読むこと。
 - **動画（既定）**: `POST https://generativelanguage.googleapis.com/v1beta/models/{model}:predictLongRunning`
   → `GET /v1beta/{operation.name}` でポーリング。
   この2本のパスは Gemini API の公式ディスカバリドキュメントで確認済み。

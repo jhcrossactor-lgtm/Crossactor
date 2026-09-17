@@ -6,11 +6,17 @@ image:
   # 2026-09-08 リリースの gpt-image-2.5 系。sunburst=高精度/低速, flare=高速。
   model: gpt-image-2.5-sunburst
   endpoint: https://api.openai.com/v1/images/edits
+  # bearer = .env のキーで自分で認証する（ローカル実行はこちら）
+  # proxy  = Authorizationを付けない。クラウド環境の API credentials 側で注入させる
+  auth: bearer
   api_key_env: OPENAI_API_KEY
   # 16:9 ちょうど。幅・高さとも16の倍数という制約を満たす値。
   size: "2048x1152"
+  # low / medium / high / xhigh / max（xhigh と max は 2.5系のみ）
   quality: high
-  output_format: png
+  output_format: png            # png / webp / jpeg
+  # response_format と input_fidelity は送らない。
+  # 前者は gpt-image 系では400、後者は gpt-image-2 以降は常に高忠実度で処理されるため不要。
   max_reference_images: 16      # 1枚目=編集対象を含めた上限
   timeout_sec: 600
   max_retries: 3

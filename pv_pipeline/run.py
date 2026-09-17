@@ -8,6 +8,8 @@
   python run.py --stage all               # 1 -> 目視確認で停止
   python run.py status                    # 各工程の進み具合
   python run.py check                     # 素材と環境の事前チェック
+  python run.py connect                   # ChatGPT Image との疎通確認
+  python run.py connect --smoke           # 実際に1枚編集して確かめる（課金あり）
 
 別物件で使うときは projects/<物件名>/ を作って cuts.yaml と input/ を差し替える。
   python run.py --project projects/別物件 --stage 1
@@ -22,6 +24,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
+from pvp.connect import run_connect  # noqa: E402
 from pvp.cuts import load_cuts, stage1_order  # noqa: E402
 from pvp.stages.stage1 import run_stage1, stage1_status  # noqa: E402
 from pvp.stages.stage2 import run_stage2  # noqa: E402
@@ -38,7 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog=__doc__,
     )
     parser.add_argument("command", nargs="?", default="run",
-                        choices=["run", "status", "check"], help="実行する内容")
+                        choices=["run", "status", "check", "connect"], help="実行する内容")
     parser.add_argument("--project", default=DEFAULT_PROJECT, help="物件ディレクトリ")
     parser.add_argument("--stage", default="1", help="1 / 2 / 3 / all")
     parser.add_argument("--cut", default=None, help="カット番号（例: 04）。省略で全カット")
@@ -51,6 +54,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--force", action="store_true",
                         help="stage1 の合格チェックを飛ばして stage2 に進む")
     parser.add_argument("--music", default=None, help="BGM音源のパス（stage3）")
+    parser.add_argument("--smoke", action="store_true",
+                        help="connect で実際に1枚編集して確かめる（課金が発生する）")
     return parser
 
 
@@ -126,6 +131,9 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_check(project)
     if args.command == "status":
         return cmd_status(project)
+    if args.command == "connect":
+        logger = RunLogger(project.log_dir, "connect")
+        return run_connect(project, logger, smoke=args.smoke)
 
     image_provider = args.image_provider or args.provider
     video_provider = args.video_provider or args.provider

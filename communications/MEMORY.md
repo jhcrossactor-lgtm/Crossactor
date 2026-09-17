@@ -70,3 +70,11 @@ claude.ai アカウント側スキルへの書き込み手段は存在しない�
 **記録場所**
 `pv_pipeline/README.md`（使い方・エンドポイントの出どころ・既知の制約）
 `communications/logs/2026-09-17.md`（経緯）
+
+**2026-09-17 追記: ChatGPT Image 連携**
+`run.py connect` で疎通を切り分けられるようにした。`auth: bearer / proxy` を切り替え可能。
+クラウドで繋ぐなら claude.ai/code の環境設定（雲アイコン→歯車）で、
+API credentials に `api.openai.com` を登録するのが本筋（キーがVMに入らない）。
+その場合は `config.yaml` を `auth: proxy` にすること。
+API仕様: `response_format` は送ると400。`input_fidelity` は gpt-image-2 以降は指定不可で、
+入力は常に高忠実度で処理される（＝「建物は変更禁止」はモデル既定の挙動で満たされる）。
