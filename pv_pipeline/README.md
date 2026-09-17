@@ -255,16 +255,27 @@ delivery:
 コピー先には `<コピー先>\<project_name>\stage1\...` の形で置かれる。
 中身が変わっていないファイルは触らないので、Drive の再同期は起きない。
 
-### 作業ディレクトリごと別ドライブに置く
+### 作業ディレクトリごと別ドライブに置く（Cドライブを使いたくないとき）
 
-Cドライブの容量を使いたくないなら、プロジェクトごと移してしまえばいい。
+容量を食うのは素材と `stage2/_raw/`（動画APIが返した原本）。丸ごと移せる。
 
 ```powershell
-Move-Item .\projects\villa_test G:\pv\villa_test
-python run.py --project G:\pv\villa_test --stage 1
+.\scripts\move_project.ps1 -To 'G:\pv\villa_test'
 ```
 
-`--project` は任意のパスを受け付ける。`input/` も `stage2/_raw/` もそちらに乗る。
+設定（`config.yaml` / `cuts.yaml`）はリポジトリ側に原本を残したままコピーし、
+素材・生成物だけを移動する。設定を残すのは `git pull` を壊さないため。
+
+移したあと、毎回 `--project` を書かなくて済むように環境変数を設定する。
+
+```powershell
+[Environment]::SetEnvironmentVariable('PVP_PROJECT','G:\pv\villa_test','User')
+```
+
+PowerShell を開き直せば、以降は `python run.py --stage 1` だけで G: 側を見る。
+優先順位は `--project` > `PVP_PROJECT` > `projects/villa_test`。
+
+外付けドライブを抜いた状態では動かなくなる点だけ注意。
 
 ## 人物の一貫性
 

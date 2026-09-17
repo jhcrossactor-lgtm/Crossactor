@@ -14,6 +14,10 @@
 
 別物件で使うときは projects/<物件名>/ を作って cuts.yaml と input/ を差し替える。
   python run.py --project projects/別物件 --stage 1
+
+作業一式を別ドライブに置くときは、環境変数 PVP_PROJECT にそのパスを入れておけば
+毎回 --project を書かなくてよい。
+  $env:PVP_PROJECT = 'G:\pv\villa_test'      # PowerShell、そのセッションだけ
 """
 
 from __future__ import annotations
@@ -36,6 +40,17 @@ from pvp.util import RunLogger, load_dotenv, load_project  # noqa: E402
 DEFAULT_PROJECT = "projects/villa_test"
 
 
+def default_project() -> str:
+    """既定の物件ディレクトリ。環境変数 PVP_PROJECT で上書きできる。
+
+    作業一式を別ドライブ（外付けSSD等）に置いたとき、毎回 --project を
+    打たなくて済むようにするため。
+    """
+    import os
+
+    return os.environ.get("PVP_PROJECT", "").strip() or DEFAULT_PROJECT
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="ヴィラPV生成パイプライン",
@@ -45,7 +60,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("command", nargs="?", default="run",
                         choices=["run", "status", "check", "connect", "publish"],
                         help="実行する内容")
-    parser.add_argument("--project", default=DEFAULT_PROJECT, help="物件ディレクトリ")
+    parser.add_argument("--project", default=None,
+                        help="物件ディレクトリ。省略時は環境変数 PVP_PROJECT、"
+                             "それも無ければ projects/villa_test")
     parser.add_argument("--stage", default="1", help="1 / 2 / 3 / all")
     parser.add_argument("--cut", default=None, help="カット番号（例: 04）。省略で全カット")
     parser.add_argument("--provider", default=None, help="image/video 両方を上書き（mock など）")
@@ -129,7 +146,7 @@ def cmd_status(project) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    project_root = Path(args.project)
+    project_root = Path(args.project or default_project())
     if not project_root.is_absolute():
         project_root = HERE / project_root
     load_dotenv([project_root / ".env", HERE / ".env", HERE.parent / ".env"])
