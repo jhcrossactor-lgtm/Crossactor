@@ -9,6 +9,7 @@
   python run.py status                    # 各工程の進み具合
   python run.py check                     # 素材と環境の事前チェック
   python run.py connect                   # 画像API・動画APIの疎通確認
+  python run.py publish --deliver-to G:\\pv   # 成果物を外付けSSD等へコピー
   python run.py connect --smoke           # 実際に1枚編集して確かめる（課金あり）
 
 別物件で使うときは projects/<物件名>/ を作って cuts.yaml と input/ を差し替える。
@@ -25,6 +26,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from pvp.connect import run_connect  # noqa: E402
+from pvp.delivery import deliver, deliver_if_auto, delivery_dir  # noqa: E402
 from pvp.cuts import load_cuts, stage1_order  # noqa: E402
 from pvp.stages.stage1 import run_stage1, stage1_status  # noqa: E402
 from pvp.stages.stage2 import run_stage2  # noqa: E402
@@ -41,7 +43,8 @@ def build_parser() -> argparse.ArgumentParser:
         epilog=__doc__,
     )
     parser.add_argument("command", nargs="?", default="run",
-                        choices=["run", "status", "check", "connect"], help="実行する内容")
+                        choices=["run", "status", "check", "connect", "publish"],
+                        help="実行する内容")
     parser.add_argument("--project", default=DEFAULT_PROJECT, help="物件ディレクトリ")
     parser.add_argument("--stage", default="1", help="1 / 2 / 3 / all")
     parser.add_argument("--cut", default=None, help="カット番号（例: 04）。省略で全カット")
@@ -56,6 +59,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--music", default=None, help="BGM音源のパス（stage3）")
     parser.add_argument("--smoke", action="store_true",
                         help="connect で実際に1枚編集して確かめる（課金が発生する）")
+    parser.add_argument("--deliver-to", default=None,
+                        help="成果物のコピー先（外付けSSDやGoogle Driveの同期フォルダ）。"
+                             "config.yaml の delivery.dir より優先する")
     parser.add_argument("--no-video", action="store_true",
                         help="connect で動画APIのチェックを省く")
     return parser
@@ -133,6 +139,16 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_check(project)
     if args.command == "status":
         return cmd_status(project)
+    if args.command == "publish":
+        logger = RunLogger(project.log_dir, "publish")
+        dest = delivery_dir(project, args.deliver_to)
+        if dest is None:
+            raise SystemExit(
+                "config.yaml の delivery.dir が空。コピー先（Google Drive の同期フォルダ）を書くこと"
+            )
+        copied = deliver(project, logger, override=args.deliver_to)
+        print(f"\n{copied} 件をコピーした -> {dest / (project.cuts.get('project_name') or project.root.name)}")
+        return 0
     if args.command == "connect":
         logger = RunLogger(project.log_dir, "connect")
         return run_connect(project, logger, smoke=args.smoke, video=not args.no_video)
@@ -157,6 +173,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             ok, ng = stage1_status(project)
             logger.log(f"stage1 完了 合格={ok} 未合格={ng}")
+            deliver_if_auto(project, logger, ["stage1", "logs"], args.deliver_to)
             if args.stage == "all":
                 print()
                 print("=" * 62)
@@ -177,11 +194,16 @@ def main(argv: list[str] | None = None) -> int:
                 )
             run_stage2(project, logger, only_cut=args.cut, provider_override=video_provider)
             logger.log("stage2 完了")
+            deliver_if_auto(project, logger, ["stage2", "logs"], args.deliver_to)
 
         elif stage == "3":
             music = Path(args.music) if args.music else None
             out = run_stage3(project, logger, music_override=music)
             print(f"\n書き出し: {out}")
+            deliver_if_auto(project, logger, ["output", "logs"], args.deliver_to)
+            dest = delivery_dir(project, args.deliver_to)
+            if dest is not None:
+                print(f"コピー先: {dest / (project.cuts.get('project_name') or project.root.name)}")
 
     return 0
 

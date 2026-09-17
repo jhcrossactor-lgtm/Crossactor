@@ -61,6 +61,18 @@ video:
     poll_interval_sec: 10
     poll_timeout_sec: 1200
 
+delivery:
+  # 成果物のコピー先。Google Drive デスクトップ版の同期フォルダを指定すると、
+  # そのまま Drive に上がる。空なら何もしない（ローカルだけ）。
+  # Windows のパスはシングルクォートで囲むこと（バックスラッシュをそのまま扱うため）:
+  #   dir: 'G:\マイドライブ\★ Crossactor\AI関連\test\成果物'
+  # スラッシュ区切りでもよい:
+  #   dir: 'G:/マイドライブ/★ Crossactor/AI関連/test/成果物'
+  dir: ''
+  auto: true                       # 各工程の完了時に自動でコピーする
+  include: [stage1, stage2, output, logs]
+  # stage2/_raw（動画APIが返した原本）は大きいのでコピーしない
+
 assemble:
   width: 1920
   height: 1080

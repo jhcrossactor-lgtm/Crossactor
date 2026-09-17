@@ -220,6 +220,52 @@ python run.py --cut 01 --stage 2 --video-provider minimax
 項目名が違っていれば `config.yaml` の `image_field` / `duration_field` / `prompt_field` /
 各パスを書き換えるだけで直る。コードには手を入れなくてよい。
 
+## 成果物の出し先（外付けSSD / Google Drive）
+
+既定ではプロジェクト直下（`stage1/` `stage2/` `output/` `logs/`）に出る。
+別のドライブや Google Drive の同期フォルダへ**成果物だけ**コピーできる。
+`stage2/_raw/`（動画APIが返した原本）は大きいのでコピーしない。
+
+### その場で指定する
+
+```powershell
+python run.py publish --deliver-to 'G:\pv_output'
+```
+
+`--deliver-to` を付けて `--stage` を回せば、工程が終わるたびに自動でコピーされる。
+
+```powershell
+python run.py --stage 1 --deliver-to 'G:\pv_output'
+```
+
+### 毎回書くのが面倒なとき
+
+`config.yaml` の `delivery.dir` に書く。Windows のパスは**シングルクォートで囲む**こと。
+
+```yaml
+delivery:
+  dir: 'G:\pv_output'
+  auto: true
+  include: [stage1, stage2, output, logs]
+```
+
+環境変数 `PVP_DELIVER_TO` でも指定できる。優先順位は
+`--deliver-to` > `PVP_DELIVER_TO` > `config.yaml`。
+
+コピー先には `<コピー先>\<project_name>\stage1\...` の形で置かれる。
+中身が変わっていないファイルは触らないので、Drive の再同期は起きない。
+
+### 作業ディレクトリごと別ドライブに置く
+
+Cドライブの容量を使いたくないなら、プロジェクトごと移してしまえばいい。
+
+```powershell
+Move-Item .\projects\villa_test G:\pv\villa_test
+python run.py --project G:\pv\villa_test --stage 1
+```
+
+`--project` は任意のパスを受け付ける。`input/` も `stage2/_raw/` もそちらに乗る。
+
 ## 人物の一貫性
 
 `cuts.yaml` の `stage1_order`（既定 `02 → 03 → 05 → 04 → 07 → 09`）の順に生成する。
