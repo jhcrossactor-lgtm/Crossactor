@@ -43,6 +43,18 @@ RENDER = {
     "sun_angle_deg": 0.9,          # 影のやわらかさ
 }
 
+# 動画用：開発道路を南→北へ進むカメラパス（連番PNG／Blender側にもキーフレームで残す）
+PATH = {
+    "frames": 10,
+    "start": [6.6, -38.0, 1.55],   # 南端（道路上・目線1.55m）
+    "end": [6.6, 26.0, 1.55],      # 北端
+    "look_ahead_m": 16.0,          # 何m先を見るか
+    "look_side_m": -6.0,           # 西（住宅側）へ振る量。マイナスで住宅側
+    "look_height_m": 2.6,
+    "lens": 32,
+    "samples": 48,                 # 連番は枚数が多いのでサンプル数を落とす
+}
+
 # マテリアル名の日本語対応（Blenderのアウトライナで読めるように）
 MAT_JA = {
     "tire": "車_タイヤ",
@@ -379,14 +391,55 @@ def build_cameras(scene_data, root):
     return cams
 
 
+def build_path_camera(root):
+    """道路を南→北へ進むカメラ。位置・注視点をフレーム1〜Nにキーフレームで打つ。"""
+    col = get_collection("カメラ", root)
+    n = PATH["frames"]
+    data = bpy.data.cameras.new("05_道路パス")
+    data.lens = PATH["lens"]
+    data.clip_end = 2000.0
+    cam = bpy.data.objects.new("05_道路パス", data)
+    col.objects.link(cam)
+
+    tgt = bpy.data.objects.new("05_道路パス_注視点", None)
+    tgt.empty_display_size = 0.6
+    col.objects.link(tgt)
+    con = cam.constraints.new("TRACK_TO")
+    con.target = tgt
+    con.track_axis = "TRACK_NEGATIVE_Z"
+    con.up_axis = "UP_Y"
+
+    for i in range(n):
+        t = i / (n - 1) if n > 1 else 0.0
+        pos = [PATH["start"][k] + (PATH["end"][k] - PATH["start"][k]) * t for k in range(3)]
+        cam.location = pos
+        tgt.location = (pos[0] + PATH["look_side_m"],
+                        pos[1] + PATH["look_ahead_m"],
+                        PATH["look_height_m"])
+        cam.keyframe_insert("location", frame=i + 1)
+        tgt.keyframe_insert("location", frame=i + 1)
+
+    for ob in (cam, tgt):                       # 等速にする
+        for fc in ob.animation_data.action.fcurves:
+            for kp in fc.keyframe_points:
+                kp.interpolation = "LINEAR"
+
+    sc = bpy.context.scene
+    sc.frame_start, sc.frame_end, sc.frame_current = 1, n, 1
+    return cam
+
+
 # ---------------------------------------------------------------- main
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
     do_render = "--render" in argv
-    only = None
+    do_path = "--path" in argv
+    only, rng_arg = None, None
     for a in argv:
         if a.startswith("--only="):
             only = a.split("=", 1)[1]
+        if a.startswith("--path-range="):
+            rng_arg = a.split("=", 1)[1]
 
     scene_data = json.load(open(SCENE_JSON, encoding="utf-8"))
     reset_scene()
@@ -394,6 +447,7 @@ def main():
     build_world()
     build_sun(root)
     cams = build_cameras(scene_data, root)
+    path_cam = build_path_camera(root)
 
     os.makedirs(os.path.dirname(OUT_BLEND), exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=OUT_BLEND)
@@ -402,6 +456,21 @@ def main():
                 if o.type == "MESH" and (o.data.calc_loop_triangles() or True))
     print("saved %s / オブジェクト%d / 三角形%d / マテリアル%d / カメラ%d"
           % (OUT_BLEND, n_obj, n_tri, len(bpy.data.materials), len(cams)))
+
+    if do_path:
+        out = os.path.join(OUT_RENDER, "path")
+        os.makedirs(out, exist_ok=True)
+        sc = bpy.context.scene
+        sc.camera = path_cam
+        sc.cycles.samples = PATH["samples"]
+        a, bnd = 1, PATH["frames"]
+        if rng_arg:
+            a, bnd = (int(v) for v in rng_arg.split(":"))
+        for f in range(a, bnd + 1):
+            sc.frame_set(f)
+            sc.render.filepath = os.path.join(out, "path_%02d.png" % f)
+            bpy.ops.render.render(write_still=True)
+            print("rendered path_%02d" % f)
 
     if do_render:
         os.makedirs(OUT_RENDER, exist_ok=True)

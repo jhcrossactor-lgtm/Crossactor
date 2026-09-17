@@ -122,11 +122,31 @@ GLBのインポートではなく、Blender内で編集可能な素の状態で�
 | `03_玄関アプローチ` | 駐車場から玄関を見る近景 | 35mm |
 | `04_俯瞰45` | 北東からの45°俯瞰 | 45mm |
 
+## 動画用カメラパス（連番）
+
+`--path` を付けると、開発道路を**南→北へ等速で進むカメラ**の連番PNGを
+`output/renders/path/path_01.png` 〜 `path_10.png` に出力する。
+光・マテリアル・画角は固定なので、そのまま繋げても破綻しない。
+
+```
+python3 tools/mitsushima_blender.py --path                 # 10枚まとめて
+python3 tools/mitsushima_blender.py --path --path-range=3:6  # 3〜6枚目だけ
+```
+
+- カメラ `05_道路パス` と注視点Emptyに**フレーム1〜10のキーフレーム（線形補間）**を打ってあるので、
+  Blenderで開けばそのままアニメーションとして再生・レンダリングできる（シーンのフレーム範囲も1〜10に設定済み）
+- 位置・枚数・画角はスクリプト冒頭の `PATH` で変更する
+  （`frames` 枚数／`start`・`end` 始点終点／`look_ahead_m` 何m先を見るか／`look_side_m` 住宅側への振り／`lens` 焦点距離／`samples`）
+- 枚数を増やすなら `frames` を上げるだけ。1枚あたりCPUレンダで約80秒（48サンプル）
+
 ## 後工程の想定フロー
 
 1. **Blender** … `output/mitsushima.blend` でカメラ・太陽角度を調整してレンダリング
 2. **ChatGPT画像** … 出力PNGを元絵にして写真調へ加工（img2img）
 3. **MiniMax Hailuo** … 加工した静止画から動画生成
+
+連番（`output/renders/path/`）を使う場合、2の加工は**1枚目で決めたプロンプトを全枚に使い回す**と
+見た目が揃いやすい。カット単位で繋ぐなら 04_俯瞰45 → path連番 → 03_玄関アプローチ の順が自然。
 
 2の加工を安定させるため、ビュー変換は`Standard`（実色寄り）にしてある。
 白モデルで渡したい場合は `output/mitsushima_town_white.glb` をインポートするか、
