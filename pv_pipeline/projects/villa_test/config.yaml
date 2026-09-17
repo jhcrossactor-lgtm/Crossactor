@@ -84,14 +84,17 @@ assemble:
     duration: 9.0
     background: endcard_bull_lit.png   # 体全体に弱い光が当たった闘牛（輪郭だけ光る逆光ではない）
     bg_reveal: true             # 闘牛は最初は見えず、光が通過した所から浮かび上がる
-    bg_level: 1.0               # 浮かび上がった後の明るさ（元画像そのもの。元が暗い写真なので薄暗く見える）
+    bg_level: 1.0               # 浮かび上がった後の明るさ
+    bg_gamma: 1.9               # シルエット感：中間調を沈めて暗い塊にし、光の当たる輪郭・筋だけ残す
+    bg_gamma_gain: 1.35         # 沈めた分、ハイライトを少し持ち上げる
     bg_dim: 0.5                 # 最後に沈んだ後も、うっすら見える程度に残す
     bg_shine: 1.1               # 光の帯が闘牛の体全体をなめる強さ
     bg_scale: 1.0               # 闘牛はタイトルの真後ろ（中央）
     bg_offset: [0.05, 0.03]      # 角の先が文字の右端にかからないよう、わずかに右へ
     shine_width: 0.11
     shine_gain: 1.0
-    timeline: {title_in: [1.0, 3.0], sub_in: [1.9, 3.8], shine: [4.2, 6.2], dim: [6.9, 8.6]}
+    # 沈んで（dim）ぎりぎり見える暗さを一瞬保ち、闘牛もタイトルも一緒に黒へ消えて終わる（fade_out）
+    timeline: {title_in: [1.0, 3.0], sub_in: [1.9, 3.8], shine: [4.2, 6.2], dim: [6.6, 7.6], fade_out: [7.9, 9.0]}
     title: {text: "F HEAVENS", font: TrajanPro-Regular.otf, size: 0.058, tracking: 0.28, x: 0.5, y: 0.5}
     subtitle: {text: "TOKUNOSHIMA", font: TrajanPro-Regular.otf, size: 0.021, tracking: 0.85, x: 0.5, y: 0.59}
 

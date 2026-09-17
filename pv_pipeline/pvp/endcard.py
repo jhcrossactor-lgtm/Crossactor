@@ -80,6 +80,10 @@ def render_bull_shine_card(
     canvas.paste(src.resize((sw, sh_), Image.LANCZOS),
                  (round((width - sw) / 2 + bgx * width), round((height - sh_) / 2 + bgy * height)))
     bg = np.asarray(canvas, dtype=np.float32) / 255.0
+    # シルエット感：中間の明るさを沈め、光の当たる輪郭・筋だけを残す（gamma > 1 で暗部が締まる）
+    bg_gamma = float(cfg.get("bg_gamma", 1.0))
+    if bg_gamma != 1.0:
+        bg = np.power(bg, bg_gamma) * float(cfg.get("bg_gamma_gain", 1.0))
 
     title, sub = cfg["title"], cfg["subtitle"]
     ta, tg, tb = _text_layer(title, width, height, work, "title")
@@ -147,6 +151,10 @@ def render_bull_shine_card(
                 if band is not None:
                     frame = frame + (A * band * 0.9 * shine_gain)[..., None] * gold    # 文字面が金色に光る
                     frame = frame + (G * band * 1.8 * shine_gain)[..., None] * gold    # にじむ反射光（ブルーム）
+
+            # 最後に闘牛もタイトルも一緒に黒へ消えて終わる
+            if "fade_out" in tl:
+                frame = frame * (1 - _ramp(t, *tl["fade_out"]))
 
             out = (np.clip(frame, 0, 1) * 255).astype(np.uint8)
             proc.stdin.write(out.tobytes())
