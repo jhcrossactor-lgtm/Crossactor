@@ -1,0 +1,7 @@
+requests>=2.31
+PyYAML>=6.0
+# HEIC素材をそのまま置きたいとき（Drive上の IMG_8613 / IMG_8628 はHEIC）
+pillow>=10.0
+pillow-heif>=0.16
+# ffmpeg がPATHに無い環境向けの保険。通常は brew/apt で入れたffmpegを使う。
+imageio-ffmpeg>=0.5

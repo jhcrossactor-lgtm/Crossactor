@@ -1,0 +1,85 @@
+# ヴィラPV パイプライン設定（物件単位）
+# モデル名・エンドポイントはここだけで差し替える。コードにハードコードしていない。
+
+image:
+  provider: openai
+  # 2026-09-08 リリースの gpt-image-2.5 系。sunburst=高精度/低速, flare=高速。
+  model: gpt-image-2.5-sunburst
+  endpoint: https://api.openai.com/v1/images/edits
+  api_key_env: OPENAI_API_KEY
+  # 16:9 ちょうど。幅・高さとも16の倍数という制約を満たす値。
+  size: "2048x1152"
+  quality: high
+  output_format: png
+  max_reference_images: 16      # 1枚目=編集対象を含めた上限
+  timeout_sec: 600
+  max_retries: 3
+
+video:
+  provider: gemini              # gemini | minimax | mock
+  gemini:
+    # Gemini API の image-to-video。エンドポイントは公式ディスカバリで確認済み:
+    #   POST {base_url}/models/{model}:predictLongRunning
+    #   GET  {base_url}/{operation.name}
+    model: gemini-omni-1.1-flash
+    base_url: https://generativelanguage.googleapis.com/v1beta
+    api_key_env: GEMINI_API_KEY
+    aspect_ratio: "16:9"
+    resolution: "1080p"
+    generate_audio: false       # 各カットの環境音は使わず、BGMは stage3 で載せる方針
+    negative_prompt: "建物の変形, 歪み, 余分な人物, 文字, ロゴ, 手指の破綻, 急なカメラの動き"
+    duration_param: durationSeconds
+    duration_as_string: false   # "4s" 形式を要求された場合は true にする
+    poll_interval_sec: 10
+    poll_timeout_sec: 900
+  minimax:
+    # 注意: MiniMax 公式ドキュメントは構築時のネットワークから到達できず【未検証】。
+    # 初回実行前に platform.minimax.io のドキュメントでパス・項目名を照合すること。
+    model: MiniMax-H3
+    base_url: https://api.minimax.io/v1
+    create_path: /video_generation
+    status_path: /query/video_generation
+    retrieve_path: /files/retrieve
+    api_key_env: MINIMAX_API_KEY
+    group_id_env: MINIMAX_GROUP_ID
+    resolution: "1080P"
+    min_duration_sec: 5         # 下限尺で作って stage2 側で目標秒数に詰める
+    image_field: first_frame_image
+    duration_field: duration
+    prompt_field: prompt
+    image_as_data_uri: true
+    generate_audio: false
+    poll_interval_sec: 10
+    poll_timeout_sec: 1200
+
+assemble:
+  width: 1920
+  height: 1080
+  fps: 24
+  xfade_duration: 0.5           # クロスディゾルブ
+  fade_out_duration: 2.0        # 最後のフェードアウト
+  output: pv_16x9.mp4
+
+music:
+  enabled: true
+  # 画像APIにも動画APIにも「30秒級のBGMを単体で書き出す」公開エンドポイントが無い。
+  # 音源を用意したらここにパス（input/ からの相対 or 絶対）を書いて stage3 だけ回す。
+  file: ""
+  keep_clip_audio: false        # 動画APIが付けた音をそのまま残すか
+  reference: "穏やかなアコースティックギターとピアノに、波の環境音を重ねる"
+
+prompts:
+  image_common: |
+    添付1枚目の建物写真を16:9に拡張し、建物・窓割り・素材・照明・家具は一切変更しない。人物以外は元写真のまま。
+    人物は添付2枚目の設定シートと同じ顔・髪型・服装にする（30代の日本人夫婦）。
+    高級宿泊施設の実写CM品質。自然な光と影、接地感、正しい縮尺。
+    禁止：建物の変形、歪み、余分な人物、文字、ロゴ、手指の破綻。
+  image_common_no_person: |
+    添付1枚目の建物写真を16:9に拡張し、建物・窓割り・素材・照明・家具は一切変更しない。元写真のまま。
+    人物は登場させない。
+    高級宿泊施設の実写CM品質。自然な光と影、接地感、正しい縮尺。
+    禁止：建物の変形、歪み、余分な人物、手指の破綻。
+  image_attachment_note: |
+    添付画像の役割：1枚目＝編集対象の建物写真（建物は変更禁止）。2枚目以降＝人物の参照（顔・髪型・服装をそろえるためのもので、背景や構図は取り込まない）。
+  video_common: |
+    カメラはゆっくり動かす。建物の直線を歪ませない。人物の顔を変えない。シネマティック、24fps。

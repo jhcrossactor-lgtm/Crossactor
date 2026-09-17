@@ -1,0 +1,11 @@
+# 生成物と素材はリポジトリに入れない
+projects/*/input/*
+!projects/*/input/.gitkeep
+projects/*/stage1/*
+projects/*/stage2/*
+projects/*/output/*
+projects/*/logs/*
+projects/_selftest/
+.env
+__pycache__/
+*.pyc

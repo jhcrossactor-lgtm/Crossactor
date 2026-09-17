@@ -41,3 +41,32 @@ claude.ai アカウント側スキルへの書き込み手段は存在しない�
 `skills/inspo-mcp/README.md`（導入手順・ツール15件一覧・貼り付け用ブロック）
 `skills/inspo-mcp/patched/`（追記済みSKILL.md全文）
 `communications/logs/2026-09-16.md`（経緯）
+
+
+---
+
+## 2026-09-17 ヴィラPR動画パイプライン
+
+**決めたこと**
+`pv_pipeline/` にカット単位で再実行できるCLIを構築。`projects/<物件>/cuts.yaml` と
+`input/` の差し替えだけで別物件に流用できる。工程3（目視確認）は `logs/approvals.json`
+による stage2 の進入ゲートとして実装した。
+
+**理由**
+カット単位の差し替えが前提の案件なので、全工程一括実行だけだと運用に耐えない。
+人物の一貫性は「合格したカットを次のカットの人物参照に足す」連鎖で担保する。
+
+**Croにできないこと（再発防止のため記録）**
+クラウド実行環境の egress ポリシーが `api.openai.com` と MiniMax を 403 で拒否する。
+`generativelanguage.googleapis.com` のみ到達可能。
+→ **画像生成・動画生成の実行はローカルでやる。** クラウド側でできるのは実装と
+　 mock による配線検証まで。Inspo MCP と同じ制約構造。
+
+**却下した選択肢**
+- モデル名を推測して書く → 却下。config.yaml に外出しし、未検証のものは明示（MiniMax）
+- 完成尺を35秒に合わせるため勝手に duration を調整 → 却下。31.5秒になる旨を報告して判断を仰ぐ
+- BGMを動画APIの付随音声で代用 → 却下。指示は「ギター＋ピアノ＋波」のBGM。無音で出して報告
+
+**記録場所**
+`pv_pipeline/README.md`（使い方・エンドポイントの出どころ・既知の制約）
+`communications/logs/2026-09-17.md`（経緯）

@@ -1,0 +1,130 @@
+# カット定義。別物件でもこのファイルと input/ を差し替えれば流用できる。
+#
+#   image.mode          : edit = 画像編集APIに通す / skip = 元素材をそのまま使う
+#   image.person_reference: true = 人物設定シート＋合格済みカットを参照として添付
+#   video.mode          : ai = image-to-video / passthrough = ffmpegのみ（AIを使わない）
+
+project_name: villa_test
+character_sheet: character_sheet.png
+
+# 人物合成の生成順。後ろ姿のカットを先に作り、合格したものを以降の人物参照に足していく。
+stage1_order: ["02", "03", "05", "04", "07", "09"]
+
+cuts:
+  - id: "01"
+    source: 4446557_l.jpg
+    duration: 3
+    image:
+      mode: edit
+      person_reference: false
+      instruction: 人物は登場させない。海と建物の風景をそのまま16:9に整える。
+    video:
+      mode: ai
+      instruction: 海上を前進するドローンショット。
+
+  - id: "02"
+    source: IMG_8613.jpg
+    duration: 4
+    image:
+      mode: edit
+      person_reference: true
+      instruction: >-
+        夫婦が芝生を建物へ向かって歩く後ろ姿。旅行バッグを持っている。
+        撮影者の影・電柱・電線を消去する。
+    video:
+      mode: ai
+      instruction: 低い位置から人物をゆっくり追う。芝が揺れる。
+
+  - id: "03"
+    source: ICED2685.JPEG
+    duration: 4
+    image:
+      mode: edit
+      person_reference: true
+      instruction: >-
+        プールサイドを夫婦が手をつないで奥へ歩く。
+        ガラスに映った人物・ブルーシート・ホース・モップを消去し、空を夏の晴天にする。
+    video:
+      mode: ai
+      instruction: ドリーイン。水面がきらめく。
+
+  - id: "04"
+    source: GGBM1602.JPEG
+    duration: 3
+    image:
+      mode: edit
+      person_reference: true
+      instruction: 階段下で妻が吹き抜けを見上げる。斜め後ろからの構図。
+    video:
+      mode: ai
+      instruction: 足元からシャンデリアへティルトアップ。
+
+  - id: "05"
+    source: IMG_5558.JPG
+    duration: 4
+    image:
+      mode: edit
+      person_reference: true
+      instruction: 右奥の窓辺で夫婦が海を眺める後ろ姿。空を晴天にする。
+    video:
+      mode: ai
+      instruction: 窓へ前進。カーテンが微かに揺れる。
+
+  - id: "06"
+    source: IMG_5625.MOV
+    duration: 4
+    image:
+      mode: skip
+    video:
+      mode: passthrough      # AIは使わない。ffmpegで中央を16:9に切り出すだけ。
+
+  - id: "07"
+    source: IMG_5565.JPG
+    duration: 3
+    image:
+      mode: edit
+      person_reference: true
+      instruction: >-
+        ソファで夫婦がくつろぐ。テレビ画面を海の映像に差し替え、
+        ペットボトルとリモコンを消去する。
+    video:
+      mode: ai
+      instruction: 横スライド。間接照明が少し明るくなる。
+
+  - id: "08"
+    source: BIEV8282.JPEG
+    duration: 3
+    image:
+      mode: skip             # 人物なし・画像編集もスキップ
+    video:
+      mode: ai
+      instruction: ベンチ沿いに前進。薄い湯気。
+
+  - id: "09"
+    source: IMG_8628.jpg
+    duration: 3
+    image:
+      mode: edit
+      person_reference: true
+      instruction: >-
+        妻が奥のデイベッドに座り、ブラインド越しに海を見る。
+        ティッシュ箱を消去し、ベッドを整える。
+    video:
+      mode: ai
+      instruction: 窓へ前進。ブラインドが揺れる。
+
+  - id: "10"
+    source: IMG_5577.JPG
+    duration: 5
+    image:
+      mode: edit
+      person_reference: false
+      # TODO(ほせもやん): 【施設名】を実際の施設名に置き換えること。
+      instruction: >-
+        人物は登場させない。電線と電柱を消去する。
+        左上の空に、正確な日本語で「海と、何もしない贅沢を。」と入れる。
+        その直下に、字間を広く取ったセリフ体で「【施設名】」と入れる。
+        文字は白。誤字・文字化け・にじみを出さない。
+    video:
+      mode: ai
+      instruction: ゆっくり引く。窓の灯りが揺らぐ。文字は動かさない。
