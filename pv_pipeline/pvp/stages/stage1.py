@@ -66,13 +66,12 @@ def run_stage1(
         c.id for c in load_cuts(project) if c.image_mode == "edit" and c.id not in order
     )
     if only_cut:
-        target = str(only_cut).zfill(2)
-        if target not in order:
-            cut = cut_by_id(project, target)
+        targets = [t.strip().zfill(2) for t in str(only_cut).split(",") if t.strip()]
+        for target in targets:
+            cut = cut_by_id(project, target)   # 存在しない番号はここで止まる
             if cut.image_mode != "edit":
                 logger.log(f"cut{target} は画像編集スキップ指定のため何もしない", cut=target)
-                return []
-        order = [target]
+        order = [t for t in targets if cut_by_id(project, t).image_mode == "edit"]
 
     approvals = project.load_approvals()
     produced: list[Path] = []

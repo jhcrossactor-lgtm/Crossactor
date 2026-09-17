@@ -25,7 +25,7 @@ def run_stage2(
 
     cuts = load_cuts(project)
     if only_cut:
-        cuts = [cut_by_id(project, only_cut)]
+        cuts = [cut_by_id(project, t.strip()) for t in str(only_cut).split(",") if t.strip()]
 
     provider = None
     produced: list[Path] = []

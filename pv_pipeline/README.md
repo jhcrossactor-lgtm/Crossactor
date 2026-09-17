@@ -52,6 +52,7 @@ python run.py status                 # 進み具合
 
 ```bash
 python run.py --cut 04 --stage 1     # cut04の画像だけ作り直す
+python run.py --cut 05,04,07,09 --stage 1   # 複数カットを指定した順に作り直す
 python run.py --cut 04 --stage 2     # cut04の動画だけ作り直す
 python run.py --stage 3              # 作り直したら結合だけ回す
 ```

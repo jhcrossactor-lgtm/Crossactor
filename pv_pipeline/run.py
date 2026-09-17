@@ -4,6 +4,7 @@
   python run.py --stage 1                 # 人物合成（生成順に沿って1カットずつ確認）
   python run.py --stage 1 --resume        # 合格済みは飛ばして続きから
   python run.py --cut 04 --stage 1        # カット単位で作り直し
+  python run.py --cut 05,04,07,09 --stage 1   # 複数カットを指定順に
   python run.py --stage 2                 # 動画化（stage1の合格が前提）
   python run.py --stage 3                 # 結合して output/ に書き出し
   python run.py --stage all               # 1 -> 目視確認で停止
@@ -65,7 +66,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="物件ディレクトリ。省略時は環境変数 PVP_PROJECT、"
                              "それも無ければ projects/villa_test")
     parser.add_argument("--stage", default="1", help="1 / 2 / 3 / all")
-    parser.add_argument("--cut", default=None, help="カット番号（例: 04）。省略で全カット")
+    parser.add_argument("--cut", default=None,
+                        help="カット番号。カンマ区切りで複数可（例: 04 / 05,04,07,09）。省略で全カット")
     parser.add_argument("--provider", default=None, help="image/video 両方を上書き（mock など）")
     parser.add_argument("--image-provider", default=None, help="画像プロバイダを上書き")
     parser.add_argument("--video-provider", default=None, help="動画プロバイダを上書き")
