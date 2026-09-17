@@ -26,7 +26,7 @@ image:
   max_retries: 3
 
 video:
-  provider: gemini              # gemini | minimax | mock
+  provider: minimax             # gemini | minimax | mock
   gemini:
     # Gemini API の image-to-video。エンドポイントは公式ディスカバリで確認済み:
     #   POST {base_url}/models/{model}:predictLongRunning
