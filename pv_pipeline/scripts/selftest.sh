@@ -30,6 +30,8 @@ FF=$(python3 -c "import shutil,imageio_ffmpeg as i;print(shutil.which('ffmpeg') 
 "$FF" -y -loglevel error -f lavfi -i "testsrc=size=1080x1920:rate=30:duration=8" \
       -c:v libx264 -pix_fmt yuv420p "$PROJ/input/IMG_5625.MOV"
 
+python3 scripts/check_ps1_bom.py
+
 python3 run.py --project "$PROJ" check
 python3 run.py --project "$PROJ" --stage 1 --provider mock --yes
 python3 run.py --project "$PROJ" --stage 2 --provider mock

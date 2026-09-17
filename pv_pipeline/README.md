@@ -292,6 +292,13 @@ PowerShell を開き直せば、以降は `python run.py --stage 1` だけで G:
 
 外付けドライブを抜いた状態では動かなくなる点だけ注意。
 
+### PowerShellスクリプトの文字コード
+
+`scripts/*.ps1` は **UTF-8 BOM 付き・CRLF** で保存すること。
+Windows PowerShell 5.1 は BOM の無い `.ps1` を ANSI(CP932) として読むため、
+日本語が文字化けして構文エラーになる。`scripts/check_ps1_bom.py`
+（`selftest.sh` から自動で走る）で検出できる。
+
 ## 人物の一貫性
 
 `cuts.yaml` の `stage1_order`（既定 `02 → 03 → 05 → 04 → 07 → 09`）の順に生成する。

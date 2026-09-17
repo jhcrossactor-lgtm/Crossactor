@@ -1,10 +1,10 @@
-<#
+﻿<#
 .SYNOPSIS
   作業フォルダを外付けドライブへ、成果物を Google Drive の同期フォルダへ振り分ける。
 
 .DESCRIPTION
   Cドライブを使わない構成にする。
-    - 作業フォルダ : 素材・中間ファイル・stage2\_raw が入る。同期させない場所に置く
+    - 作業フォルダ : 素材・中間ファイル・stage2 の _raw が入る。同期させない場所に置く
     - 成果物       : stage1 / stage2 / output / logs だけを同期フォルダへコピーする
   作業フォルダを移し、環境変数 PVP_PROJECT と PVP_DELIVER_TO をユーザー環境に設定する。
 
@@ -27,7 +27,7 @@ foreach ($path in @($WorkDir, $DeliverTo)) {
     }
 }
 if ($WorkDir.TrimEnd('\') -ieq $DeliverTo.TrimEnd('\')) {
-    throw "作業フォルダと成果物の置き場は別にすること（同じだと stage2\_raw まで同期される）。"
+    throw "作業フォルダと成果物の置き場は別にすること（同じだと stage2 の _raw まで同期される）。"
 }
 
 Write-Host "作業フォルダ : $WorkDir"
