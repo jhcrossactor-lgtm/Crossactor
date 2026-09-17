@@ -2,6 +2,7 @@
 #
 #   image.mode          : edit = 画像編集APIに通す / skip = 元素材をそのまま使う
 #   image.person_reference: true = 人物設定シート＋合格済みカットを参照として添付
+#   image.indoor          : true = 室内カット。靴を脱ぐ注記（config の indoor_note）が入る
 #   video.mode          : ai = image-to-video / passthrough = ffmpegのみ（AIを使わない）
 
 project_name: villa_test
@@ -59,6 +60,7 @@ cuts:
     duration: 3
     image:
       mode: edit
+      indoor: true
       person_reference: true
       instruction: >-
         階段下で妻が吹き抜けを見上げる。斜め後ろからの構図。
@@ -73,6 +75,7 @@ cuts:
     duration: 4
     image:
       mode: edit
+      indoor: true
       person_reference: true
       instruction: 右奥の窓辺で夫婦が海を眺める後ろ姿。空を晴天にする。
     video:
@@ -92,6 +95,7 @@ cuts:
     duration: 3
     image:
       mode: edit
+      indoor: true
       person_reference: true
       instruction: >-
         ソファで夫婦がくつろぐ。テレビ画面を海の映像に差し替え、
@@ -114,6 +118,7 @@ cuts:
     duration: 3
     image:
       mode: edit
+      indoor: true
       person_reference: true
       instruction: >-
         妻が奥のデイベッドに座り、ブラインド越しに海を見る。

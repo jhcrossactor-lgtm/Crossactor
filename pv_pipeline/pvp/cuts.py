@@ -21,6 +21,7 @@ class Cut:
         self.image_mode: str = (raw.get("image") or {}).get("mode", "edit")
         self.image_instruction: str = (raw.get("image") or {}).get("instruction", "")
         self.use_person_reference: bool = bool((raw.get("image") or {}).get("person_reference", True))
+        self.indoor: bool = bool((raw.get("image") or {}).get("indoor", False))
         self.video_mode: str = (raw.get("video") or {}).get("mode", "ai")
         self.video_instruction: str = (raw.get("video") or {}).get("instruction", "")
 
@@ -74,6 +75,9 @@ class Cut:
             parts.append(wardrobe)
         if attach and self.use_person_reference:
             parts.append(attach)
+        indoor_note = (prompts.get("indoor_note") or "").strip()
+        if indoor_note and self.indoor and self.use_person_reference:
+            parts.append(indoor_note)
         if self.image_instruction:
             parts.append("このカットの指示：" + self.image_instruction.strip())
         return "\n\n".join(p for p in parts if p)
