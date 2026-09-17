@@ -60,7 +60,10 @@ cuts:
     image:
       mode: edit
       person_reference: true
-      instruction: 階段下で妻が吹き抜けを見上げる。斜め後ろからの構図。
+      instruction: >-
+        階段下で妻が吹き抜けを見上げる。斜め後ろからの構図。
+        奥のクジラの絵がある壁は、画面の右端まで同じ壁がそのまま続く。
+        その右側に洗面所・洗面台・ドア・別の部屋は存在しない。描き足さない。
     video:
       mode: ai
       instruction: 足元からシャンデリアへティルトアップ。
