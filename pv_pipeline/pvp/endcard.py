@@ -91,6 +91,11 @@ def render_bull_shine_card(
     slant = 0.45  # 光の帯の傾き
     sigma = max(60.0, (x1 - x0) * float(cfg.get("shine_width", 0.11)))
     shine_gain = float(cfg.get("shine_gain", 1.0))
+    # bg_reveal: 背景は最初は見えず、光が通過した所から薄暗く浮かび上がる（光は背景全体をなめる）
+    bg_reveal = bool(cfg.get("bg_reveal", False))
+    if bg_reveal:
+        x0, x1 = min(x0, int(width * 0.12)), max(x1, int(width * 0.88))
+        y0 = int(height * 0.2)
 
     cmd = [ffmpeg_bin(), "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{width}x{height}",
            "-r", str(fps), "-i", "-", "-c:v", "libx264", "-crf", "16", "-preset", "slow",
@@ -101,18 +106,31 @@ def render_bull_shine_card(
         for i in range(frames):
             t = i / fps
             dim = _ramp(t, *tl["dim"])
-            k_bg = bg_level * _ramp(t, *tl["bg_in"]) * (1 - dim) + bg_dim * dim
-            frame = bg * k_bg
-
-            # 光の帯：タイトルの左外から右外へ斜めに走る
             sh = (t - tl["shine"][0]) / (tl["shine"][1] - tl["shine"][0])
             band_strength = float(np.sin(np.clip(sh, 0, 1) * np.pi)) if 0 <= sh <= 1 else 0.0
+
+            if bg_reveal:
+                # 光の帯の中心より左（すでに光が通った所）が浮かび上がる
+                if sh < 0:
+                    reveal = 0.0
+                elif sh > 1:
+                    reveal = 1.0
+                else:
+                    cx_r = (x0 - 3 * sigma) + (x1 - x0 + 6 * sigma) * float(_ease(sh))
+                    reveal = np.clip((cx_r - (xx + slant * (yy - y0))) / (3 * sigma) + 0.5, 0, 1)[..., None]
+                k = bg_level * (1 - dim) + bg_dim * dim
+                frame = bg * reveal * k
+            else:
+                k_bg = bg_level * _ramp(t, *tl["bg_in"]) * (1 - dim) + bg_dim * dim
+                frame = bg * k_bg
+
+            # 光の帯：左外から右外へ斜めに走る
             if band_strength > 0:
                 cx = (x0 - 3 * sigma) + (x1 - x0 + 6 * sigma) * float(_ease(sh))
                 d = (xx - cx) + slant * (yy - y0)
                 band = np.exp(-(d / sigma) ** 2) * band_strength
-                # 背景の闘牛の輪郭にも、ごく弱く光がかすめる
-                frame = frame + bg * band[..., None] * 0.9 * (1 - dim)
+                # 背景の闘牛の体全体に光が当たる
+                frame = frame + bg * band[..., None] * float(cfg.get("bg_shine", 0.9)) * (1 - dim)
             else:
                 band = None
 
