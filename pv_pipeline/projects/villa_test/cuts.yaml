@@ -8,7 +8,7 @@ project_name: villa_test
 character_sheet: character_sheet.png
 
 # 人物合成の生成順。後ろ姿のカットを先に作り、合格したものを以降の人物参照に足していく。
-stage1_order: ["02", "03", "05", "04", "07", "09"]
+stage1_order: ["03", "05", "04", "07", "09"]
 
 cuts:
   - id: "01"
@@ -27,15 +27,13 @@ cuts:
     duration: 4
     image:
       mode: edit
-      person_reference: true
+      person_reference: false
       instruction: >-
-        夫婦が芝生を建物へ向かって歩く後ろ姿。
-        夫は手提げのボストンバッグを片手に提げ、妻は小ぶりのトートバッグを肩にかける。
-        キャスター付きスーツケースは描かない。荷物を地面に引きずらせない。
-        撮影者の影・電柱・電線を消去する。
+        人物は登場させない。芝生と建物の佇まいをそのまま見せる。
+        撮影者の影・電柱・電線を消去する。芝生と植栽を手入れの行き届いた状態にする。
     video:
       mode: ai
-      instruction: 低い位置から人物をゆっくり追う。芝が揺れる。
+      instruction: 低い位置からゆっくり前進する。芝が揺れる。
 
   - id: "03"
     source: ICED2685.JPEG
