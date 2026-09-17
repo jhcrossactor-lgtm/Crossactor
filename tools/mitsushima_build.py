@@ -283,7 +283,7 @@ def build_scene(cfg):
         "asphalt": pal["asphalt"], "concrete": pal["concrete"],
         "ground": pal["ground"], "plot": pal["plot_ground"],
         "neighbor": pal["neighbor"], "trunk": pal["trunk"],
-        "glass": "#8fb6cc", "door": "#6b4b33", "car_glass": "#2a3238",
+        "glass": "#8fb6cc", "door": "#6b4b33", "car_glass": "#2a3238", "tire": "#22242a",
     }
     for i, c in enumerate(pal["walls"]):
         mats["wall_%d" % i] = c
@@ -365,12 +365,20 @@ def build_scene(cfg):
             pad = [(px0, y0), (px1, y0), (px1, y1), (px0, y1)]
             add_poly(gid, "concrete", pad, 0.03)
             if rng.random() < cfg["props"]["car_ratio"]:
-                cs = cfg["props"]["car_size_m"]
+                cs = cfg["props"]["car_size_m"]          # [幅, 高, 全長]
                 cxx, czz = W(((px0 + px1) / 2.0, cyp))
                 cmat = "car_%d" % rng.randrange(len(pal["cars"]))
-                add_box(gid, cmat, cxx, cs[1] / 2.0, czz, cs[2], cs[1] * 0.62, cs[0], math.pi / 2.0)
-                add_box(gid, "car_glass", cxx, cs[1] * 0.78, czz,
-                        cs[2] * 0.5, cs[1] * 0.38, cs[0] * 0.88, math.pi / 2.0)
+                body_h = cs[1] * 0.46
+                body_y = 0.30 + body_h / 2.0             # 車輪ぶんだけ浮かせる
+                add_box(gid, cmat, cxx, body_y, czz, cs[2], body_h, cs[0], math.pi / 2.0)
+                add_box(gid, cmat, cxx, 0.30 + body_h + cs[1] * 0.20, czz,
+                        cs[2] * 0.46, cs[1] * 0.40, cs[0] * 0.86, math.pi / 2.0)
+                add_box(gid, "car_glass", cxx, 0.30 + body_h + cs[1] * 0.22, czz,
+                        cs[2] * 0.44, cs[1] * 0.28, cs[0] * 0.90, math.pi / 2.0)
+                for dz in (-cs[2] * 0.32, cs[2] * 0.32):     # 車輪（前後×左右）
+                    for dx in (-cs[0] * 0.46, cs[0] * 0.46):
+                        add_box(gid, "tire", cxx + dz, 0.31, czz + dx,
+                                0.62, 0.62, 0.22, math.pi / 2.0)
 
         # 植栽（建物の裏手側の空地）
         for _ in range(cfg["props"]["tree_per_plot"]):

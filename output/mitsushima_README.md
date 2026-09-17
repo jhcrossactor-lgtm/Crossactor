@@ -80,3 +80,58 @@ three.js座標は「平面+Y（北）＝ −Z」「Y軸＝高さ」。
   jsdelivrを403拒否する**ため、スクリーンショットはnpm取得したthree.jsに差し替えたローカル複製で撮影した。
   ほせもやんのPC／通常のブラウザではそのまま開ける。
 - GLBはthree.jsのGLTFLoaderで読み込み検証済み（色付き・白モデルとも 80メッシュ／3,046三角形）。
+
+---
+
+# Blenderモデリング（PV制作フロー用）
+
+`tools/mitsushima_blender.py` が `output/mitsushima_scene.json`（DXF由来の確定座標）を読み、
+**Blenderネイティブのメッシュ・マテリアル・カメラ・ライトとして組み立てて `output/mitsushima.blend` を保存する。**
+GLBのインポートではなく、Blender内で編集可能な素の状態で生成している。
+
+## 実行方法
+
+| 環境 | コマンド |
+|---|---|
+| Blender GUI | Scriptingタブで `tools/mitsushima_blender.py` を開いて実行（Blender 4.x） |
+| Blender CLI | `blender -b -P tools/mitsushima_blender.py -- --render` |
+| Python（bpyモジュール） | `pip install bpy==4.2.0` → `python3 tools/mitsushima_blender.py --render` |
+
+`--render` を付けると `output/renders/` に4カット出力する。`--only=02` のようにカット指定も可。
+
+## .blend の中身
+
+- 単位はメートル、実寸、Z-up、敷地中心が原点（北＝+Y、東＝+X）
+- コレクション構成
+  - `三ツ島街区`
+    - `01号地`〜`10号地`（`外壁` `屋根` `窓` `玄関` `駐車土間` `車` `植栽_幹` `植栽_葉` `地面`）
+    - `道路` / `敷地` / `街路樹` / `隣接街区` / `地盤`
+    - `カメラ`（4台＋各注視点Empty） / `ライト`（太陽）
+- マテリアルは日本語名（`外壁_0`〜`外壁_3`、`屋根_0`〜`屋根_3`、`道路アスファルト` など）でPrincipled BSDF
+- ワールドはSky Texture（Nishita）。太陽高度48°・方位132°（南東）でSunライトと一致させてある
+- レンダラはCycles / 1920×1080 / 64サンプル / デノイズON / ビュー変換Standard
+
+## カメラ4台
+
+| カメラ | 内容 | 画角 |
+|---|---|---|
+| `01_鳥瞰` | 街区全体の俯瞰（南東上空） | 35mm |
+| `02_歩行目線` | 開発道路上・目線1.6m、街並みを見通す | 28mm |
+| `03_玄関アプローチ` | 駐車場から玄関を見る近景 | 35mm |
+| `04_俯瞰45` | 北東からの45°俯瞰 | 45mm |
+
+## 後工程の想定フロー
+
+1. **Blender** … `output/mitsushima.blend` でカメラ・太陽角度を調整してレンダリング
+2. **ChatGPT画像** … 出力PNGを元絵にして写真調へ加工（img2img）
+3. **MiniMax Hailuo** … 加工した静止画から動画生成
+
+2の加工を安定させるため、ビュー変換は`Standard`（実色寄り）にしてある。
+白モデルで渡したい場合は `output/mitsushima_town_white.glb` をインポートするか、
+スクリプトの `make_material` のベースカラーを白に差し替える。
+
+## 建物形状について
+
+現状は「軒高6.0m＋切妻4寸＋窓と玄関を面に貼った簡易ボリューム」で、
+街並みのスケール感とボリューム検討用のモデル。
+PVで寄りのカットを撮るなら、バルコニー・庇・外構（フェンス・植栽・ポスト）の作り込みが別途必要になる。
