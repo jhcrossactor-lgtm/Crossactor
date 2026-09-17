@@ -76,6 +76,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--provider", default=None, help="image/video 両方を上書き（mock など）")
     parser.add_argument("--image-provider", default=None, help="画像プロバイダを上書き")
     parser.add_argument("--video-provider", default=None, help="動画プロバイダを上書き")
+    parser.add_argument("--reuse-raw", action="store_true",
+                        help="stage2 で動画APIを呼ばず、生成済みの原本から仕上げ（尺・ズーム）だけやり直す")
     parser.add_argument("--yes", action="store_true", help="目視確認を省いて自動合格にする")
     parser.add_argument("--resume", action="store_true",
                         help="stage1 で、合格済みのカットを作り直さずに飛ばす")
@@ -242,7 +244,8 @@ def main(argv: list[str] | None = None) -> int:
                     f"stage1 が未合格のカットがある: {', '.join(ng)}\n"
                     "作り直すか、確認済みなら --force を付けること。"
                 )
-            run_stage2(project, logger, only_cut=args.cut, provider_override=video_provider)
+            run_stage2(project, logger, only_cut=args.cut, provider_override=video_provider,
+                       reuse_raw=args.reuse_raw)
             logger.log("stage2 完了")
             deliver_if_auto(project, logger, ["stage2", "logs"], args.deliver_to)
 

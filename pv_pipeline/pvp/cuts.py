@@ -27,6 +27,8 @@ class Cut:
         self.reference_note: str = (raw.get("image") or {}).get("reference_note", "")
         self.video_mode: str = (raw.get("video") or {}).get("mode", "ai")
         self.video_instruction: str = (raw.get("video") or {}).get("instruction", "")
+        # 仕上げで足すズーム。{to: 1.3, center: [x, y], start: 秒, end: 秒}（x,y は 0〜1）
+        self.video_zoom: dict | None = (raw.get("video") or {}).get("zoom") or None
 
     # -- パス ------------------------------------------------------------- #
     def source_path(self) -> Path:

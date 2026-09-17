@@ -22,6 +22,50 @@ CENTER_16X9_CROP = (
 )
 
 
+def probe_size(path: Path) -> tuple[int, int]:
+    """動画の幅・高さを返す（ffprobe が無い環境でも ffmpeg の出力から読む）。"""
+    import re
+    import subprocess
+
+    proc = subprocess.run([ffmpeg_bin(), "-hide_banner", "-i", str(path)],
+                          capture_output=True, text=True, encoding="utf-8", errors="replace")
+    m = re.search(r"Video:.*?(\d{2,5})x(\d{2,5})", proc.stderr)
+    if not m:
+        raise RuntimeError(f"動画サイズを取得できない: {path}")
+    return int(m.group(1)), int(m.group(2))
+
+
+def _zoom_filter(src: Path, width: int, height: int, duration: float,
+                 zoom: dict, logger: RunLogger | None = None) -> str:
+    """全景 → 指定点へ寄るフィルタ式を作る。
+
+    まず出力幅に合わせて縮めた全景を 1.0 倍とし、to 倍まで滑らかに（ease-in-out）拡大しながら、
+    center の点が画面内に収まるよう切り出す。拡大率が原本の余裕を超えると拡大補間になり画質が落ちる。
+    """
+    src_w, src_h = probe_size(src)
+    to = float(zoom.get("to", 1.25))
+    cx, cy = (list(zoom.get("center") or [0.5, 0.5]) + [0.5, 0.5])[:2]
+    t0 = float(zoom.get("start", 0.0))
+    t1 = float(zoom.get("end", duration))
+    base = width / src_w  # 全景が出力幅にちょうど収まる縮小率
+    headroom = src_w / width
+    if logger:
+        note = "" if to <= headroom + 1e-6 else f"（原本の余裕 {headroom:.2f} 倍を超えるので拡大補間になる）"
+        logger.log(f"ズーム {to:.2f}倍 中心=({cx:.2f},{cy:.2f}) {t0:.1f}〜{t1:.1f}秒 原本={src_w}x{src_h}{note}",
+                   zoom=zoom, src_size=[src_w, src_h])
+    span = max(t1 - t0, 0.01)
+    ease = f"(1-cos(PI*min(max((t-{t0})/{span}\\,0)\\,1)))/2"
+    s = f"({base}*(1+{to - 1}*{ease}))"
+    sw = f"(trunc({src_w}*{s}/2)*2)"
+    sh = f"(trunc({src_h}*{s}/2)*2)"
+    scale = f"scale=w='{sw}':h='{sh}':eval=frame:flags=lanczos"
+    # crop の iw/ih は最初のフレームの値で固定されるため使えない。拡大後の寸法を同じ式で直接渡す。
+    crop = (f"crop={width}:{height}:"
+            f"x='max(0\\,min({sw}-{width}\\,{cx}*{sw}-{width / 2}))':"
+            f"y='max(0\\,min({sh}-{height}\\,{cy}*{sh}-{height / 2}))'")
+    return f"{scale},{crop}"
+
+
 def convert_heic(src: Path, dst: Path) -> Path:
     """HEIC を JPEG に変換する。pillow-heif が要る。"""
     try:
@@ -99,19 +143,25 @@ def normalize_clip(
     height: int,
     fps: int,
     keep_audio: bool = False,
+    zoom: dict | None = None,
     logger: RunLogger | None = None,
 ) -> Path:
     """生成尺がカット定義とズレるので、解像度・fps・尺を強制的にそろえる。
 
     長い場合は頭から切り、短い場合は最終フレームを複製して埋める。
+    zoom を渡すと、全景から指定点に向かってゆっくり寄る動きを足す
+    （生成側でカメラが寄らなかったときの補正。原本が出力より大きければ画質は落ちない）。
     """
     dst.parent.mkdir(parents=True, exist_ok=True)
     src_duration = probe_duration(src)
     pad = max(0.0, duration - src_duration)
-    vf = (
-        f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
-        f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps}"
-    )
+    if zoom:
+        vf = _zoom_filter(src, width, height, duration, zoom, logger) + f",setsar=1,fps={fps}"
+    else:
+        vf = (
+            f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
+            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps}"
+        )
     if pad > 0.01:
         vf += f",tpad=stop_mode=clone:stop_duration={pad + 0.5:.3f}"
     vf += ",format=yuv420p"
