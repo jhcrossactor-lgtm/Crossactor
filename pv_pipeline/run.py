@@ -21,7 +21,7 @@
 
 作業一式を別ドライブに置くときは、環境変数 PVP_PROJECT にそのパスを入れておけば
 毎回 --project を書かなくてよい。
-  $env:PVP_PROJECT = 'G:\pv\villa_test'      # PowerShell、そのセッションだけ
+  $env:PVP_PROJECT = 'G:\\pv\\villa_test'      # PowerShell、そのセッションだけ
 """
 
 from __future__ import annotations
