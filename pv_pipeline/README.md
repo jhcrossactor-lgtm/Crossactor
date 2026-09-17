@@ -164,6 +164,26 @@ ffmpeg は別途入れること（`winget install Gyan.FFmpeg` など）。
 `size` は実行前に検証している。16の倍数・総画素数・アスペクト比の制約に外れていれば
 API を叩く前に落とす（例: `1920x1080` は 1080 が16の倍数でないため不可）。
 
+## Gemini（動画）と繋ぐ
+
+キーは **Google AI Studio** で発行する。https://aistudio.google.com/apikey
+
+これは Gemini Developer API のキーで、パイプラインが叩く
+`generativelanguage.googleapis.com` に対応する。**Vertex AI（Google Cloud）のものではない** —
+Vertex はエンドポイントも認証方式（サービスアカウント）も別物で、このコードでは使えない。
+
+```
+GEMINI_API_KEY=AIza...
+```
+
+`.env` に書いたら `python run.py connect` で画像側と一緒に確認できる。
+そのアカウントで実際に使えるモデルが一覧で出るので、`config.yaml` の
+`video.gemini.model` が使えるかどうかがその場で分かる。
+
+**動画生成は課金を有効にしたプロジェクトでないと使えないことが多い。**
+無料枠のキーでモデル一覧は引けても、生成リクエストで弾かれることがある。
+一覧に出ていても不安なら `python run.py --cut 01 --stage 2` で1カットだけ実地に試すこと。
+
 ## 人物の一貫性
 
 `cuts.yaml` の `stage1_order`（既定 `02 → 03 → 05 → 04 → 07 → 09`）の順に生成する。

@@ -8,7 +8,7 @@
   python run.py --stage all               # 1 -> 目視確認で停止
   python run.py status                    # 各工程の進み具合
   python run.py check                     # 素材と環境の事前チェック
-  python run.py connect                   # ChatGPT Image との疎通確認
+  python run.py connect                   # 画像API・動画APIの疎通確認
   python run.py connect --smoke           # 実際に1枚編集して確かめる（課金あり）
 
 別物件で使うときは projects/<物件名>/ を作って cuts.yaml と input/ を差し替える。
@@ -56,6 +56,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--music", default=None, help="BGM音源のパス（stage3）")
     parser.add_argument("--smoke", action="store_true",
                         help="connect で実際に1枚編集して確かめる（課金が発生する）")
+    parser.add_argument("--no-video", action="store_true",
+                        help="connect で動画APIのチェックを省く")
     return parser
 
 
@@ -133,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_status(project)
     if args.command == "connect":
         logger = RunLogger(project.log_dir, "connect")
-        return run_connect(project, logger, smoke=args.smoke)
+        return run_connect(project, logger, smoke=args.smoke, video=not args.no_video)
 
     image_provider = args.image_provider or args.provider
     video_provider = args.video_provider or args.provider
