@@ -39,8 +39,11 @@ video:
     poll_interval_sec: 10
     poll_timeout_sec: 900
   minimax:
-    # 注意: MiniMax 公式ドキュメントは構築時のネットワークから到達できず【未検証】。
-    # 初回実行前に platform.minimax.io のドキュメントでパス・項目名を照合すること。
+    # 3ステップ構成（作成 -> task_idで照会 -> file_idからDL）は複数の情報源と一致したが、
+    # 公式ドキュメント(platform.minimax.io)には構築時のネットワークから到達できておらず、
+    # リクエストの項目名までは直接確認できていない。初回実行時にログで確かめること。
+    # base_url は国際版アカウント用。中国本土アカウントは api.minimaxi.com になる。
+    # キーとホストは対応していないと通らない。
     model: MiniMax-H3
     base_url: https://api.minimax.io/v1
     create_path: /video_generation

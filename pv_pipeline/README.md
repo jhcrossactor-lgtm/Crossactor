@@ -184,6 +184,42 @@ GEMINI_API_KEY=AIza...
 無料枠のキーでモデル一覧は引けても、生成リクエストで弾かれることがある。
 一覧に出ていても不安なら `python run.py --cut 01 --stage 2` で1カットだけ実地に試すこと。
 
+## MiniMax H3（動画の切替先）と繋ぐ
+
+既定は Gemini なので、**通常は不要**。Gemini の絵が気に入らないときの差し替え先。
+
+キーは **MiniMax Open Platform** で発行する。地域でサイトが分かれている。
+
+| | サイト | base_url |
+|---|---|---|
+| 国際版（日本から使うのはこちら） | https://platform.minimax.io/ | `https://api.minimax.io/v1` |
+| 中国本土版 | https://platform.minimaxi.com/ | `https://api.minimaxi.com/v1` |
+
+**キーとホストは対応していないと通らない。** 国際版のキーを `api.minimaxi.com` に投げても認証が落ちる。
+`config.yaml` の既定は国際版。中国本土アカウントなら `video.minimax.base_url` を書き換えること。
+
+ログイン後、**API Keys**（または Access）から新規キーを作る。支払い方法の登録が要る。
+
+切り替えるには `config.yaml` の `video.provider` を `minimax` にするか、その場で：
+
+```bash
+python run.py --stage 2 --video-provider minimax
+```
+
+### 確証レベル
+
+非同期3ステップ（`POST /v1/video_generation` → `GET /v1/query/video_generation` →
+`GET /v1/files/retrieve`）という構成は複数の情報源と一致したが、**公式ドキュメントに
+直接到達できていないため、リクエストの項目名までは確認できていない。**
+初回は1カットだけ回してログで確かめること。
+
+```bash
+python run.py --cut 01 --stage 2 --video-provider minimax
+```
+
+項目名が違っていれば `config.yaml` の `image_field` / `duration_field` / `prompt_field` /
+各パスを書き換えるだけで直る。コードには手を入れなくてよい。
+
 ## 人物の一貫性
 
 `cuts.yaml` の `stage1_order`（既定 `02 → 03 → 05 → 04 → 07 → 09`）の順に生成する。
