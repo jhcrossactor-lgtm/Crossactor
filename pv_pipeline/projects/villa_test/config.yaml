@@ -43,25 +43,16 @@ video:
     poll_interval_sec: 10
     poll_timeout_sec: 900
   minimax:
-    # 3ステップ構成（作成 -> task_idで照会 -> file_idからDL）は複数の情報源と一致したが、
-    # 公式ドキュメント(platform.minimax.io)には構築時のネットワークから到達できておらず、
-    # リクエストの項目名までは直接確認できていない。初回実行時にログで確かめること。
-    # base_url は国際版アカウント用。中国本土アカウントは api.minimaxi.com になる。
-    # キーとホストは対応していないと通らない。
+    # Video Generation V2（公式ドキュメント platform.minimax.io で確認済み）
+    #   POST /v2/video_generation -> GET /v2/query/video_generation/{task_id}
+    # 国際版アカウントは api.minimax.io、中国本土版は api.minimaxi.com。キーと対応させること。
     model: MiniMax-H3
-    base_url: https://api.minimax.io/v1
-    create_path: /video_generation
-    status_path: /query/video_generation
-    retrieve_path: /files/retrieve
+    base_url: https://api.minimax.io
     api_key_env: MINIMAX_API_KEY
-    group_id_env: MINIMAX_GROUP_ID
-    resolution: "1080P"
-    min_duration_sec: 5         # 下限尺で作って stage2 側で目標秒数に詰める
-    image_field: first_frame_image
-    duration_field: duration
-    prompt_field: prompt
-    image_as_data_uri: true
-    generate_audio: false
+    resolution: 2K                # H3 は 768P / 2K
+    min_duration_sec: 4           # H3 は 4〜15秒の整数。短いカットは4秒で作って切りそろえる
+    max_duration_sec: 15
+    prompt_expansion_mode: disabled   # プロンプトの自動書き換えを止める
     poll_interval_sec: 10
     poll_timeout_sec: 1200
 
