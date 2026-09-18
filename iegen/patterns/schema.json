@@ -1,0 +1,48 @@
+{
+ "id": "str",
+ "source": {
+  "type": "own|web",
+  "url": "str|null",
+  "fetched": "date",
+  "file": "str"
+ },
+ "site": {
+  "area_m2": "num",
+  "frontage_mm": "num",
+  "depth_mm": "num",
+  "road_dir": "N|E|S|W",
+  "corner": "bool",
+  "flag_lot": "bool"
+ },
+ "building": {
+  "floors": "int",
+  "footprint_mm": [
+   "w",
+   "d"
+  ],
+  "floor_area_m2": "num",
+  "type": "3LDK|4LDK"
+ },
+ "layout": {
+  "f1": [
+   "rooms"
+  ],
+  "f2": [
+   "rooms"
+  ],
+  "f3": [
+   "rooms"
+  ],
+  "stair": {
+   "type": "straight|u_turn",
+   "pos": "front|middle|back",
+   "side": "L|R"
+  },
+  "wet_floor": "1|2",
+  "garage_side": "L|R|full"
+ },
+ "quality": {
+  "reviewed": "bool",
+  "note": "str"
+ }
+}

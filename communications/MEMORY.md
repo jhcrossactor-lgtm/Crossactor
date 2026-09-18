@@ -41,3 +41,22 @@ claude.ai アカウント側スキルへの書き込み手段は存在しない�
 `skills/inspo-mcp/README.md`（導入手順・ツール15件一覧・貼り付け用ブロック）
 `skills/inspo-mcp/patched/`（追記済みSKILL.md全文）
 `communications/logs/2026-09-16.md`（経緯）
+
+---
+
+## 2026-09-18 — IeGen をクラウドで着手、以降はローカル前提
+
+**決定**
+IeGen（木造3階建て建売プラン自動作成）の初回セットアップを Crossactor リポジトリ `iegen/` 配下に展開した。
+Phase 0 の中核（Obsidian・質疑応答集7版OCR・e-Gov照合）はローカル Claude Code で行う。
+
+**理由**
+クラウド実行環境は egress ポリシーで `laws.e-gov.go.jp` / `drive.google.com` を 403 で拒否し、Obsidian Vault も参照できない。
+一方、クラウドは揮発するためリポジトリ以外に永続化手段がなく、成果を残すには Crossactor 配下しかない。
+
+**却下した選択肢**
+- 別リポジトリとして git init → クラウドから push 先がない（スコープは Crossactor のみ）ため却下
+- G0 回答まで何もしない → 展開・ルール追記・依存確認は環境非依存で先行できるため却下
+
+**再発防止メモ**
+Drive MCP の base64 を手で転記すると誤りが混入する（今回2byte）。zip は CRC で復元できたが、次回は zip をチャット添付で渡してもらう方が確実。

@@ -1,0 +1,23 @@
+module: 900
+floors: 3
+structure: wood_conventional
+use: detached_for_sale
+parking: 1            # ビルトイン、車の建物外はみ出し可
+target_floor_area_m2: [100, 105]   # 駐車場・バルコニー除く、目安
+site_area_m2: [60, 70]
+frontage_short_mm: 4500
+tatami_m2: 1.62       # 900×1800
+region: osaka_pref
+plan:
+  default_type: 4LDK  # 敷地に余裕がある場合
+  f1: [builtin_garage, room_x1, wc]
+  f2: {ldk_min_jo: 16, wc: true, bath_if_possible: true}
+  f3: {western_rooms: 3}
+rooms:
+  washroom: [1800, 1800]
+  bath: [1800, 1800]
+  wc: {sizes: [[900,1350],[900,1500]], preferred: [900,1800]}
+  stair: {straight_box: [900,2700], u_turn_box: [1800,1800]}
+rules_hint:
+  f2_wet_min_depth_mm: 8100   # 要検証
+output: [pdf, dxf]

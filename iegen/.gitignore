@@ -1,0 +1,12 @@
+# IeGen
+patterns/inbox/*
+patterns/own/*
+!patterns/inbox/.gitkeep
+!patterns/own/.gitkeep
+law/cache/*
+!law/cache/.gitkeep
+law/osaka/qa/v7/*.pdf
+*.jww
+.venv/
+__pycache__/
+*.pyc

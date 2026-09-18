@@ -1,0 +1,10 @@
+# 1ルール1条文
+- id: stair.width            # 一意
+  category: stair
+  law: {name: 建築基準法施行令, article: "23", paragraph: "1"}
+  qa_ref: []                 # 例: ["v7:2-37"]
+  applies_to: {use: detached, floors: [2,3]}
+  check: "stair.width_mm >= 750"
+  message: 階段幅不足
+  source_fetched: null       # e-Gov取得日
+  verified: false            # e-Gov原文照合後にtrue

@@ -1,0 +1,13 @@
+# 住宅の階段（令23）— verified:false の間は判定に使わない
+- id: stair.width
+  law: {name: 建築基準法施行令, article: "23", paragraph: "1"}
+  check: "stair.width_mm >= 750"
+  verified: false
+- id: stair.riser
+  law: {name: 建築基準法施行令, article: "23", paragraph: "1"}
+  check: "stair.riser_mm <= 230"
+  verified: false
+- id: stair.tread
+  law: {name: 建築基準法施行令, article: "23", paragraph: "1"}
+  check: "stair.tread_mm >= 150"
+  verified: false

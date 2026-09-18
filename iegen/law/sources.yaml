@@ -1,0 +1,27 @@
+priority:
+  - id: obsidian
+    type: local_vault
+    path: ${OBSIDIAN_VAULT}      # 実行時設定
+    role: 実務解釈・注釈
+  - id: egov
+    type: api
+    url: https://laws.e-gov.go.jp/api/2/   # 実装時に仕様確認
+    cache: law/cache/
+    role: 条文原文
+  - id: osaka_qa_v7
+    type: pdf_ocr
+    drive_title: 建築基準法及び同大阪府条例＆質疑応答集改定7版.pdf
+    dir: law/osaka/qa/v7/
+    role: 府下運用解釈（正）
+  - id: osaka_qa_v6
+    type: pdf_text
+    index: law/osaka/qa/qa_index_v6.json
+    role: 差分確認用（stale）
+  - id: pref_ordinance_commentary
+    drive_title: osaka_pref_ordinance.pdf
+  - id: osaka_city_handling
+    note: 大阪市建築基準法取扱い（令和3年11月）分冊PDF
+  - id: municipal
+    tool: arch-reg-sync
+    dir: law/municipal/
+interpretation_order: [kinki_common, tokutei_gyoseicho, osaka_qa_v7, bouka_hinan_kaisetsu]

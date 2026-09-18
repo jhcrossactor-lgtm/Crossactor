@@ -1,0 +1,14 @@
+[project]
+name = "iegen"
+version = "0.0.1"
+description = "木造3階建て建売プラン自動作成"
+requires-python = ">=3.11"
+dependencies = [
+  "pypdf",
+  "pdfplumber",
+  "pymupdf",
+  "ezdxf",
+  "shapely",
+  "ortools",
+  "pyyaml",
+]
