@@ -11,7 +11,10 @@
 | `output/mitsushima_town_white.glb` | Blender用GLB（**PV白モデル用**・全マテリアル白／名前と分割は同一） |
 | `output/mitsushima_scene.json` | シーン定義（HTMLに埋め込むものと同一） |
 | `output/mitsushima_check.json` | 検証結果（区画数・建物数・離隔・はみ出し判定） |
-| `output/shots/*.png` | 鳥瞰／歩行目線 × 昼／夕景のスクリーンショット |
+| `output/shots/*.png` | Three.js版のスクリーンショット（鳥瞰／歩行目線 × 昼／夕景） |
+| `output/renders/*.png` | Blenderレンダ 主要4カット（1920×1080） |
+| `output/renders/dusk/*.png` | 同・夕景版 |
+| `output/renders/path_street,path_drone,path_entry/` | 動画用の連番（1280×720） |
 
 再生成: `python3 tools/mitsushima_build.py`（Python標準ライブラリのみ、外部依存なし）
 
@@ -122,22 +125,49 @@ GLBのインポートではなく、Blender内で編集可能な素の状態で�
 | `03_玄関アプローチ` | 駐車場から玄関を見る近景 | 35mm |
 | `04_俯瞰45` | 北東からの45°俯瞰 | 45mm |
 
+## 外構
+
+| 要素 | 内容 |
+|---|---|
+| 境界フェンス | 区画ポリゴンの辺にブロック基礎0.35m＋メッシュフェンス（天端1.15m）。共有辺は1本だけ立て、道路境界線より東へ出る部分は切る |
+| 門柱 | 0.4×0.4×1.5m＋表札板。玄関アプローチの脇、道路際に配置 |
+| 玄関アプローチ | 幅1.2mのタイル帯を駐車土間の上に敷く（玄関位置に合わせる） |
+| カーポート | 3.0×5.2m・高さ2.35m、ポリカ屋根は半透明。**全区画の40%**に設置 |
+| 低木 | 門柱まわりに2本。建物の間口内に収めて隣地へ出さない |
+
 ## 動画用カメラパス（連番）
 
-`--path` を付けると、開発道路を**南→北へ等速で進むカメラ**の連番PNGを
-`output/renders/path/path_01.png` 〜 `path_10.png` に出力する。
-光・マテリアル・画角は固定なので、そのまま繋げても破綻しない。
+`--path=<名前>` で連番PNGを出す。光・マテリアル・画角は固定なので、そのまま繋げても破綻しない。
+解像度は1280×720（後段のimg2img／動画生成には十分）。
+
+| 名前 | 内容 | 枚数 | 出力先 |
+|---|---|---|---|
+| `street` | 開発道路を南→北へ等速で歩く | 25 | `output/renders/path_street/` |
+| `drone` | 南東上空から降りながら街区へ寄る | 12 | `output/renders/path_drone/` |
+| `entry` | 道路から3号地の玄関へ寄る | 8 | `output/renders/path_entry/` |
 
 ```
-python3 tools/mitsushima_blender.py --path                 # 10枚まとめて
-python3 tools/mitsushima_blender.py --path --path-range=3:6  # 3〜6枚目だけ
+python3 tools/mitsushima_blender.py --path=street                    # 25枚まとめて
+python3 tools/mitsushima_blender.py --path=drone --path-range=3:6    # 3〜6枚目だけ
+python3 tools/mitsushima_blender.py --path=street --dusk             # 夕景で連番
 ```
 
-- カメラ `05_道路パス` と注視点Emptyに**フレーム1〜10のキーフレーム（線形補間）**を打ってあるので、
-  Blenderで開けばそのままアニメーションとして再生・レンダリングできる（シーンのフレーム範囲も1〜10に設定済み）
-- 位置・枚数・画角はスクリプト冒頭の `PATH` で変更する
-  （`frames` 枚数／`start`・`end` 始点終点／`look_ahead_m` 何m先を見るか／`look_side_m` 住宅側への振り／`lens` 焦点距離／`samples`）
-- 枚数を増やすなら `frames` を上げるだけ。1枚あたりCPUレンダで約80秒（48サンプル）
+- 各パスのカメラ `05_パス_<名前>` と注視点Emptyに**キーフレーム（線形補間）**を打ってあるので、
+  Blenderで開けばそのままアニメーションとして再生・レンダリングできる
+- 枚数・始点終点・画角はスクリプト冒頭の `PATHS` で変更する
+  （`look: "follow"` はカメラ位置からの相対で前を見る、`"fixed"` は注視点も始点終点で補間）
+- 1枚あたりCPUレンダで約35秒（720p・28サンプル）
+
+## 夕景（`--dusk`）
+
+`--dusk` を付けると `RENDER` を夕景設定に上書きして撮る。出力は `output/renders/dusk/`
+（連番なら `output/renders/dusk_path_<名前>/`）。
+
+- 住戸が東向きなので、低い太陽は**東寄り（方位106°・高度9°）**にして道路側の面へ斜光を当てている
+  （西日にすると道路から見える面がすべて影になり、絵にならない）
+- 窓に発光を入れて灯りを表現（`window_emission`）
+- Nishitaの空は地平線付近が明るすぎて白飛びするため、**カメラに映る空だけ縦グラデーションに差し替え**ている
+  （照明側はNishitaのまま）
 
 ## 後工程の想定フロー
 

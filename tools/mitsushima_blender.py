@@ -41,6 +41,25 @@ RENDER = {
     "sun_azimuth_deg": 132.0,      # 方位（0=北, 90=東, 180=南）
     "sun_strength": 4.6,
     "sun_angle_deg": 0.9,          # 影のやわらかさ
+    "sun_color": (1.0, 0.96, 0.9),
+    "sky_strength": 0.34,
+    "sky_camera_strength": 0.15,
+    "exposure": -0.15,
+    "window_emission": 0.0,
+}
+
+# 夕景。--dusk で RENDER をこの値に上書きして撮る
+DUSK = {
+    # 住戸が東向きなので、低い太陽は東寄り（朝夕の斜光）にして道路側の面に光を当てる
+    "sun_elevation_deg": 9.0,
+    "sun_azimuth_deg": 106.0,
+    "sun_strength": 5.5,
+    "sun_angle_deg": 1.2,
+    "sun_color": (1.0, 0.70, 0.40),
+    "sky_strength": 0.22,
+    "sky_camera_strength": 0.14,
+    "exposure": 0.1,
+    "window_emission": 1.3,        # 窓に灯りを入れる
 }
 
 # 動画用カメラパス。連番PNGを出し、Blender側にもキーフレームで残す。
@@ -103,7 +122,7 @@ def reset_scene():
     sc.cycles.samples = RENDER["samples"]
     sc.cycles.use_denoising = True
     sc.view_settings.view_transform = "Standard"   # 実色に近い。img2imgの元絵向き
-    sc.view_settings.exposure = -0.15
+    sc.view_settings.exposure = RENDER["exposure"]
 
 
 def get_collection(name, parent=None):
@@ -139,6 +158,10 @@ def make_material(name, hex_color, kind):
         bsdf.inputs["Metallic"].default_value = 0.4
         bsdf.inputs["Alpha"].default_value = 0.55
         mat.blend_method = "BLEND"
+    elif kind == "glass" and RENDER.get("window_emission", 0.0) > 0:
+        bsdf.inputs["Roughness"].default_value = 0.1
+        bsdf.inputs["Emission Color"].default_value = (1.0, 0.72, 0.42, 1.0)
+        bsdf.inputs["Emission Strength"].default_value = RENDER["window_emission"]
     elif kind in ("glass", "car_glass"):
         bsdf.inputs["Roughness"].default_value = 0.08
         bsdf.inputs["Metallic"].default_value = 0.0
@@ -357,14 +380,35 @@ def build_world():
     sky.sun_disc = False
     # 照明用（強め）と、カメラに映る背景用（弱め＝白飛び防止）を Light Path で切り替える
     bg_light = nt.nodes.new("ShaderNodeBackground")
-    bg_light.inputs["Strength"].default_value = 0.34
+    bg_light.inputs["Strength"].default_value = RENDER["sky_strength"]
     bg_cam = nt.nodes.new("ShaderNodeBackground")
-    bg_cam.inputs["Strength"].default_value = 0.15
+    bg_cam.inputs["Strength"].default_value = RENDER["sky_camera_strength"]
     lp = nt.nodes.new("ShaderNodeLightPath")
     mix = nt.nodes.new("ShaderNodeMixShader")
     out = nt.nodes.new("ShaderNodeOutputWorld")
     nt.links.new(sky.outputs["Color"], bg_light.inputs["Color"])
-    nt.links.new(sky.outputs["Color"], bg_cam.inputs["Color"])
+    if RENDER.get("window_emission", 0.0) > 0:
+        # 夕景：Nishitaは地平線付近が明るすぎて白飛びするので、
+        # カメラに映る空だけ制御できる縦グラデーションに差し替える
+        bg_cam.inputs["Strength"].default_value = 1.0
+        coord = nt.nodes.new("ShaderNodeTexCoord")
+        sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+        rng = nt.nodes.new("ShaderNodeMapRange")
+        rng.inputs["From Min"].default_value = -0.05
+        rng.inputs["From Max"].default_value = 0.45
+        ramp = nt.nodes.new("ShaderNodeValToRGB")
+        ramp.color_ramp.elements[0].position = 0.0
+        ramp.color_ramp.elements[0].color = (1.0, 0.42, 0.16, 1.0)
+        ramp.color_ramp.elements[1].position = 1.0
+        ramp.color_ramp.elements[1].color = (0.10, 0.18, 0.42, 1.0)
+        mid = ramp.color_ramp.elements.new(0.32)
+        mid.color = (0.98, 0.68, 0.38, 1.0)
+        nt.links.new(coord.outputs["Generated"], sep.inputs["Vector"])
+        nt.links.new(sep.outputs["Z"], rng.inputs["Value"])
+        nt.links.new(rng.outputs["Result"], ramp.inputs["Fac"])
+        nt.links.new(ramp.outputs["Color"], bg_cam.inputs["Color"])
+    else:
+        nt.links.new(sky.outputs["Color"], bg_cam.inputs["Color"])
     nt.links.new(lp.outputs["Is Camera Ray"], mix.inputs["Fac"])
     nt.links.new(bg_light.outputs["Background"], mix.inputs[1])
     nt.links.new(bg_cam.outputs["Background"], mix.inputs[2])
@@ -376,7 +420,7 @@ def build_sun(root):
     data = bpy.data.lights.new("太陽", type="SUN")
     data.energy = RENDER["sun_strength"]
     data.angle = math.radians(RENDER["sun_angle_deg"])
-    data.color = (1.0, 0.96, 0.9)
+    data.color = RENDER["sun_color"]
     sun = bpy.data.objects.new("太陽", data)
     col.objects.link(sun)
     el = math.radians(RENDER["sun_elevation_deg"])
@@ -471,6 +515,8 @@ def build_path_camera(root, name, spec):
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
     do_render = "--render" in argv
+    if "--dusk" in argv:
+        RENDER.update(DUSK)
     path_name, only, rng_arg = None, None, None
     for a in argv:
         if a == "--path":
@@ -504,7 +550,7 @@ def main():
 
     if do_path:
         spec = PATHS[path_name]
-        out = os.path.join(OUT_RENDER, "path_" + path_name)
+        out = os.path.join(OUT_RENDER, ("dusk_path_" if "--dusk" in argv else "path_") + path_name)
         os.makedirs(out, exist_ok=True)
         sc = bpy.context.scene
         sc.camera = path_cams[path_name]
@@ -520,12 +566,13 @@ def main():
             print("rendered %s_%02d" % (path_name, f))
 
     if do_render:
-        os.makedirs(OUT_RENDER, exist_ok=True)
+        out_dir = os.path.join(OUT_RENDER, "dusk") if "--dusk" in argv else OUT_RENDER
+        os.makedirs(out_dir, exist_ok=True)
         for cam in cams:
             if only and only not in cam.name:
                 continue
             bpy.context.scene.camera = cam
-            bpy.context.scene.render.filepath = os.path.join(OUT_RENDER, cam.name + ".png")
+            bpy.context.scene.render.filepath = os.path.join(out_dir, cam.name + ".png")
             bpy.ops.render.render(write_still=True)
             print("rendered", cam.name)
 
