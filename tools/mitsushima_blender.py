@@ -52,7 +52,8 @@ PATH = {
     "look_side_m": -6.0,           # 西（住宅側）へ振る量。マイナスで住宅側
     "look_height_m": 2.6,
     "lens": 32,
-    "samples": 32,                 # 連番は枚数が多いのでサンプル数を落とす
+    "samples": 28,                 # 連番は枚数が多いのでサンプル数を落とす
+    "resolution": [1280, 720],     # 連番はHD。後段のimg2img/動画生成には十分
 }
 
 # マテリアル名の日本語対応（Blenderのアウトライナで読めるように）
@@ -123,7 +124,7 @@ def make_material(name, hex_color, kind):
         bsdf.inputs["Roughness"].default_value = 0.35
         bsdf.inputs["IOR"].default_value = 1.5
         if "Transmission Weight" in bsdf.inputs:
-            bsdf.inputs["Transmission Weight"].default_value = 0.45
+            bsdf.inputs["Transmission Weight"].default_value = 0.0   # 屈折は切る（描画が重いわりに見た目が変わらない）
         bsdf.inputs["Alpha"].default_value = 0.38
         mat.blend_method = "BLEND"
     elif kind == "fence_mesh":                       # メッシュフェンス（透ける）
@@ -490,6 +491,7 @@ def main():
         sc = bpy.context.scene
         sc.camera = path_cam
         sc.cycles.samples = PATH["samples"]
+        sc.render.resolution_x, sc.render.resolution_y = PATH["resolution"]
         a, bnd = 1, PATH["frames"]
         if rng_arg:
             a, bnd = (int(v) for v in rng_arg.split(":"))
