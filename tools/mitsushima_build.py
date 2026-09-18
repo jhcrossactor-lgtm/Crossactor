@@ -823,7 +823,7 @@ def write_glb(scene, path, white=False):
         metal = 0.0
         alpha = 1.0
         if m == "carport_roof":
-            rough, alpha = 0.12, 0.45
+            rough, alpha = 0.35, 0.38
         elif m == "fence_mesh":
             rough, alpha = 0.6, 0.55
         elif m == "glass" or m == "car_glass":

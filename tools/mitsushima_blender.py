@@ -45,7 +45,7 @@ RENDER = {
 
 # 動画用：開発道路を南→北へ進むカメラパス（連番PNG／Blender側にもキーフレームで残す）
 PATH = {
-    "frames": 10,
+    "frames": 25,
     "start": [6.6, -38.0, 1.55],   # 南端（道路上・目線1.55m）
     "end": [6.6, 26.0, 1.55],      # 北端
     "look_ahead_m": 16.0,          # 何m先を見るか
@@ -119,12 +119,12 @@ def make_material(name, hex_color, kind):
     bsdf = mat.node_tree.nodes["Principled BSDF"]
     bsdf.inputs["Base Color"].default_value = (*lin, 1.0)
     bsdf.inputs["Roughness"].default_value = 0.9
-    if kind == "carport_roof":                      # ポリカ板（半透明）
-        bsdf.inputs["Roughness"].default_value = 0.08
+    if kind == "carport_roof":                      # ポリカ板（すりガラス状の半透明）
+        bsdf.inputs["Roughness"].default_value = 0.35
         bsdf.inputs["IOR"].default_value = 1.5
         if "Transmission Weight" in bsdf.inputs:
-            bsdf.inputs["Transmission Weight"].default_value = 0.9
-        bsdf.inputs["Alpha"].default_value = 0.5
+            bsdf.inputs["Transmission Weight"].default_value = 0.45
+        bsdf.inputs["Alpha"].default_value = 0.38
         mat.blend_method = "BLEND"
     elif kind == "fence_mesh":                       # メッシュフェンス（透ける）
         bsdf.inputs["Roughness"].default_value = 0.6
