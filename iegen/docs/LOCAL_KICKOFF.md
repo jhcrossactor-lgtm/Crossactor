@@ -4,11 +4,20 @@
 以下をローカルで実行すれば Phase 0 の残りから自走できる。
 
 ## 1. 取得
+既に `%USERPROFILE%\Crossactor` にクローンがある場合（通常こちら）:
 ```powershell
-cd $env:USERPROFILE\dev
+cd $env:USERPROFILE\Crossactor
+git fetch origin claude/new-session-geuhry
+git checkout claude/new-session-geuhry
+cd iegen
+uv venv; uv pip install -e .   # または uv pip install pypdf pdfplumber pymupdf ezdxf shapely ortools pyyaml
+claude
+```
+クローンが無い場合:
+```powershell
+cd $env:USERPROFILE
 git clone -b claude/new-session-geuhry https://github.com/jhcrossactor-lgtm/Crossactor.git
 cd Crossactor\iegen
-uv venv; uv pip install -e .   # または uv pip install pypdf pdfplumber pymupdf ezdxf shapely ortools pyyaml
 claude
 ```
 
