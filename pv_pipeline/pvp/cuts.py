@@ -35,6 +35,9 @@ class Cut:
         self.video_start_crop: dict | None = (raw.get("video") or {}).get("start_crop") or None
         # 仕上げで重ねる文字。[{text, font, size, x, y, start, fade, color, tracking, anchor}]
         self.video_overlays: list[dict] = list((raw.get("video") or {}).get("overlays") or [])
+        # 縦型など、別サイズで書き出すときのカットごとの設定
+        # {cover: {x, y}, overlays: [...]}（無ければ中央で切り出し、文字は横型と同じ）
+        self.variants: dict = dict((raw.get("video") or {}).get("variants") or {})
 
     # -- パス ------------------------------------------------------------- #
     def source_path(self) -> Path:
@@ -85,7 +88,12 @@ class Cut:
         return self.project.stage2_dir / f"cut{self.id}.mp4"
 
     def stage2_raw_path(self) -> Path:
-        return self.project.stage2_dir / "_raw" / f"cut{self.id}.mp4"
+        """動画APIが返した原本。別サイズの書き出しでも、常に同じ原本を使う。
+
+        ここを stage2_dir 基準にすると、variant のフォルダに原本が無いために
+        動画APIを呼び直してしまう（課金が発生する）。必ず project.raw_dir を使うこと。
+        """
+        return self.project.raw_dir / f"cut{self.id}.mp4"
 
     # -- プロンプト -------------------------------------------------------- #
     def image_prompt(self, config: dict[str, Any]) -> str:

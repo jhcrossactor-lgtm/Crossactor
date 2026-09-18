@@ -152,4 +152,24 @@ def run_stage3(project: Project, logger: RunLogger, music_override: Path | None 
         f"完成: {out} 尺={total:.2f}秒 音声={'あり' if music else 'なし(無音)'}",
         stage="3", output=str(out), duration=round(total, 2), has_music=bool(music),
     )
+    for export in assemble_cfg.get("exports") or []:
+        _export_light(out, export, logger)
     return out
+
+
+def _export_light(src: Path, export: dict, logger: RunLogger) -> Path:
+    """完成版から、容量を落とした共有用のファイルを書き出す。"""
+    from ..util import ffmpeg_bin, run_cmd
+
+    dst = src.with_name(f"{src.stem}{export.get('suffix', '_light')}{src.suffix}")
+    vf = []
+    if export.get("width") and export.get("height"):
+        vf = ["-vf", f"scale={export['width']}:{export['height']}:flags=lanczos"]
+    run_cmd([ffmpeg_bin(), "-y", "-i", str(src)] + vf +
+            ["-c:v", "libx264", "-crf", str(export.get("crf", 26)), "-preset", "slow",
+             "-profile:v", "high", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+             "-an", str(dst)], logger)
+    mb = dst.stat().st_size / 1024 / 1024
+    logger.log(f"軽量版: {dst.name} {mb:.1f}MB（元 {src.stat().st_size / 1024 / 1024:.1f}MB）",
+               stage="3", export=str(dst), size_mb=round(mb, 1))
+    return dst

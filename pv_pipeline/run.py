@@ -76,6 +76,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--provider", default=None, help="image/video 両方を上書き（mock など）")
     parser.add_argument("--image-provider", default=None, help="画像プロバイダを上書き")
     parser.add_argument("--video-provider", default=None, help="動画プロバイダを上書き")
+    parser.add_argument("--variant", default="",
+                        help="別サイズで書き出す（config.yaml の variants の名前。例: vertical）")
     parser.add_argument("--reuse-raw", action="store_true",
                         help="stage2 で動画APIを呼ばず、生成済みの原本から仕上げ（尺・ズーム）だけやり直す")
     parser.add_argument("--yes", action="store_true", help="目視確認を省いて自動合格にする")
@@ -170,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
     if not project_root.is_absolute():
         project_root = HERE / project_root
     load_dotenv([project_root / ".env", HERE / ".env", HERE.parent / ".env"])
-    project = load_project(project_root)
+    project = load_project(project_root, args.variant)
 
     if args.command == "check":
         return cmd_check(project)

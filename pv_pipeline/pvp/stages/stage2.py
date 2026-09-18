@@ -71,12 +71,17 @@ def run_stage2(
             logger.log(f"cut{cut.id} stage1画像が無いので元素材を使う ({source_image.name})",
                        cut=cut.id, stage="2")
 
-        if cut.video_start_crop:
+        vcfg = (cut.variants.get(project.variant) or {}) if project.variant else {}
+        if cut.video_start_crop and not project.variant:
             source_image = _start_crop(source_image, cut, logger)
 
         raw = cut.stage2_raw_path()
         generates_audio = False
-        if reuse_raw and raw.exists():
+        if project.variant and raw.exists():
+            # 別サイズの書き出しは、動画APIを呼ばず原本から作り直す
+            logger.log(f"cut{cut.id} 原本から{project.variant}用に作り直す: {raw.name}",
+                       cut=cut.id, stage="2", variant=project.variant)
+        elif reuse_raw and raw.exists():
             # API を呼ばず、生成済みの原本から仕上げ（尺そろえ・ズーム）だけやり直す
             logger.log(f"cut{cut.id} 生成済みの原本を再利用（APIは呼ばない）: {raw.name}",
                        cut=cut.id, stage="2", reuse_raw=True)
@@ -99,13 +104,15 @@ def run_stage2(
         media.normalize_clip(raw, cut.stage2_path(), cut.duration, width, height, fps,
                              keep_audio=keep_audio and generates_audio,
                              zoom=cut.video_zoom, logger=logger,
-                             stretch=bool(assemble_cfg.get("stretch_to_duration", False)))
-        if cut.video_overlays:
+                             stretch=bool(assemble_cfg.get("stretch_to_duration", False)),
+                             cover=vcfg.get("cover", {} if project.variant else None))
+        overlays = vcfg.get("overlays", cut.video_overlays) if project.variant else cut.video_overlays
+        if overlays:
             from ..overlay import apply_overlays
 
             plain = cut.stage2_path().with_name(f"{cut.stage2_path().stem}_notext.mp4")
             cut.stage2_path().replace(plain)
-            apply_overlays(plain, cut.stage2_path(), cut.video_overlays,
+            apply_overlays(plain, cut.stage2_path(), overlays,
                            width, height, fps, cut.duration, logger)
         logger.log(f"cut{cut.id} 尺そろえ完了 {cut.duration}s -> {cut.stage2_path()}",
                    cut=cut.id, stage="2")

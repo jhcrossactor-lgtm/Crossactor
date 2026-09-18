@@ -22,6 +22,7 @@ cuts:
       person_reference: false
       instruction: 人物は登場させない。海と建物の風景をそのまま16:9に整える。
     video:
+      variants: {vertical: {cover: {x: 0.5}}}
       mode: ai
       instruction: 海上を前進するドローンショット。
 
@@ -36,6 +37,7 @@ cuts:
         人物は登場させない。芝生と建物の佇まいをそのまま見せる。
         撮影者の影・電柱・電線を消去する。芝生と植栽を手入れの行き届いた状態にする。
     video:
+      variants: {vertical: {cover: {x: 0.5}}}
       mode: ai
       instruction: >-
         低い位置からゆっくり前進する。構図とカメラの速さは控えめなまま。
@@ -59,6 +61,7 @@ cuts:
         プールの中には入らない。
         ガラスに映った人物・ブルーシート・ホース・モップを消去し、空を夏の晴天にする。
     video:
+      variants: {vertical: {cover: {x: 0.56}}}
       mode: ai
       instruction: ドリーイン。水面がきらめく。夫婦はサンラウンジャーに座ったまま、穏やかにくつろいでいる。立ち上がらない。
 
@@ -74,6 +77,7 @@ cuts:
         奥のクジラの絵がある壁は、画面の右端まで同じ壁がそのまま続く。
         その右側に洗面所・洗面台・ドア・別の部屋は存在しない。描き足さない。
     video:
+      variants: {vertical: {cover: {x: 0.55}}}
       mode: ai
       instruction: 足元からシャンデリアへティルトアップ。
 
@@ -86,6 +90,7 @@ cuts:
       person_reference: true
       instruction: 右奥の窓辺で夫婦が海を眺める後ろ姿。空を晴天にする。
     video:
+      variants: {vertical: {cover: {x: 0.68}}}
       mode: ai
       instruction: >-
         窓辺で海を眺めていた夫婦が、ゆっくり互いのほうへ向き直り、目を合わせて穏やかに笑い合う。
@@ -105,6 +110,7 @@ cuts:
         夫は妻のほうを向いて穏やかに笑っている。二人とも外は見ていない。
         テレビ画面を海の映像に差し替え、ペットボトルとリモコンを消去する。
     video:
+      variants: {vertical: {cover: {x: 0.4}}}
       mode: ai
       instruction: 横スライド。間接照明が少し明るくなる。夫婦はソファに座ったまま、笑顔で会話を続ける。立ち上がらない。
 
@@ -122,6 +128,7 @@ cuts:
         心地よい夜風が吹いていて、妻の髪とワンピースの裾が少しなびいている。
         建物の窓の暖かい明かりとプールの青い光が二人を照らす。夜の実写らしい自然な明暗にする。
     video:
+      variants: {vertical: {cover: {x: 0.28}}}
       mode: ai
       instruction: >-
         夜風がそよぎ、妻の髪とワンピースの裾がゆっくりなびく。二人はグラスを軽く合わせたあと、微笑み合う。
@@ -143,6 +150,7 @@ cuts:
         ベンチの上段に白いタオルを敷き、その上に夫が座っている。
         肌に汗の粒が光り、満足そうにリラックスして笑顔を見せている。顔は斜め前から見える程度。
     video:
+      variants: {vertical: {cover: {x: 0.45}}}
       mode: ai
       instruction: >-
         サウナの中で、汗を光らせた夫が満足そうに微笑み、ゆっくり深く息を吐いて肩の力を抜く。
@@ -162,6 +170,7 @@ cuts:
         デイベッドによじ登る・上に立つ・膝立ちになる・身を乗り出す、はしない。
         ティッシュ箱を消去し、ベッドを整える。
     video:
+      variants: {vertical: {cover: {x: 0.63}}}
       mode: ai
       instruction: >-
         デイベッドで本を読む妻が、ゆっくり本のページを1枚めくり、ふっと穏やかに微笑む。
@@ -198,6 +207,18 @@ cuts:
         建物のどの部分も切り落とさず、縮めず、別の部屋や棟を足さない。元写真の建物全体を画面内に収める。
         文字は一切入れない（キャッチコピーと施設名は動画の仕上げで重ねる）。左上の夜空はすっきり残す。
     video:
+      variants:
+        vertical:
+          cover: {x: 0.45}
+          overlays:
+            - {text: "海と、", font: KozMinPro-Light.otf, size: 0.075, tracking: 0.12,
+               x: 0.09, y: 0.10, start: 1.5, fade: 2.2, rise: 0.008}
+            - {text: "何もしない贅沢を。", font: KozMinPro-Light.otf, size: 0.075, tracking: 0.12,
+               x: 0.09, y: 0.165, start: 1.9, fade: 2.2, rise: 0.008}
+            - {text: "The sea, and the luxury", font: GaramondPremrPro-It.otf, size: 0.042, tracking: 0.05,
+               x: 0.095, y: 0.225, start: 3.4, fade: 2.0, rise: 0.006}
+            - {text: "of doing nothing.", font: GaramondPremrPro-It.otf, size: 0.042, tracking: 0.05,
+               x: 0.095, y: 0.265, start: 3.7, fade: 2.0, rise: 0.006}
       mode: ai
       instruction: ゆっくり引く。窓の灯りがかすかに揺らぐ。建物は動かさない。文字やロゴは描かない。
       # 文字は動画生成に描かせると崩れるので、仕上げで重ねてゆっくりフェードインさせる

@@ -162,6 +162,7 @@ def normalize_clip(
     zoom: dict | None = None,
     logger: RunLogger | None = None,
     stretch: bool = False,
+    cover: dict | None = None,
 ) -> Path:
     """生成尺がカット定義とズレるので、解像度・fps・尺を強制的にそろえる。
 
@@ -177,6 +178,13 @@ def normalize_clip(
     pad = 0.0 if slow else max(0.0, duration - src_duration)
     if zoom:
         vf = _zoom_filter(src, width, height, duration, zoom, logger) + ",setsar=1"
+    elif cover is not None:
+        # 縦型など、比が違う画面いっぱいに入れる。余白は作らず、はみ出す側を切る。
+        cx, cy = float(cover.get("x", 0.5)), float(cover.get("y", 0.5))
+        vf = (
+            f"scale={width}:{height}:force_original_aspect_ratio=increase:flags=lanczos,"
+            f"crop={width}:{height}:(iw-{width})*{cx}:(ih-{height})*{cy},setsar=1"
+        )
     else:
         vf = (
             f"scale={width}:{height}:force_original_aspect_ratio=decrease:flags=lanczos,"

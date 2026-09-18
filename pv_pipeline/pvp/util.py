@@ -60,6 +60,7 @@ class Project:
     """1 物件 = 1 ディレクトリ。cuts.yaml を差し替えれば別物件に流用できる。"""
 
     root: Path
+    variant: str = ""          # 別サイズの書き出し（例: vertical）。空なら通常の16:9
     config: dict[str, Any] = field(default_factory=dict)
     cuts: dict[str, Any] = field(default_factory=dict)
 
@@ -73,7 +74,12 @@ class Project:
 
     @property
     def stage2_dir(self) -> Path:
-        return self.root / "stage2"
+        return self.root / (f"stage2_{self.variant}" if self.variant else "stage2")
+
+    @property
+    def raw_dir(self) -> Path:
+        """動画APIが返した原本。別サイズの書き出しでも、これを元にする。"""
+        return self.root / "stage2" / "_raw"
 
     @property
     def output_dir(self) -> Path:
@@ -104,7 +110,7 @@ class Project:
         self.approvals_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def load_project(root: Path) -> Project:
+def load_project(root: Path, variant: str = "") -> Project:
     root = Path(root).resolve()
     config_path = root / "config.yaml"
     cuts_path = root / "cuts.yaml"
@@ -114,7 +120,19 @@ def load_project(root: Path) -> Project:
         raise SystemExit(f"cuts.yaml が見つからない: {cuts_path}")
     config = yaml.safe_load(config_path.read_text(encoding="utf-8-sig")) or {}
     cuts = yaml.safe_load(cuts_path.read_text(encoding="utf-8-sig")) or {}
-    project = Project(root=root, config=config, cuts=cuts)
+    if variant:
+        # variants.<名前> の内容を assemble に重ねる（幅・高さ・出力名・エンドカードなど）
+        over = ((config.get("variants") or {}).get(variant)) or {}
+        if not over:
+            raise SystemExit(f"config.yaml に variants.{variant} が無い")
+        merged = dict(config.get("assemble") or {})
+        for k, v in over.items():
+            if k == "end_card" and isinstance(v, dict):
+                merged["end_card"] = {**(merged.get("end_card") or {}), **v}
+            else:
+                merged[k] = v
+        config = {**config, "assemble": merged}
+    project = Project(root=root, variant=variant, config=config, cuts=cuts)
     project.ensure_dirs()
     return project
 

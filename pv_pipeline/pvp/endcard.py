@@ -75,7 +75,9 @@ def render_bull_shine_card(
     bg_scale = float(cfg.get("bg_scale", 1.0))
     bgx, bgy = (list(cfg.get("bg_offset") or [0.0, 0.0]) + [0.0, 0.0])[:2]
     src = Image.open(background).convert("RGB")
-    sw, sh_ = round(width * bg_scale), round(height * bg_scale)
+    # 縦横比を保って幅に合わせる（縦型に書き出しても闘牛が潰れない）
+    sw = round(width * bg_scale)
+    sh_ = round(sw * src.height / src.width)
     canvas = Image.new("RGB", (width, height), (0, 0, 0))
     canvas.paste(src.resize((sw, sh_), Image.LANCZOS),
                  (round((width - sw) / 2 + bgx * width), round((height - sh_) / 2 + bgy * height)))
