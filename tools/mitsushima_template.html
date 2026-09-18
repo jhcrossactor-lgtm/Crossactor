@@ -91,7 +91,9 @@ scene.add(sun, sun.target);
 const mats = {};
 for (const [name, hex] of Object.entries(SCENE.materials)) {
   const o = { color: new THREE.Color(hex), roughness: 0.95, metalness: 0.0 };
-  if (name === 'glass' || name === 'car_glass') { o.roughness = 0.12; o.metalness = 0.25; }
+  if (name === 'carport_roof') { o.roughness = 0.1; o.transparent = true; o.opacity = 0.45; }
+  else if (name === 'fence_mesh') { o.roughness = 0.6; o.transparent = true; o.opacity = 0.55; }
+  else if (name === 'glass' || name === 'car_glass') { o.roughness = 0.12; o.metalness = 0.25; }
   else if (name.startsWith('car_')) { o.roughness = 0.35; o.metalness = 0.3; }
   else if (name === 'asphalt') { o.roughness = 0.98; }
   mats[name] = new THREE.MeshStandardMaterial(o);

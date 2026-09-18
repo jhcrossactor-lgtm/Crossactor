@@ -79,7 +79,15 @@
       "#4b443d",
       "#2f3b45",
       "#6f6a63"
-    ]
+    ],
+    "fence_block": "#b5b1a8",
+    "fence_mesh": "#9aa0a4",
+    "gate_post": "#3d4249",
+    "gate_plate": "#d8d5cf",
+    "carport_post": "#9fa6ab",
+    "carport_roof": "#cfd8dc",
+    "approach": "#cfc9bd",
+    "shrub": "#4a6f3c"
   },
   "props": {
     "car_ratio": 0.7,
@@ -124,5 +132,28 @@
       "eye_height_m": 1.6,
       "speed_mps": 4.5
     }
+  },
+  "exterior": {
+    "_comment": "外構。境界フェンスは区画ポリゴンの辺に沿って立てる（道路に面する辺は駐車場入口なので立てない）",
+    "fence_block_h_m": 0.35,
+    "fence_top_h_m": 1.15,
+    "fence_block_t_m": 0.12,
+    "fence_mesh_t_m": 0.03,
+    "carport_ratio": 0.4,
+    "carport": {
+      "width_m": 3.0,
+      "depth_m": 5.2,
+      "height_m": 2.35,
+      "slab_t_m": 0.12,
+      "post_r_m": 0.06
+    },
+    "gate_post": {
+      "w_m": 0.4,
+      "d_m": 0.4,
+      "h_m": 1.5,
+      "plate_h_m": 0.5
+    },
+    "approach_w_m": 1.2,
+    "shrub_per_plot": 2
   }
 }

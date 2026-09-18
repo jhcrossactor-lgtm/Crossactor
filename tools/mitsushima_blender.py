@@ -35,7 +35,7 @@ OUT_RENDER = os.path.join(ROOT, "output", "renders")
 # ---------------------------------------------------------------- 設定
 RENDER = {
     "resolution": (1920, 1080),
-    "samples": 64,
+    "samples": 48,
     "engine": "CYCLES",
     "sun_elevation_deg": 48.0,     # 太陽高度
     "sun_azimuth_deg": 132.0,      # 方位（0=北, 90=東, 180=南）
@@ -52,12 +52,16 @@ PATH = {
     "look_side_m": -6.0,           # 西（住宅側）へ振る量。マイナスで住宅側
     "look_height_m": 2.6,
     "lens": 32,
-    "samples": 48,                 # 連番は枚数が多いのでサンプル数を落とす
+    "samples": 32,                 # 連番は枚数が多いのでサンプル数を落とす
 }
 
 # マテリアル名の日本語対応（Blenderのアウトライナで読めるように）
 MAT_JA = {
     "tire": "車_タイヤ",
+    "fence_block": "外構_ブロック", "fence_mesh": "外構_メッシュフェンス",
+    "gate_post": "外構_門柱", "gate_plate": "外構_表札", "approach": "外構_アプローチ",
+    "carport_post": "外構_カーポート柱", "carport_roof": "外構_カーポート屋根",
+    "shrub": "外構_低木",
     "asphalt": "道路アスファルト", "concrete": "駐車土間コンクリート",
     "ground": "地盤", "plot": "区画地面", "neighbor": "隣接街区",
     "trunk": "樹木_幹", "glass": "ガラス", "door": "玄関扉", "car_glass": "車_ガラス",
@@ -115,7 +119,19 @@ def make_material(name, hex_color, kind):
     bsdf = mat.node_tree.nodes["Principled BSDF"]
     bsdf.inputs["Base Color"].default_value = (*lin, 1.0)
     bsdf.inputs["Roughness"].default_value = 0.9
-    if kind in ("glass", "car_glass"):
+    if kind == "carport_roof":                      # ポリカ板（半透明）
+        bsdf.inputs["Roughness"].default_value = 0.08
+        bsdf.inputs["IOR"].default_value = 1.5
+        if "Transmission Weight" in bsdf.inputs:
+            bsdf.inputs["Transmission Weight"].default_value = 0.9
+        bsdf.inputs["Alpha"].default_value = 0.5
+        mat.blend_method = "BLEND"
+    elif kind == "fence_mesh":                       # メッシュフェンス（透ける）
+        bsdf.inputs["Roughness"].default_value = 0.6
+        bsdf.inputs["Metallic"].default_value = 0.4
+        bsdf.inputs["Alpha"].default_value = 0.55
+        mat.blend_method = "BLEND"
+    elif kind in ("glass", "car_glass"):
         bsdf.inputs["Roughness"].default_value = 0.08
         bsdf.inputs["Metallic"].default_value = 0.0
         bsdf.inputs["IOR"].default_value = 1.45
@@ -258,6 +274,16 @@ def role_of(o):
         return "地面"
     if m == "neighbor":
         return "隣接建物"
+    if m.startswith("fence_"):
+        return "境界フェンス"
+    if m.startswith("gate_"):
+        return "門柱"
+    if m.startswith("carport_"):
+        return "カーポート"
+    if m == "approach":
+        return "玄関アプローチ"
+    if m == "shrub":
+        return "低木"
     return m
 
 
@@ -266,7 +292,8 @@ def collection_for(group, root):
         n = int(group.split("_")[1])
         return get_collection("%02d号地" % n, root)
     return get_collection({"road": "道路", "site": "敷地", "street": "街路樹",
-                           "neighbor": "隣接街区", "ground": "地盤"}.get(group, group), root)
+                           "neighbor": "隣接街区", "ground": "地盤",
+                           "fence": "境界フェンス"}.get(group, group), root)
 
 
 def build(scene_data):

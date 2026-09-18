@@ -289,6 +289,9 @@ def build_scene(cfg):
         mats["wall_%d" % i] = c
     for i, c in enumerate(pal["accents"]):
         mats["accent_%d" % i] = c
+    for k in ("fence_block", "fence_mesh", "gate_post", "gate_plate",
+              "carport_post", "carport_roof", "approach", "shrub"):
+        mats[k] = pal[k]
     for i, c in enumerate(pal["roofs"]):
         mats["roof_%d" % i] = c
     for i, c in enumerate(pal["cars"]):
@@ -344,7 +347,7 @@ def build_scene(cfg):
         accent = "accent_%d" % rng.randrange(len(pal["accents"]))
         roof = "roof_%d" % rng.randrange(len(pal["roofs"]))
         # 片流れ（道路側＝+Xが高い）の2階建て一式。w_xが奥行、w_yが間口。
-        add_house(objs, add_box, gid, wx, wz, w_x, w_y, wall, accent, roof, b, rng)
+        house = add_house(objs, add_box, gid, wx, wz, w_x, w_y, wall, accent, roof, b, rng)
 
         # 駐車場土間（道路側）と車
         px0, px1 = x1 + 0.1, road_x - 0.1
@@ -367,6 +370,10 @@ def build_scene(cfg):
                         add_box(gid, "tire", cxx + dz, 0.31, czz + dx,
                                 0.62, 0.62, 0.22, math.pi / 2.0)
 
+        # 外構（カーポート・門柱・玄関アプローチ・低木）
+        add_exterior(objs, add_box, gid, cfg, rng, W,
+                     rect, road_x, wx, wz, w_x, w_y, house["door_z"])
+
         # 植栽（建物の裏手側の空地）
         for _ in range(cfg["props"]["tree_per_plot"]):
             tx = x0 - 0.9 - rng.random() * 0.4
@@ -385,6 +392,9 @@ def build_scene(cfg):
             "top_m": round(b["eave_height_m"] + w_x * b["roof_slope"] + b["roof_thickness_m"], 3),
             "roof": "片流れ%d寸（道路側が高く裏へ流す）" % round(b["roof_slope"] * 10),
         })
+
+    # --- 境界フェンス（区画の辺に沿って。道路に面する辺は駐車場入口なので立てない）
+    add_fences(objs, add_box, plots_raw, road_x, cfg, W)
 
     # --- 街路樹
     interval = cfg["props"]["street_tree_interval_m"]
@@ -427,6 +437,7 @@ def add_house(objs, add_box, gid, wx, wz, dx, dz, wall, accent, roof, b, rng):
     """
     slope = b["roof_slope"]
     y_low = b["eave_height_m"]                     # 裏（-X）の壁天端
+    # 返り値：玄関のZ位置。外構（アプローチ・門柱）を玄関に合わせるために使う
     y_high = y_low + dx * slope                    # 道路側（+X）の壁天端
     hx, hz = dx / 2.0, dz / 2.0
     fh = b["floor_height_m"]
@@ -482,6 +493,106 @@ def add_house(objs, add_box, gid, wx, wz, dx, dz, wall, accent, roof, b, rng):
     for off in (-0.26, 0.26):
         for lv in (0, 1):
             win(wx - hx - t / 2.0, 1.35 + lv * fh, wz + off * dz, t, 1.2, 1.0)
+
+    return {"door_z": dz_door, "accent_z": az, "side": side}
+
+
+def add_exterior(objs, add_box, gid, cfg, rng, W,
+                 rect, road_x, wx, wz, dx, dz, door_z):
+    """区画内の外構。道路側（+X）の駐車スペースまわりに置く。"""
+    e = cfg["exterior"]
+    x0, y0, x1, y1 = rect
+    px0, px1 = x1 + 0.1, road_x - 0.1          # 駐車土間の範囲（平面x）
+    if px1 - px0 < 2.0:
+        return
+    face_x = wx + dx / 2.0                     # 建物の道路側の面
+    pad_x0, pad_x1 = face_x + 0.1, face_x + 0.1 + (px1 - px0)
+    aw = e["approach_w_m"]
+
+    # 玄関アプローチ（駐車土間の上にタイル帯を敷く）
+    objs.append({"kind": "poly", "group": gid, "mat": "approach", "y": 0.035,
+                 "pts": [[round(pad_x0, 3), round(door_z - aw / 2.0, 3)],
+                         [round(pad_x1, 3), round(door_z - aw / 2.0, 3)],
+                         [round(pad_x1, 3), round(door_z + aw / 2.0, 3)],
+                         [round(pad_x0, 3), round(door_z + aw / 2.0, 3)]],
+                 "tris": [[0, 1, 2], [0, 2, 3]]})
+
+    # 門柱（道路際・アプローチの脇）
+    g = e["gate_post"]
+    gx = pad_x1 - 0.55
+    gz = min(max(door_z + aw / 2.0 + 0.45, wz - dz / 2.0 + 0.3), wz + dz / 2.0 - 0.3)
+    add_box(gid, "gate_post", gx, g["h_m"] / 2.0, gz, g["d_m"], g["h_m"], g["w_m"])
+    add_box(gid, "gate_plate", gx + g["d_m"] / 2.0 + 0.02, g["h_m"] * 0.62, gz,
+            0.04, g["plate_h_m"], g["w_m"] * 0.7)
+
+    # 低木（門柱まわり。隣地へ出ないよう建物の間口内に収める）
+    z_lo, z_hi = wz - dz / 2.0 + 0.3, wz + dz / 2.0 - 0.3
+    for i in range(e["shrub_per_plot"]):
+        r = 0.3 + rng.random() * 0.14
+        sz = min(max(gz + 0.55, z_lo), z_hi)
+        objs.append({"kind": "cone", "group": gid, "mat": "shrub",
+                     "c": [round(gx - 0.15 - i * 0.7, 3), 0.0, round(sz, 3)],
+                     "r": round(r, 3), "h": round(r * 2.3, 3)})
+
+    # カーポート（一部の区画のみ）
+    if rng.random() < e["carport_ratio"]:
+        cp = e["carport"]
+        cw, cd, ch = cp["width_m"], cp["depth_m"], cp["height_m"]
+        cz = door_z - aw / 2.0 - cw / 2.0 - 0.35
+        cx0 = face_x + 0.3
+        add_box(gid, "carport_roof", cx0 + cd / 2.0, ch, cz, cd, cp["slab_t_m"], cw)
+        for sx in (cx0 + 0.25, cx0 + cd - 0.25):
+            for sz in (cz - cw / 2.0 + 0.15, cz + cw / 2.0 - 0.15):
+                objs.append({"kind": "cyl", "group": gid, "mat": "carport_post",
+                             "c": [round(sx, 3), 0.0, round(sz, 3)],
+                             "r": cp["post_r_m"], "h": round(ch, 3)})
+
+
+def add_fences(objs, add_box, plots, road_x, cfg, W):
+    """区画境界にブロック＋メッシュフェンス。共有辺は1本だけ立てる。"""
+    e = cfg["exterior"]
+    bh, th_b = e["fence_block_h_m"], e["fence_block_t_m"]
+    fh, th_m = e["fence_top_h_m"], e["fence_mesh_t_m"]
+    def clip_to_road(a, b2):
+        """道路境界線(x=road_x)より東へ出る部分を切り落とす。"""
+        ax, ay = a
+        bx, by = b2
+        if ax > road_x + 0.02 and bx > road_x + 0.02:
+            return None
+        if abs(bx - ax) > 1e-9:
+            if ax > road_x:
+                t = (road_x - ax) / (bx - ax)
+                ax, ay = road_x, ay + (by - ay) * t
+            if bx > road_x:
+                t = (road_x - ax) / (bx - ax)
+                bx, by = road_x, ay + (by - ay) * t
+        return (ax, ay), (bx, by)
+
+    seen = set()
+    for plot in plots:
+        n = len(plot)
+        for i in range(n):
+            seg = clip_to_road(plot[i], plot[(i + 1) % n])
+            if seg is None:
+                continue
+            a, b2 = seg
+            if abs(a[0] - road_x) < 0.02 and abs(b2[0] - road_x) < 0.02:
+                continue                                  # 道路に面する辺（駐車場入口）
+            key = tuple(sorted([(round(a[0], 2), round(a[1], 2)),
+                                (round(b2[0], 2), round(b2[1], 2))]))
+            if key in seen:
+                continue
+            seen.add(key)
+            L = math.hypot(b2[0] - a[0], b2[1] - a[1])
+            if L < 0.4:
+                continue
+            mx, my = (a[0] + b2[0]) / 2.0, (a[1] + b2[1]) / 2.0
+            cx, cz = W((mx, my))
+            ax, az = W((a[0], a[1]))
+            bx, bz = W((b2[0], b2[1]))
+            rot = math.atan2(-(bz - az), bx - ax)
+            add_box("fence", "fence_block", cx, bh / 2.0, cz, L, bh, th_b, rot)
+            add_box("fence", "fence_mesh", cx, (bh + fh) / 2.0, cz, L, fh - bh, th_m, rot)
 
 
 def add_tree(objs, group, pos, cfg, rng, pal, scale=1.0):
@@ -710,7 +821,12 @@ def write_glb(scene, path, white=False):
         mat_index[m] = i
         rough = 0.95
         metal = 0.0
-        if m == "glass" or m == "car_glass":
+        alpha = 1.0
+        if m == "carport_roof":
+            rough, alpha = 0.12, 0.45
+        elif m == "fence_mesh":
+            rough, alpha = 0.6, 0.55
+        elif m == "glass" or m == "car_glass":
             rough, metal = 0.15, 0.1
         elif m.startswith("car_"):
             rough, metal = 0.35, 0.2
@@ -718,14 +834,18 @@ def write_glb(scene, path, white=False):
             color, rough, metal = hex_to_linear("#e6e4e0"), 0.9, 0.0
         else:
             color = hex_to_linear(scene["materials"][m])
-        materials.append({
+        color = color[:3] + [alpha]
+        mat_def = {
             "name": m,
             "pbrMetallicRoughness": {
                 "baseColorFactor": color,
                 "metallicFactor": metal, "roughnessFactor": rough,
             },
             "doubleSided": True,
-        })
+        }
+        if alpha < 1.0:
+            mat_def["alphaMode"] = "BLEND"
+        materials.append(mat_def)
 
     buf = bytearray()
     accessors, bufviews, meshes, nodes = [], [], [], []
