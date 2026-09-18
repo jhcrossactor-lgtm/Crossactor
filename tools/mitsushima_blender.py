@@ -43,17 +43,24 @@ RENDER = {
     "sun_angle_deg": 0.9,          # 影のやわらかさ
 }
 
-# 動画用：開発道路を南→北へ進むカメラパス（連番PNG／Blender側にもキーフレームで残す）
-PATH = {
-    "frames": 25,
-    "start": [6.6, -38.0, 1.55],   # 南端（道路上・目線1.55m）
-    "end": [6.6, 26.0, 1.55],      # 北端
-    "look_ahead_m": 16.0,          # 何m先を見るか
-    "look_side_m": -6.0,           # 西（住宅側）へ振る量。マイナスで住宅側
-    "look_height_m": 2.6,
-    "lens": 32,
-    "samples": 28,                 # 連番は枚数が多いのでサンプル数を落とす
-    "resolution": [1280, 720],     # 連番はHD。後段のimg2img/動画生成には十分
+# 動画用カメラパス。連番PNGを出し、Blender側にもキーフレームで残す。
+# look: "follow" = カメラ位置からの相対（前方・横・高さ）、"fixed" = 注視点も始点終点で補間
+PATHS = {
+    "street": {                      # 開発道路を南→北へ歩く
+        "frames": 25, "lens": 32, "samples": 28, "resolution": [1280, 720],
+        "start": [6.6, -38.0, 1.55], "end": [6.6, 26.0, 1.55],
+        "look": "follow", "look_ahead_m": 16.0, "look_side_m": -6.0, "look_height_m": 2.6,
+    },
+    "drone": {                       # 南東上空から降りながら街区へ寄る
+        "frames": 12, "lens": 35, "samples": 28, "resolution": [1280, 720],
+        "start": [62.0, -62.0, 42.0], "end": [24.0, -16.0, 11.0],
+        "look": "fixed", "look_start": [0.0, -6.0, 4.0], "look_end": [-2.0, 4.0, 3.2],
+    },
+    "entry": {                       # 道路から3号地（カーポート・車なし）の玄関へ寄る
+        "frames": 8, "lens": 30, "samples": 28, "resolution": [1280, 720],
+        "start": [8.6, 13.8, 1.60], "end": [3.3, 17.2, 1.60],
+        "look": "fixed", "look_start": [-2.1, 19.6, 2.2], "look_end": [-2.1, 19.73, 1.8],
+    },
 }
 
 # マテリアル名の日本語対応（Blenderのアウトライナで読めるように）
@@ -419,17 +426,18 @@ def build_cameras(scene_data, root):
     return cams
 
 
-def build_path_camera(root):
-    """道路を南→北へ進むカメラ。位置・注視点をフレーム1〜Nにキーフレームで打つ。"""
+def build_path_camera(root, name, spec):
+    """カメラパスを1本つくる。位置・注視点をフレーム1〜Nにキーフレームで打つ。"""
     col = get_collection("カメラ", root)
-    n = PATH["frames"]
-    data = bpy.data.cameras.new("05_道路パス")
-    data.lens = PATH["lens"]
+    n = spec["frames"]
+    label = "05_パス_%s" % name
+    data = bpy.data.cameras.new(label)
+    data.lens = spec["lens"]
     data.clip_end = 2000.0
-    cam = bpy.data.objects.new("05_道路パス", data)
+    cam = bpy.data.objects.new(label, data)
     col.objects.link(cam)
 
-    tgt = bpy.data.objects.new("05_道路パス_注視点", None)
+    tgt = bpy.data.objects.new(label + "_注視点", None)
     tgt.empty_display_size = 0.6
     col.objects.link(tgt)
     con = cam.constraints.new("TRACK_TO")
@@ -439,11 +447,16 @@ def build_path_camera(root):
 
     for i in range(n):
         t = i / (n - 1) if n > 1 else 0.0
-        pos = [PATH["start"][k] + (PATH["end"][k] - PATH["start"][k]) * t for k in range(3)]
+        pos = [spec["start"][k] + (spec["end"][k] - spec["start"][k]) * t for k in range(3)]
+        if spec["look"] == "follow":
+            look = (pos[0] + spec["look_side_m"],
+                    pos[1] + spec["look_ahead_m"],
+                    spec["look_height_m"])
+        else:
+            look = [spec["look_start"][k] + (spec["look_end"][k] - spec["look_start"][k]) * t
+                    for k in range(3)]
         cam.location = pos
-        tgt.location = (pos[0] + PATH["look_side_m"],
-                        pos[1] + PATH["look_ahead_m"],
-                        PATH["look_height_m"])
+        tgt.location = look
         cam.keyframe_insert("location", frame=i + 1)
         tgt.keyframe_insert("location", frame=i + 1)
 
@@ -451,9 +464,6 @@ def build_path_camera(root):
         for fc in ob.animation_data.action.fcurves:
             for kp in fc.keyframe_points:
                 kp.interpolation = "LINEAR"
-
-    sc = bpy.context.scene
-    sc.frame_start, sc.frame_end, sc.frame_current = 1, n, 1
     return cam
 
 
@@ -461,13 +471,17 @@ def build_path_camera(root):
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
     do_render = "--render" in argv
-    do_path = "--path" in argv
-    only, rng_arg = None, None
+    path_name, only, rng_arg = None, None, None
     for a in argv:
+        if a == "--path":
+            path_name = "street"
+        if a.startswith("--path="):
+            path_name = a.split("=", 1)[1]
         if a.startswith("--only="):
             only = a.split("=", 1)[1]
         if a.startswith("--path-range="):
             rng_arg = a.split("=", 1)[1]
+    do_path = path_name is not None
 
     scene_data = json.load(open(SCENE_JSON, encoding="utf-8"))
     reset_scene()
@@ -475,7 +489,10 @@ def main():
     build_world()
     build_sun(root)
     cams = build_cameras(scene_data, root)
-    path_cam = build_path_camera(root)
+    path_cams = {nm: build_path_camera(root, nm, sp) for nm, sp in PATHS.items()}
+    sc0 = bpy.context.scene
+    sc0.frame_start, sc0.frame_end, sc0.frame_current = 1, max(
+        sp["frames"] for sp in PATHS.values()), 1
 
     os.makedirs(os.path.dirname(OUT_BLEND), exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=OUT_BLEND)
@@ -486,20 +503,21 @@ def main():
           % (OUT_BLEND, n_obj, n_tri, len(bpy.data.materials), len(cams)))
 
     if do_path:
-        out = os.path.join(OUT_RENDER, "path")
+        spec = PATHS[path_name]
+        out = os.path.join(OUT_RENDER, "path_" + path_name)
         os.makedirs(out, exist_ok=True)
         sc = bpy.context.scene
-        sc.camera = path_cam
-        sc.cycles.samples = PATH["samples"]
-        sc.render.resolution_x, sc.render.resolution_y = PATH["resolution"]
-        a, bnd = 1, PATH["frames"]
+        sc.camera = path_cams[path_name]
+        sc.cycles.samples = spec["samples"]
+        sc.render.resolution_x, sc.render.resolution_y = spec["resolution"]
+        a, bnd = 1, spec["frames"]
         if rng_arg:
             a, bnd = (int(v) for v in rng_arg.split(":"))
         for f in range(a, bnd + 1):
             sc.frame_set(f)
-            sc.render.filepath = os.path.join(out, "path_%02d.png" % f)
+            sc.render.filepath = os.path.join(out, "%s_%02d.png" % (path_name, f))
             bpy.ops.render.render(write_still=True)
-            print("rendered path_%02d" % f)
+            print("rendered %s_%02d" % (path_name, f))
 
     if do_render:
         os.makedirs(OUT_RENDER, exist_ok=True)
