@@ -8,10 +8,12 @@ import csv
 import difflib
 import json
 import os
-import re
+import sys
 from pathlib import Path
 
 import fitz
+
+sys.path.insert(0, str(Path(__file__).parent))
 
 # (marks file, skip file, source pdf, output pdf, 番号が読めないページ用の予備オフセット)
 # 作業フォルダに jobs.json があればそちらを優先する。
@@ -21,15 +23,8 @@ DEFAULT_JOBS = [
 ]
 YELLOW = (1.0, 0.93, 0.2)
 RED = (0.85, 0.05, 0.05)
-# 音声由来の表記ゆれを吸収する
-VARIANTS = {"脅迫": "強迫", "帰す": "帰す", "関わらず": "かかわらず", "合わせて": "併せて"}
-DROP = re.compile(r"[\s　、。，．,.「」『』（）()・:：;；…\-－―ー〜～⇨→]")
-
-
-def norm(s):
-    for a, b in VARIANTS.items():
-        s = s.replace(a, b)
-    return DROP.sub("", s)
+# 正規化は hunt.py と共有する（_norm.py）。片方だけ直すとズレる。
+from _norm import norm  # noqa: E402
 
 
 def page_chars(page):

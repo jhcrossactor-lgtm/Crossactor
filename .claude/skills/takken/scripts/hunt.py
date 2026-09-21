@@ -7,8 +7,8 @@ QUERIES（探す文言のリスト）を書き換えて実行する。CLI でも
     python hunt.py --pdf "G:/.../26宅建_基本テキスト(宅建業法).pdf" --offset 11
     python hunt.py --queries queries.txt      # ラベル|文言|正規表現（正規表現は省略可）
 
-NFKC をかけないこと。add_markers.py と同じ正規化条件で照合するのが狙いだが、
-現状ズレている（起動時に警告を出す）。詳細は SKILL.md「既知の落とし穴」を読むこと。
+正規化は add_markers.py と共有する（_norm.py）。NFKC はかけない。
+追加で当てたい文字幅ちがいは --queries の正規表現欄に書く（診断専用）。
 """
 import argparse
 import difflib
@@ -19,6 +19,9 @@ from pathlib import Path
 
 import fitz
 
+sys.path.insert(0, str(Path(__file__).parent))
+from _norm import norm  # noqa: E402
+
 # --- ここを書き換えて使う ---------------------------------------------------
 PDF = Path(r"G:\google drive_jh\宅建テキスト\26宅建_基本テキスト(宅建業法).pdf")
 OFF = 11
@@ -28,38 +31,6 @@ QUERIES = [
 ]
 # ---------------------------------------------------------------------------
 
-DROP = re.compile(r"[\s　、。，．,.「」『』（）()・:：;；…\-－―〜～⇨*_|#\u2003]")
-
-
-def norm(s):
-    return DROP.sub("", s)
-
-
-def warn_if_normalization_differs():
-    """add_markers.py と正規化条件がズレていないか起動時に確かめる。
-
-    ズレたままだと「hunt.py では見つかるのに add_markers.py では当たらない」
-    （またはその逆）が起きて、要確認の潰し込みが空回りする。
-    """
-    try:
-        sys.path.insert(0, str(Path(__file__).parent))
-        import add_markers as am
-    except Exception:
-        return
-    # パターン文字列を突き合わせると   のようなエスケープが素の文字として
-    # 混ざる。実際に落とすかどうかで判定する。
-    probe = "\t\n 　 、。，．,.「」『』（）()・:：;；…-－―ー〜～⇨→*_|#"
-    only_am = {c for c in probe if am.DROP.match(c) and not DROP.match(c)}
-    only_hunt = {c for c in probe if DROP.match(c) and not am.DROP.match(c)}
-    if only_am or only_hunt or am.VARIANTS:
-        print("⚠ 正規化条件が add_markers.py とズレている（SKILL.md「既知の落とし穴」参照）")
-        if only_am:
-            print(f"   add_markers.py だけが落とす: {''.join(sorted(only_am))}")
-        if only_hunt:
-            print(f"   hunt.py だけが落とす      : {''.join(sorted(only_hunt))}")
-        if am.VARIANTS:
-            print(f"   hunt.py に無い表記ゆれ変換 : {am.VARIANTS}")
-        print()
 
 
 def build_pagemap(doc, off):
@@ -141,8 +112,6 @@ def main():
     queries = load_queries(a.queries) if a.queries else QUERIES
     if not queries:
         ap.error("探す文言が無い。--queries を渡すか、このファイルの QUERIES を書き換えろ")
-
-    warn_if_normalization_differs()
 
     doc = fitz.open(a.pdf)
     raw = [doc[i].get_text() for i in range(doc.page_count)]
