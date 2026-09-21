@@ -1,102 +1,108 @@
 ---
 name: kanri
-description: RentBook（フジヒサハウジング管理台帳）システムを起動・操作するスキル。ローカル開発サーバの起動、Supabase上の台帳データ（物件・部屋・入居者・入金・賃料履歴・修繕・点検）の照会と更新を扱う。トリガー: 「/kanri」「管理台帳」「台帳を開いて」「RentBook起動」「レントブック」「フジヒサの台帳」「家賃の入金状況」「空室状況を出して」「滞納を確認」「賃料履歴を見たい」
+description: RentBook（フジヒサハウジング管理台帳／収益物件管理システム）を起動するスキル。本番URLを開くか、ローカル開発サーバを立ち上げる。起動後はユーザーの指示に従って台帳データ（物件・部屋・入金・賃料履歴・修繕・点検）の照会や資料出力を行う。トリガー: 「/kanri」「管理台帳」「台帳を開いて」「台帳起動」「RentBook」「レントブック」「フジヒサの台帳」「収益物件管理システム」
 user-invocable: true
 ---
 
 # RentBook — フジヒサハウジング管理台帳
 
-`/kanri` はこのシステムを起動・操作するためのトリガー。
+`/kanri` はこのシステムを**起動する**トリガー。
+起動したら止まってほせもやんの指示を待つ。先回りして操作しない。
+
+Excel手入力をやめ、入出金を会計アプリ風UIで記帳してSupabaseに蓄積し、
+どの端末からでも「本日時点の最新版」として4資料を出力するシステム。
+
+**出力する4資料**：物件概要書／レントロール／収支表／入金状況
 
 ---
 
-## システム構成
+## 起動
 
-| 要素 | 所在 |
-|---|---|
-| アプリ本体 | `github.com/Fujihisahousing/fujihisa-housing`（別リポジトリ） |
-| 業務データ | Supabase `rpmiecrhnjpvgntltftd`（ap-northeast-1 / PostgreSQL 17.6） |
-| 移行SQL・取込スクリプト | Google Drive `★　Crossactor/フジヒサ/rentbook_data/`（アプリは実行時に読まない） |
+### A. 本番（通常はこっち）
 
----
+```
+https://fujihisahousing.github.io/fujihisa-housing/
+```
 
-## 起動手順
+GitHub Pages 配信。`main` へのpushで自動デプロイされる。
+**ブラウザで開くだけ。** 環境構築は不要。
+
+### B. ローカル開発（改修・検証時）
 
 ```bash
-cd <fujihisa-housing のクローン先>
-# ルートに .env.local が無ければ Drive の rentbook_data/rentbook-data-backup/ から配置
+git clone https://github.com/Fujihisahousing/fujihisa-housing
+cd fujihisa-housing
 npm install
-npm run dev
+cp .env.example .env.local    # VITE_SUPABASE_ANON_KEY を埋める
+npm run dev                   # → http://localhost:5173/
 ```
 
-`.env.local` の中身は Supabase URL と **publishable キー**。
-publishable キーは公開アプリのバンドルにも含まれる公開前提のキーなので、
-Drive に置いてあること自体は設計どおり。
+| コマンド | 内容 |
+|---|---|
+| `npm run dev` | 開発サーバ起動（Vite / ポート5173） |
+| `npm run build` | 本番ビルド（`tsc -b && vite build`） |
+| `npm run preview` | ビルド結果の確認 |
+| `npm run typecheck` | 型チェックのみ |
+
+`.env.local` が無い場合は Drive の
+`★　Crossactor/フジヒサ/rentbook_data/rentbook-data-backup/.env.local` から持ってくる。
 
 ---
 
-## データ照会
+## 構成
 
-アプリを起動せずデータだけ見たい場合は Supabase MCP を直接使う。
-
-```
-project_id: rpmiecrhnjpvgntltftd
-```
-
-### 本番テーブル
-
-| テーブル | 行数 | 内容 |
-|---|---:|---|
-| `properties` | 15 | 物件 |
-| `units` | 157 | 部屋 |
-| `leases` | 0 | 契約（**未使用。要確認**） |
-| `payment_records` | 6,917 | 入金記録 |
-| `transactions` | 3,104 | 取引 |
-| `rent_history` | 258 | 賃料履歴 |
-| `property_repairs` | 675 | 修繕 |
-| `property_documents` | 335 | 書類 |
-| `property_opex` | 289 | 運営費 |
-| `property_inspections` | 182 | 点検 |
-| `audit_logs` | 2,820 | 監査ログ |
-| `move_events` / `move_out_ledger` | 6 / 5 | 入退去 |
-| `arrears_notes` / `payment_notes` | 1 / 0 | 滞納・入金メモ |
-| `profiles` / `settings` | 4 / 2 | ユーザー・設定 |
-
-### 管理物件
-
-プランドール堂島／阿波座／道頓堀、ルネスプランドール守口、シャーメゾン新大阪、
-近畿吉田ビル、富士マンション、東大阪松原、東中浜、五月田町、大庭町、豊野町、川西市久代
+| 要素 | 内容 |
+|---|---|
+| リポジトリ | `github.com/Fujihisahousing/fujihisa-housing`（public） |
+| 技術 | React + TypeScript + Vite / Tailwind / Zustand / SheetJS |
+| DB | Supabase `rpmiecrhnjpvgntltftd`（ap-northeast-1 / PostgreSQL 17.6） |
+| ホスティング | GitHub Pages |
+| 仕様書 | リポジトリ内 `docs/SOW.md` |
 
 ---
 
-## 扱う際のルール
+## セキュリティ設計（遵守すること）
 
-1. **入居者名・金額は個人情報**。外部サービスへの送信、公開リポジトリへのコミットは禁止
-2. **書き込み前に必ず確認を取る**。台帳は業務の正本であり、誤更新は実害に直結する
-3. **参照は読み取り専用クエリで行う**。`SELECT` で足りる用件に `UPDATE` を使わない
-4. **数字を出すときは集計条件を明記する**。期間・対象物件・除外条件を添える
+このシステムは設計として以下を前提にしている。**崩さない。**
 
----
-
-## 作業用テーブルについて（触らない）
-
-`tmp_backup_*` / `backup_*` が24本ある。依存0・ポリシー0・作成後の更新0を確認済みで、
-**アプリは一切参照していない**。照会対象に含めないこと。
-
-うち3本は RLS が無効（`rent_history_backup_dojima_20260903`、
-`backup_runes202_20260904`、`backup_runes202_hist_20260904`）。
-対応方針は `communications/agenda/pending.md` の議題で保留中。
+- **`service_role` キーはリポジトリにもアプリにも絶対に置かない。** 守りは Supabase の RLS
+- `anon key` はクライアントに公開される前提のキー。`.env.local` や Drive にあるのは設計どおり
+- 個人情報は**サーバ側で暗号化**（pgcrypto + Vault）。復号は `is_admin()` のみ
+- `leases`（個人情報）は RLS で **admin 限定**
+- 退去後 `pii_retention_years`（既定2年）で個人情報を自動匿名化（pg_cron 日次ジョブ）
 
 ---
 
-## 要確認（未確定）
+## データ照会（アプリを起動せず直接見る場合）
 
-- `fujihisa-housing` のローカルクローン先パス
-- `leases` テーブルが0行である理由（設計どおりか、未移行か）
+Supabase MCP を使う。`project_id: rpmiecrhnjpvgntltftd`
+
+| テーブル | 行数 | | テーブル | 行数 |
+|---|---:|---|---|---:|
+| `payment_records` | 6,917 | | `property_documents` | 335 |
+| `transactions` | 3,104 | | `property_opex` | 289 |
+| `audit_logs` | 2,820 | | `rent_history` | 258 |
+| `property_repairs` | 675 | | `property_inspections` | 182 |
+| `units` | 157 | | `properties` | 15 |
+| `move_events` | 6 | | `move_out_ledger` | 5 |
+| `profiles` | 4 | | `settings` | 2 |
+| `arrears_notes` | 1 | | `leases` / `payment_notes` | 0 |
+
+**管理物件**：プランドール堂島／阿波座／道頓堀、ルネスプランドール守口、
+シャーメゾン新大阪、近畿吉田ビル、富士マンション、東大阪松原、東中浜、
+五月田町、大庭町、豊野町、川西市久代
+
+### 照会時のルール
+
+1. **書き込み前に必ず確認を取る。** 台帳は業務の正本。誤更新は実害に直結する
+2. 参照で足りる用件に `UPDATE` を使わない
+3. 数字を出すときは集計条件（期間・対象物件・除外条件）を明記する
+4. 入居者名・金額を外部サービスへ送信しない
+5. `tmp_backup_*` / `backup_*` の24本は**作業用。照会対象に含めない**
 
 ---
 
 ## 関連
 
-- 台帳の所在と構成 → `CLAUDE.md` の「フジヒサハウジング管理台帳（rentbook）」節
-- 調査の経緯 → `communications/logs/2026-09-21.md`
+- 台帳の所在と経緯 → `CLAUDE.md` の「フジヒサハウジング管理台帳（rentbook）」節
+- 未決議題 → `communications/agenda/pending.md`
