@@ -82,6 +82,46 @@ MBTIはENTJ（指揮官型）。思考・判断・行動すべてにおいてENT
 
 ---
 
+## スキルの置き場所（全PC共通ルール）
+
+**どのPCで作業していても、このリポジトリを開いた時点でこのルールが適用される。**
+
+### 1. 業務スキルは必ず `.claude/skills/` に置く
+
+`~/.claude/skills/` の個人スキルには置かない。個人スキルはPC間で同期されず、
+そのPCが使えなくなると業務が止まる（2026-09-21 に `/マーカー` で実際に発生）。
+
+新しくスキルを作ったら `.claude/skills/<name>/SKILL.md` に置いてコミットする。
+「あとでリポジトリに入れる」はしない。作った時点で入れる。
+
+### 2. セッション開始時にスキルの同期状態を確認する
+
+```bash
+bash scripts/sync_account_skills.sh --check
+```
+
+- **差分なし** → 何も言わずに本題へ進む
+- **差分あり** → `bash scripts/sync_account_skills.sh` を流し、内容をほせもやんに報告してコミット
+
+claude.ai 側でスキルを直した直後は必ず差分が出る。放置すると2系統がズレる。
+
+### 3. claude.ai ミラーは一方向。リポジトリ側で直接編集しない
+
+`.claude/skills/` の中には claude.ai アカウントからミラーしたスキルがある
+（`adobe-invoice-download` `arch-reg-sync` `cro-mini` `deep-verify` `event-lp`
+`grilling` `haichi-tool` `promo-design` `seo-lp` `writing-great-skills`）。
+
+claude.ai 側へ**書き戻す手段は存在しない**。ミラー側のファイルをリポジトリで直接編集しても
+claude.ai には反映されず、次の同期で上書きされて消える。
+**ミラー側を直すときは claude.ai のスキル編集画面で直し、そのあと同期スクリプトを流す。**
+
+Anthropic 標準スキル（`docx` `pdf` `pptx` `xlsx` `skill-creator` `theme-studio`
+`docs` `import-memory` `morning`）は全PCへ自動配布されるため取り込まない。
+
+詳細 → `.claude/skills/README.md`
+
+---
+
 ## 対話ログの記録方法
 
 ほせもやんとの重要な対話・決定事項は以下の形式で記録：
