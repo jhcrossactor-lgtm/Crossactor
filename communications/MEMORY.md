@@ -41,3 +41,29 @@ claude.ai アカウント側スキルへの書き込み手段は存在しない�
 `skills/inspo-mcp/README.md`（導入手順・ツール15件一覧・貼り付け用ブロック）
 `skills/inspo-mcp/patched/`（追記済みSKILL.md全文）
 `communications/logs/2026-09-16.md`（経緯）
+
+---
+
+## 2026-09-21｜業務スキルはリポジトリに置く（個人スキル禁止）
+
+**決定**：業務で使うスキルは `.claude/skills/` に置いてコミットする。
+`~/.claude/skills/` の個人スキルには置かない。
+
+**理由**：`/マーカー`（宅建テキストへのマーカー付与）を別PCの個人スキルとして作ったため、
+PCが変わった途端に消えて業務が止まった。個人スキルはPC間で同期されない。
+`~/.claude/skills/synced/` は claude.ai からの一方向ミラーで、ローカル作成分は含まれない。
+
+**却下した選択肢**：都度作り直す → 音声からの抽出基準・ページオフセット・
+表記ゆれ辞書といった暗黙知が失われ、同じ品質を再現できない。
+
+**実施**：`.claude/skills/マーカー/`（SKILL.md ＋ scripts/add_markers.py）を復元してコミット。
+ハードコードされた `G:` パスは `--src` / `--work` に外出しし、どのPCでも動くようにした。
+
+**Croにできないこと（追記）**
+NotebookLM には到達できない（API/MCP無し・ログイン必須）。音声の文字起こし機能も無い。
+音声を扱う業務はローカルPC実行が必須。クラウドセッションで頼まれたら即座にそう答える。
+
+**記録場所**
+`.claude/skills/マーカー/SKILL.md`（手順・ファイル仕様）
+`communications/logs/2026-09-21.md`（経緯・調査結果）
+Drive 作業フォルダ ID `1mHcfp-6oER7MJ1dtluQZnxUNSpX9Pc5Q`（marks/skip/processed と成果物の実体）

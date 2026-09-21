@@ -72,13 +72,99 @@ MBTIはENTJ（指揮官型）。思考・判断・行動すべてにおいてENT
 
 ## スキルシステム
 
-専門業務が発生したとき、対応するスキルファイルを参照する。
+専門業務が発生したとき、対応するスキルを使う。実体は `.claude/skills/<name>/SKILL.md`。
+`/<name>` で明示起動できるほか、下表のトリガーに該当すれば自動で発火する。
 
-| スキル | ファイル |
+**◎ = claude.ai ミラー（リポジトリ側で直接編集しない。次章参照）**
+
+### 業務全般
+
+| スキル | 用途 |
+|---|---|
+| `cro-mini` ◎ | 業務依頼の部門振り分け（司令塔）。業務タスクなら明示指定なしで自動起動 |
+| `ai-editorial` | 1テーマ→レポート／ブログ／Xスレ／YouTube台本／メルマガ／インフォグラの6種を並列生成 |
+| `ai-employee` | 1テーマ→リサーチ／スライド／アジェンダを5分前後で生成（高速版） |
+
+### デザイン・制作
+
+| スキル | 用途 |
+|---|---|
+| `promo-design` ◎ | チラシ・バナー・サムネ・LPファーストビュー・物件チラシの設計 |
+| `event-lp` ◎ | イベント告知LPを単一HTMLで生成 |
+| `seo-lp` ◎ | SEO監査・schema.org・ローカルSEO・Ahrefs MCP連携 |
+
+### 不動産・建築
+
+| スキル | 用途 |
+|---|---|
+| `arch-reg-sync` ◎ | 自治体の建築法規・都市計画を調査→NotebookLM貼付用MD＋A4縦PDF |
+| `haichi-tool` ◎ | 木造ハイツの配置検討ツール・1フロア平面図をシングルHTMLで生成 |
+| `takken` | 宅建講習の音声から指示を拾い、テキストPDFにマーカー付与（`/takken`。ローカル実行専用） |
+
+### 検証・要件詰め
+
+| スキル | 用途 |
+|---|---|
+| `deep-verify` ◎ | 誤りコストの高い出力の多角検証（鑑定・利益折半・容積計算・法規判断） |
+| `grilling` ◎ | 計画・設計・要件を問い詰めて精度を上げるヒアリング |
+
+### 事務・スキル整備
+
+| スキル | 用途 |
+|---|---|
+| `adobe-invoice-download` ◎ | Adobe請求書・領収書のDLとA4印刷（手動起動のみ） |
+| `score-rename` | 吹奏楽の楽譜PDFを読み、標準スコア順の連番＋略称でリネーム |
+| `x-skill-scout` | Xから Claude / エージェント設計 / スキル事例を週次収集 |
+| `writing-great-skills` ◎ | SKILL.md の新規作成・改善・レビュー時の参照 |
+
+### 参照ドキュメント（スキルではない）
+
+| 内容 | ファイル |
 |---|---|
 | マーケティング | `skills/marketing.md` |
 | 開発・技術 | `skills/development.md` |
 | リサーチ | `skills/research.md` |
+| Inspo MCP 運用 | `skills/inspo-mcp/README.md` |
+
+---
+
+## スキルの置き場所（全PC共通ルール）
+
+**どのPCで作業していても、このリポジトリを開いた時点でこのルールが適用される。**
+
+### 1. 業務スキルは必ず `.claude/skills/` に置く
+
+`~/.claude/skills/` の個人スキルには置かない。個人スキルはPC間で同期されず、
+そのPCが使えなくなると業務が止まる（2026-09-21 に `/マーカー` で実際に発生）。
+
+新しくスキルを作ったら `.claude/skills/<name>/SKILL.md` に置いてコミットする。
+「あとでリポジトリに入れる」はしない。作った時点で入れる。
+
+### 2. セッション開始時にスキルの同期状態を確認する
+
+```bash
+bash scripts/sync_account_skills.sh --check
+```
+
+- **差分なし** → 何も言わずに本題へ進む
+- **差分あり** → `bash scripts/sync_account_skills.sh` を流し、内容をほせもやんに報告してコミット
+
+claude.ai 側でスキルを直した直後は必ず差分が出る。放置すると2系統がズレる。
+
+### 3. claude.ai ミラーは一方向。リポジトリ側で直接編集しない
+
+`.claude/skills/` の中には claude.ai アカウントからミラーしたスキルがある
+（`adobe-invoice-download` `arch-reg-sync` `cro-mini` `deep-verify` `event-lp`
+`grilling` `haichi-tool` `promo-design` `seo-lp` `writing-great-skills`）。
+
+claude.ai 側へ**書き戻す手段は存在しない**。ミラー側のファイルをリポジトリで直接編集しても
+claude.ai には反映されず、次の同期で上書きされて消える。
+**ミラー側を直すときは claude.ai のスキル編集画面で直し、そのあと同期スクリプトを流す。**
+
+Anthropic 標準スキル（`docx` `pdf` `pptx` `xlsx` `skill-creator` `theme-studio`
+`docs` `import-memory` `morning`）は全PCへ自動配布されるため取り込まない。
+
+詳細 → `.claude/skills/README.md`
 
 ---
 
