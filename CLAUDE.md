@@ -133,6 +133,45 @@ LP・Webページ・アプリUI・販促クリエイティブを作る時は、
 
 ---
 
+## フジヒサハウジング管理台帳（rentbook）
+
+**正本の所在：Google Drive 共有ドライブ ▸ フジヒサ ▸ `rentbook_data`**
+
+```
+folderId: 1sqp0uuzZsX-tJXTVZ-vjWiapdYAHjyOv
+所有者  : hello@crossactor.com
+権限    : 書き込み可（canAddChildren: true / 2026-09-21 確認）
+URL     : https://drive.google.com/drive/folders/1sqp0uuzZsX-tJXTVZ-vjWiapdYAHjyOv
+```
+
+台帳関連の読み書きは**すべてここに対して行う**。ローカルパスを前提にしない。
+
+### 構成
+
+| 対象 | ID | 内容 |
+|---|---|---|
+| `台帳_投入SQL/` | `1Era6HnNmmZlteodNkjzSGGFx5RRbDGTQ` | 物件別 load SQL・`daicho_payload.json`・`extract.py`・`gensql.py` |
+| `rentbook-data-backup/` | `1PQPsflqurIHJIp0pgDbvRncIvW2H1-Fa` | データバックアップ |
+| `rentbook-before-rewrite-20260910.bundle` | `1fP6iJR4GKOGy2ULrPU779gaZvCLxQnfF` | gitバンドル。リポジトリ全体の復元用（2026-09-10 書き換え前時点） |
+
+### 管理物件
+
+プランドール堂島／阿波座／道頓堀、ルネスプランドール守口、シャーメゾン新大阪、
+近畿吉田ビル、富士マンション、東大阪松原、東中浜、五月田町、大庭町、豊野町、川西市久代
+
+### 運用ルール
+
+- 台帳の照会・更新はまず `rentbook_data` を見る。推測で他の場所を探さない
+- ローカルの `G:\ClaudeLocal\rentbook` は**参照しない**。クラウドセッションから到達不可であり、正本でもない
+- `/kanri` はローカル専用コマンドだったため、クラウドセッションでは発火しない
+
+### 未確定（要確認）
+
+- 台帳DB本体の所在（Supabase の可能性が高いが**未検証**）
+- `rentbook-before-rewrite-20260910.bundle` に `/kanri` の定義が含まれるか**未検証**
+
+---
+
 ## MEMORY.md
 
 - `communications/MEMORY.md` を維持する

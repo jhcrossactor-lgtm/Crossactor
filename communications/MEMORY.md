@@ -41,3 +41,39 @@ claude.ai アカウント側スキルへの書き込み手段は存在しない�
 `skills/inspo-mcp/README.md`（導入手順・ツール15件一覧・貼り付け用ブロック）
 `skills/inspo-mcp/patched/`（追記済みSKILL.md全文）
 `communications/logs/2026-09-16.md`（経緯）
+
+---
+
+## 2026-09-21 — 管理台帳の正本を Google Drive `rentbook_data` に確定
+
+**決定**
+フジヒサハウジング管理台帳の読み書きは、Google Drive 共有ドライブ
+「フジヒサ ▸ `rentbook_data`」(`1sqp0uuzZsX-tJXTVZ-vjWiapdYAHjyOv`) を正本として行う。
+ローカルパスを前提にした運用をやめる。
+
+**理由**
+ほせもやんがローカル環境を整理し、必要なものをすべてDriveへ集約した。
+またクラウドセッションはローカルディスクに到達できないため、
+ローカル前提の運用だとCroが台帳に一切アクセスできない。Drive経由なら両環境から届く。
+
+**経緯**
+`/kanri`（管理台帳コマンド）がクラウドセッションで発火しない件を調査。
+リポジトリ内に `kanri` / `台帳` のヒットは0件。`G:\ClaudeLocal\rentbook` はローカルディスク上にあり、
+Drive内に `ClaudeLocal` フォルダは存在しないことを確認。
+一方で台帳データ一式は Drive の `フジヒサ/rentbook_data` に無事残っていた。
+
+**却下した選択肢**
+- ローカル `G:\ClaudeLocal\rentbook` を参照し続ける → クラウドから到達不可のため却下
+- `/kanri` をリポジトリの `.claude/skills/` へ移植 → 台帳本体の所在が未確定な段階では時期尚早。保留
+
+**Croにできないこと（再発防止のため記録）**
+クラウドセッションからローカルディスク（C: / G: 等）は一切見えない。
+ジャンクション・シンボリックリンクも無関係。ローカル限定スキルの発火可否も確認できない。
+
+**未確定**
+- 台帳DB本体の所在（Supabase の可能性が高いが未検証）
+- `rentbook-before-rewrite-20260910.bundle` に `/kanri` 定義が含まれるか未検証
+
+**記録場所**
+`CLAUDE.md`（「フジヒサハウジング管理台帳（rentbook）」節）
+`communications/logs/2026-09-21.md`（調査の経緯）
