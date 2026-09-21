@@ -9,7 +9,7 @@
 | **リポジトリ生まれ** | ここ | 直接編集してコミット |
 | **claude.ai ミラー** | claude.ai アカウント側 | claude.ai で編集 → `bash scripts/sync_account_skills.sh` → コミット |
 
-**リポジトリ生まれ**：`ai-editorial` `ai-employee` `score-rename` `x-skill-scout` `マーカー`
+**リポジトリ生まれ**：`ai-editorial` `ai-employee` `score-rename` `x-skill-scout` `takken`
 
 **claude.ai ミラー**：`adobe-invoice-download` `arch-reg-sync` `cro-mini` `deep-verify`
 `event-lp` `grilling` `haichi-tool` `promo-design` `seo-lp` `writing-great-skills`
