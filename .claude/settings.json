@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/hooks/agenda-reminder.sh\" 2>/dev/null || true",
+            "timeout": 10,
+            "statusMessage": "未決議題を確認中..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/hooks/agenda-reminder.sh\" 2>/dev/null || true",
+            "timeout": 10,
+            "statusMessage": "未決議題を確認中..."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -135,7 +135,7 @@ LP・Webページ・アプリUI・販促クリエイティブを作る時は、
 
 ## フジヒサハウジング管理台帳（rentbook）
 
-**正本の所在：Google Drive 共有ドライブ ▸ フジヒサ ▸ `rentbook_data`**
+**正本の所在：Google Drive ▸ マイドライブ ▸ `★　Crossactor` ▸ `フジヒサ` ▸ `rentbook_data`**
 
 ```
 folderId: 1sqp0uuzZsX-tJXTVZ-vjWiapdYAHjyOv
@@ -143,6 +143,9 @@ folderId: 1sqp0uuzZsX-tJXTVZ-vjWiapdYAHjyOv
 権限    : 書き込み可（canAddChildren: true / 2026-09-21 確認）
 URL     : https://drive.google.com/drive/folders/1sqp0uuzZsX-tJXTVZ-vjWiapdYAHjyOv
 ```
+
+`フジヒサ` は 2026-09-21 にマイドライブ直下から `★　Crossactor` 配下へ移動した。
+他のクライアント案件（プライム・ひらかたデザイン・Shido案件・BOATS）と同じ階層。
 
 台帳関連の読み書きは**すべてここに対して行う**。ローカルパスを前提にしない。
 
@@ -163,12 +166,40 @@ URL     : https://drive.google.com/drive/folders/1sqp0uuzZsX-tJXTVZ-vjWiapdYAHjy
 
 - 台帳の照会・更新はまず `rentbook_data` を見る。推測で他の場所を探さない
 - ローカルの `G:\ClaudeLocal\rentbook` は**参照しない**。クラウドセッションから到達不可であり、正本でもない
-- `/kanri` はローカル専用コマンドだったため、クラウドセッションでは発火しない
+- `/kanri` は**管理台帳ではなくCRO組織の「経営管理部」コマンド**（Drive の 10部門コマンド群 `06-kanri.md`）。
+  同等の機能は `cro-mini` スキルで利用できるため、移植は不要
 
-### 未確定（要確認）
+### 台帳DB（Supabase）
 
-- 台帳DB本体の所在（Supabase の可能性が高いが**未検証**）
-- `rentbook-before-rewrite-20260910.bundle` に `/kanri` の定義が含まれるか**未検証**
+```
+プロジェクト: フジヒサハウジング管理物件DXシステム
+project_id  : rpmiecrhnjpvgntltftd
+リージョン  : ap-northeast-1 / PostgreSQL 17.6
+```
+
+本番テーブル17本。主要なものは `payment_records`(6,917) `transactions`(3,104)
+`audit_logs`(2,820) `property_repairs`(675) `units`(157) `properties`(15)。
+`台帳_投入SQL/` の SQL はこのDBへの投入スクリプト。
+
+### 未決・要確認
+
+- `leases` テーブルが **0行**。設計意図どおりか未確認
+- RLS無効の公開テーブル3本（`rent_history_backup_dojima_20260903` ほか2本）。対応保留中
+- 作業用テーブル24本（`tmp_backup_*` / `backup_*`）。依存0・ポリシー0・更新0を確認済みで削除可能だが保留中
+- `rentbook-before-rewrite-20260910.bundle` の中身は**未展開**
+
+→ いずれも `communications/agenda/pending.md` の木曜議題に集約
+
+---
+
+## 未決議題の自動表示
+
+`communications/agenda/pending.md` に未決の議題を書いておくと、
+**セッション開始時とスキル起動時に自動で表示される**（`hooks/agenda-reminder.sh`）。
+
+- 設定：`.claude/settings.json` の `SessionStart` と `PreToolUse`（matcher: `Skill`）
+- 決着した議題は該当ブロックを削除する。ファイルが空なら何も表示されない
+- 表示されない場合は `/hooks` を一度開いて設定を再読み込みする
 
 ---
 
