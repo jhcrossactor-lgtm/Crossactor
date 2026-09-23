@@ -150,11 +150,26 @@ export function saveDraft({ title, body, images = [] }) {
   });
 }
 
+// 有料設定: 有料を選び価格を入れ、区切り文言の直後に有料ラインを置く
+async function setPaywall(page, sel, { price, paywallText }) {
+  (await need(page, sel.paid.paidOption, 'paid.paidOption')).click();
+  await (await need(page, sel.paid.priceInput, 'paid.priceInput')).fill(String(price));
+  (await need(page, sel.paid.paywallSettingButton, 'paid.paywallSettingButton')).click();
+  await need(page, sel.paid.lineButton, 'paid.lineButton');
+  const marker = await page.getByText(paywallText, { exact: false }).last().elementHandle({ timeout: 10000 }).catch(() => null);
+  if (!marker) throw new SelectorError(`有料エリア設定画面に区切り文言が見つからない: ${paywallText}`);
+  const i = await page.locator(sel.paid.lineButton).evaluateAll(
+    (btns, m) => btns.findIndex((b) => m.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING), marker);
+  if (i < 0) throw new SelectorError(`区切り文言の後に有料ラインのボタンがない: ${sel.paid.lineButton}`);
+  await page.locator(sel.paid.lineButton).nth(i).click();
+  if (sel.paid.paywallDoneButton) (await need(page, sel.paid.paywallDoneButton, 'paid.paywallDoneButton')).click();
+}
+
 /**
- * 保存済み下書きを開いてそのまま公開する。本文は触らない（note上での手直しを残すため）。
+ * 保存済み下書きを開いてそのまま公開する（paid 指定時は有料設定も行う）。本文は触らない（note上での手直しを残すため）。
  * 戻り値: 公開URL
  */
-export function publishDraft({ draftUrl, tags = [] }) {
+export function publishDraft({ draftUrl, tags = [], paid = null }) {
   return withSession(draftUrl, async (page, sel) => {
     await need(page, sel.editor.title, 'editor.title');
     (await need(page, sel.publish.openPublishButton, 'publish.openPublishButton')).click();
@@ -165,6 +180,7 @@ export function publishDraft({ draftUrl, tags = [] }) {
         await tagInput.press('Enter');
       }
     }
+    if (paid) await setPaywall(page, sel, paid);
     (await need(page, sel.publish.submitButton, 'publish.submitButton')).click();
     try {
       await page.waitForURL((u) => u.pathname.includes(sel.publish.publishedUrlPattern), { timeout: 30000 });

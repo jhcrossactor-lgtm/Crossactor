@@ -7,7 +7,10 @@ const editor = (d = { title: '', html: '' }) => `<!doctype html><meta charset=ut
 <button aria-label="メニューを開く" id=plus>+</button><div id=menu hidden><button id=imgbtn>画像</button></div>
 <input type=file id=file accept="image/*" hidden>
 <button id=save>下書き保存</button><button id=pub>公開に進む</button>
-<div id=toast></div><div id=dlg hidden><input placeholder="ハッシュタグを追加する"><ul id=tags></ul><button id=submit>投稿する</button></div>
+<div id=toast></div><div id=dlg hidden><input placeholder="ハッシュタグを追加する"><ul id=tags></ul>
+<label><input type=radio name=pay id=paidopt>有料</label><input name=price>
+<button id=pwset>有料エリア設定</button><div id=pw></div><button id=pwdone>設定する</button>
+<button id=submit>投稿する</button></div>
 <script>
 const body = document.querySelector('.ProseMirror');
 body.addEventListener('paste', (e) => { e.preventDefault(); body.innerHTML += e.clipboardData.getData('text/html'); });
@@ -17,6 +20,17 @@ save.onclick = async () => {
   history.replaceState(null, '', '/notes/n' + id + '/edit'); toast.textContent = '保存しました';
 };
 pub.onclick = () => { dlg.hidden = false; };
+let paywallAfter = null;
+pwset.onclick = () => {
+  pw.innerHTML = '';
+  for (const el of body.children) {
+    pw.appendChild(el.cloneNode(true));
+    const b = document.createElement('button');
+    b.textContent = 'ラインをこの場所に変更';
+    b.onclick = () => { paywallAfter = el.textContent; };
+    pw.appendChild(b);
+  }
+};
 plus.onclick = () => { menu.hidden = false; };
 imgbtn.onclick = () => { menu.hidden = true; file.click(); };
 file.onchange = () => { const f = file.files[0]; body.insertAdjacentHTML('beforeend', '<img data-name="' + f.name + '" src="x">'); file.value = ''; };
@@ -25,7 +39,8 @@ ti.onkeydown = (e) => { if (e.key === 'Enter') { tags.insertAdjacentHTML('before
 submit.onclick = async () => {
   const id = location.pathname.split('/')[2];
   await fetch('/api/publish', { method: 'POST', body: JSON.stringify({ id,
-    title: document.querySelector('textarea').value, html: body.innerHTML, tags: [...tags.children].map(li => li.textContent) }) });
+    title: document.querySelector('textarea').value, html: body.innerHTML, tags: [...tags.children].map(li => li.textContent),
+    paid: paidopt.checked, price: document.querySelector('input[name=price]').value, paywallAfter }) });
   location.href = '/n/' + id;
 };
 </script>`;

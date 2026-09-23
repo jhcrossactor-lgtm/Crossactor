@@ -24,5 +24,12 @@
     "addButton": "button[aria-label='メニューを開く']",
     "menuItem": "button:has-text('画像')",
     "uploadedImage": "div.ProseMirror img"
+  },
+  "paid": {
+    "paidOption": "label:has-text('有料')",
+    "priceInput": "input[name='price']",
+    "paywallSettingButton": "button:has-text('有料エリア設定')",
+    "lineButton": "button:has-text('ラインをこの場所に変更')",
+    "paywallDoneButton": "button:has-text('設定する')"
   }
 }

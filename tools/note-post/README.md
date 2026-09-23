@@ -23,6 +23,10 @@ node src/cli.js publish <番号>      # 選んだ在庫を公開（note上で手
 node src/cli.js publish <番号> --force  # 自己チェックNGの在庫を、確認の上で公開
 node src/cli.js reject <番号>       # 見送り（note上の下書きは残るので不要なら手動削除）
 node src/cli.js run --dry-run      # 動作確認用。下書き保存はするが在庫・topics・1日枠に影響しない
+node src/cli.js propose [件数]      # ジャンルごとにテーマ案を出す（Slack通知）
+node src/cli.js proposals          # 未回答のテーマ案一覧
+node src/cli.js accept 1 3 5       # テーマ案を採用 → topics.csv に追加
+node src/cli.js decline 2 4        # テーマ案を不採用
 ```
 
 ### 運用の流れ
@@ -44,6 +48,43 @@ node src/cli.js run --dry-run      # 動作確認用。下書き保存はする�
 - `STOP` ファイルを置くと `run` / `publish` は即終了（`touch STOP` / `rm STOP`）
 - 生成記事は `out/YYYY-MM-DD-N.md`、チェック結果は `.check.json` にも保存される
 
+## ジャンル（genres.json）
+
+| ID | ジャンル | 有料 | アフィリエイト |
+|---|---|---|---|
+| `ai-smb` | 小さな会社のAI活用 | 有料（前半無料） | なし |
+| `arch-ai` | 建築・不動産×AI／3Dパース | 有料（前半無料） | なし |
+| `affiliate` | ASPサービス紹介 | 無料 | あり |
+
+- `run` はジャンルを上から順にローテーションする（前回の次のジャンルで、未処理テーマがあるもの）
+- 読者像・切り口・トーン・禁止ルールは genres.json に書いてあり、記事生成と自己チェックの両方に渡る
+- `enabled: false` でジャンルを休止できる
+- **有料ジャンルの `paid.price` は未設定（null）**。null のままだと下書きは作れるが `publish` できない
+
+### 有料記事
+
+- Claude が無料部分と有料部分の境目に区切りを1つ置く → 本文には `paywallText`（「ここから有料」）の行として入る
+- `publish` 時に「有料」を選び、価格を入れ、区切りの行の直後に有料ラインを置く
+- 区切りがない・2つ以上ある・無料部分が400字未満 → 自己チェックNG
+
+### アフィリエイト（affiliates.csv）
+
+```
+id,name,url,category,description
+svc1,サービス名,https://px.a8.net/...,スクール,特徴・向いている人・注意点（Claudeはここに書いてあること以外を書かない）
+```
+
+- Claude は商品IDだけを本文に置き、**URLは書かない**。システムがリンクに置き換え、リンク名に「（PR）」を付ける
+- 記事の先頭に `prNotice`（「※本記事はアフィリエイト広告（PR）を含みます。」）を自動で入れる（ステマ規制対応）
+- 本文に生のURLがある・リストにないIDを使った・商品リンクがない → 自己チェックNG
+- affiliates.csv が空ならアフィリエイトジャンルは飛ばす
+
+### テーマ提案（proposals.csv）
+
+- `run` のあと、未処理テーマが2件未満のジャンルがあれば、Claude がそのジャンルのテーマ案を3件ずつ出してSlackに送る
+- 未回答の案が残っている間は追加提案しない
+- `accept` したものだけ topics.csv に入る（AIが勝手にテーマを増やすことはない）
+
 ## 差し込み画像（OpenAI）
 
 1. Claudeが記事内の画像を入れたい位置に `<!-- image: 英語プロンプト | alt: 日本語説明 -->` を書く（最大 `NOTE_IMAGE_COUNT` 枚）
@@ -59,11 +100,11 @@ node src/cli.js run --dry-run      # 動作確認用。下書き保存はする�
 ## topics.csv
 
 ```
-theme,reader,message,tags,status
-テーマ,想定読者,伝えたいこと,タグ1;タグ2,
+genre,theme,reader,message,tags,status
+ai-smb,テーマ,想定読者,伝えたいこと,タグ1;タグ2,
 ```
 
-status が空の先頭行を1件処理する。タグ区切りは `;`。
+status が空の行から、ローテーション順のジャンルのものを1件処理する。タグ区切りは `;`。
 
 ## 失敗時
 
@@ -83,18 +124,20 @@ note UIのセレクタはすべてここに分離している。**現時点の�
 | 変数 | 既定 |
 |---|---|
 | `NOTE_POST_MODEL` | `claude-opus-5` |
+| `NOTE_TOPIC_LOW` | `2`（ジャンルごとの未処理テーマがこれ未満で提案） |
+| `NOTE_PROPOSE_PER_GENRE` | `3` |
 | `NOTE_IMAGE_COUNT` | `2`（`0` で画像無効） |
 | `OPENAI_IMAGE_MODEL` | `gpt-image-2` |
 | `OPENAI_IMAGE_QUALITY` | `medium`（`low` / `high` / `auto`） |
 | `NOTE_HEADLESS` | `1`（`0` でブラウザ表示） |
 | `NOTE_STATE_PATH` | `~/.note-state.json` |
-| `NOTE_TOPICS_PATH` / `NOTE_POSTED_PATH` / `NOTE_STOP_PATH` / `NOTE_OUT_DIR` / `NOTE_SELECTORS_PATH` | このディレクトリ配下 |
+| `NOTE_TOPICS_PATH` / `NOTE_POSTED_PATH` / `NOTE_PROPOSALS_PATH` / `NOTE_GENRES_PATH` / `NOTE_AFFILIATES_PATH` / `NOTE_STOP_PATH` / `NOTE_OUT_DIR` / `NOTE_SELECTORS_PATH` | このディレクトリ配下 |
 
 Claude APIはサーバー側フォールバック（`fallbacks: "default"`）を有効にしている。モデルが応答を拒否した場合、APIが自動で別モデルで再実行する。
 
 ## テスト
 
-ダミーnote画面（`test/fake-note.js`）とモックLLMで、login / dry-run（画像差し込み含む）/ 在庫積み上げ / 番号指定公開（note上の手直し保持）/ NG在庫と --force / reject / 画像0枚 / STOP / ログイン切れ / セレクタ不一致 を検証する。
+ダミーnote画面（`test/fake-note.js`）とモックLLMで、login / dry-run（画像差し込み含む）/ 在庫積み上げ / 番号指定公開（note上の手直し保持）/ NG在庫と --force / reject / ジャンルローテーション / 有料ライン・価格設定 / 価格未設定で公開不可 / アフィリエイト展開とPR表記 / ルール違反NG / テーマ提案→採用 / 画像0枚 / STOP / ログイン切れ / セレクタ不一致 を検証する。
 
 ```bash
 npm test                       # GUIのある環境
