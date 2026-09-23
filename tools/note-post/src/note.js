@@ -104,11 +104,8 @@ async function fillBody(page, sel, body, images) {
   if (len < 50) throw new SelectorError(`本文の流し込みに失敗（${len}字しか入っていない）: ${bodySel}`);
 }
 
-/**
- * 記事（images: 本文中のマーカー位置に差し込む画像）を下書き保存し、publish=true なら続けて公開する。
- * 戻り値: { draftUrl, publishedUrl|null }
- */
-export async function postToNote({ title, body, images = [], tags = [], publish = false }) {
+// ログイン済みセッションでページを開き、失敗時はスクショを残す共通処理
+async function withSession(targetUrl, fn) {
   const sel = loadSelectors();
   if (!fs.existsSync(config.statePath)) {
     throw new LoginExpiredError(`storageStateがない: ${config.statePath}（先に note-post login）`);
@@ -117,26 +114,49 @@ export async function postToNote({ title, body, images = [], tags = [], publish 
   const context = await browser.newContext({ storageState: config.statePath });
   const page = await context.newPage();
   try {
-    await page.goto(url(sel.urls.newNote), { waitUntil: 'domcontentloaded' });
+    await page.goto(url(targetUrl), { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle').catch(() => {});
     if (page.url().includes(sel.urls.loginUrlPattern)) {
       throw new LoginExpiredError(`ログイン切れ（ログイン画面へリダイレクト）: ${page.url()}`);
     }
+    const result = await fn(page, sel);
+    // 次回に備えてセッションを更新保存
+    await context.storageState({ path: config.statePath });
+    return result;
+  } catch (e) {
+    fs.mkdirSync(config.outDir, { recursive: true });
+    const shot = path.join(config.outDir, `error-${Date.now()}.png`);
+    await page.screenshot({ path: shot, fullPage: true }).catch(() => {});
+    e.message += `\nスクリーンショット: ${shot}`;
+    throw e;
+  } finally {
+    await browser.close();
+  }
+}
 
+/**
+ * 記事（images: 本文中のマーカー位置に差し込む画像）を新規下書きとして保存する。公開はしない。
+ * 戻り値: 下書き編集URL
+ */
+export function saveDraft({ title, body, images = [] }) {
+  return withSession(loadSelectors().urls.newNote, async (page, sel) => {
     const titleBox = await need(page, sel.editor.title, 'editor.title');
     await titleBox.fill(title);
     await need(page, sel.editor.body, 'editor.body');
     await fillBody(page, sel, body, images);
-
     (await need(page, sel.editor.saveDraftButton, 'editor.saveDraftButton')).click();
     await need(page, sel.editor.draftSavedToast, 'editor.draftSavedToast', 15000);
-    const draftUrl = page.url();
+    return page.url();
+  });
+}
 
-    // 失敗時の再ログイン・再開に備えてセッションを更新保存
-    await context.storageState({ path: config.statePath });
-
-    if (!publish) return { draftUrl, publishedUrl: null };
-
+/**
+ * 保存済み下書きを開いてそのまま公開する。本文は触らない（note上での手直しを残すため）。
+ * 戻り値: 公開URL
+ */
+export function publishDraft({ draftUrl, tags = [] }) {
+  return withSession(draftUrl, async (page, sel) => {
+    await need(page, sel.editor.title, 'editor.title');
     (await need(page, sel.publish.openPublishButton, 'publish.openPublishButton')).click();
     if (tags.length) {
       const tagInput = await need(page, sel.publish.tagInput, 'publish.tagInput');
@@ -151,14 +171,6 @@ export async function postToNote({ title, body, images = [], tags = [], publish 
     } catch {
       throw new SelectorError(`公開後のURL遷移を確認できない: ${page.url()}`);
     }
-    return { draftUrl, publishedUrl: page.url() };
-  } catch (e) {
-    fs.mkdirSync(config.outDir, { recursive: true });
-    const shot = path.join(config.outDir, `error-${Date.now()}.png`);
-    await page.screenshot({ path: shot, fullPage: true }).catch(() => {});
-    e.message += `\nスクリーンショット: ${shot}`;
-    throw e;
-  } finally {
-    await browser.close();
-  }
+    return page.url();
+  });
 }

@@ -1,6 +1,6 @@
 # note-post
 
-noteへの記事自動投稿CLI。topics.csv → Claude APIで記事生成 → 自己チェック → OpenAIで差し込み画像生成 → Playwrightで公開。
+noteへの記事自動投稿CLI。topics.csv → Claude APIで記事生成 → 自己チェック → OpenAIで差し込み画像生成 → noteに下書き保存（在庫）→ **人が選んで** 公開。
 
 ## セットアップ（ローカルPC）
 
@@ -16,20 +16,33 @@ export SLACK_WEBHOOK_URL=...        # 任意（未設定なら通知はログ出
 ## 使い方
 
 ```bash
-node src/cli.js login           # ブラウザが開く → 手動ログイン → ターミナルでEnter → ~/.note-state.json 保存
-node src/cli.js run --dry-run   # 生成＋チェック＋note下書き保存まで。公開しない
-node src/cli.js run             # 本番。チェックOKなら公開、NGなら下書きのみ
+node src/cli.js login              # ブラウザが開く → 手動ログイン → ターミナルでEnter → ~/.note-state.json 保存
+node src/cli.js run                # 1本生成してnoteに下書き保存 → 在庫に追加（公開はしない）。cronで毎日回す想定
+node src/cli.js list               # 確認待ち在庫の一覧（番号・タイトル・下書きURL・NG指摘）
+node src/cli.js publish <番号>      # 選んだ在庫を公開（note上で手直しした内容のまま公開）
+node src/cli.js publish <番号> --force  # 自己チェックNGの在庫を、確認の上で公開
+node src/cli.js reject <番号>       # 見送り（note上の下書きは残るので不要なら手動削除）
+node src/cli.js run --dry-run      # 動作確認用。下書き保存はするが在庫・topics・1日枠に影響しない
 ```
 
-| モード | 公開 | topics.csv の status 更新 | 1日1本の枠を消費 | posted.csv |
-|---|---|---|---|---|
-| `--dry-run` | しない（下書き保存のみ） | しない | しない | `dry_run` で記録 |
-| 本番・チェックOK | する | `published` | する | `published` + 公開URL |
-| 本番・チェックNG | しない（下書き保存のみ） | `draft_ng` | する | `draft_ng` + 下書きURL、Slack通知 |
+### 運用の流れ
 
-- 生成記事は `out/YYYY-MM-DD-N.md`、チェック結果は `.check.json` に保存される
-- `STOP` ファイルを置くと実行開始時・ブラウザ操作前に即終了（`touch STOP` / `rm STOP`）
-- 1日の判定はJST。posted.csv に当日の `published` / `draft_ng` があれば終了
+1. `run` が毎日1本、下書きを作って在庫に積む。**確認待ちが残っていても作り続ける**
+2. 追加のたびにSlackへ「在庫追加 #番号・タイトル・下書きURL・在庫本数」を通知
+3. ほせもやんが note 上で下書きを読む。直したければ note 上でそのまま直す
+4. 出したいものを `publish <番号>` で公開 → 公開URLを posted.csv に記録、Slack通知
+
+| 状態（posted.csv の status） | 意味 |
+|---|---|
+| `pending` | 確認待ち在庫（自己チェックOK） |
+| `pending_ng` | 確認待ち在庫（自己チェックNG。公開には `--force`） |
+| `published` | 公開済み（`url` / `published_at` に記録） |
+| `rejected` | 見送り |
+| `dry_run` | 動作確認の記録（在庫ではない） |
+
+- **1日1本**: `run` の生成も `publish` の公開も、それぞれ1日1本まで（JST）
+- `STOP` ファイルを置くと `run` / `publish` は即終了（`touch STOP` / `rm STOP`）
+- 生成記事は `out/YYYY-MM-DD-N.md`、チェック結果は `.check.json` にも保存される
 
 ## 差し込み画像（OpenAI）
 
@@ -38,7 +51,8 @@ node src/cli.js run             # 本番。チェックOKなら公開、NGなら
 3. **チェックOKのときだけ** OpenAI Images API（既定 `gpt-image-2`、1536x1024、quality medium）で生成 → `out/…-imgN.png`
 4. noteエディタの「+」→「画像」→ファイル選択で、マーカー位置に順にアップロード
 
-- 画像生成に失敗した分はその画像だけ省いて投稿を続ける（本番時はSlack通知）
+- 画像生成に失敗した分はその画像だけ省いて続行する（Slack通知）
+- 自己チェックNGの在庫は画像なし（`--force` で公開する場合も画像なし）
 - dry-run では自己チェックNGでも画像を作る（パイプライン確認のため）
 - ローカルの `out/…md` ではマーカーが `![alt](…-imgN.png)` に置き換わる
 
@@ -80,7 +94,7 @@ Claude APIはサーバー側フォールバック（`fallbacks: "default"`）を
 
 ## テスト
 
-ダミーnote画面（`test/fake-note.js`）とモックLLMで、login / dry-run（画像差し込み含む）/ 公開 / NG / 画像0枚 / STOP / ログイン切れ / セレクタ不一致 を検証する。
+ダミーnote画面（`test/fake-note.js`）とモックLLMで、login / dry-run（画像差し込み含む）/ 在庫積み上げ / 番号指定公開（note上の手直し保持）/ NG在庫と --force / reject / 画像0枚 / STOP / ログイン切れ / セレクタ不一致 を検証する。
 
 ```bash
 npm test                       # GUIのある環境
