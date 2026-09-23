@@ -6,6 +6,7 @@ import { readTable, writeTable, appendRow } from './csv.js';
 import { generateArticle, checkArticle } from './llm.js';
 import { login, postToNote, LoginExpiredError, SelectorError } from './note.js';
 import { notifySlack } from './slack.js';
+import { generateImages, stripImageMarkers } from './images.js';
 
 const POSTED_HEADER = ['date', 'status', 'theme', 'title', 'url', 'issues'];
 const log = (...a) => console.log(`[note-post ${new Date().toISOString()}]`, ...a);
@@ -50,14 +51,30 @@ async function run({ dryRun }) {
 
   fs.mkdirSync(config.outDir, { recursive: true });
   const base = path.join(config.outDir, `${today}-${idx + 1}${dryRun ? '-dry' : ''}`);
-  fs.writeFileSync(`${base}.md`, `# ${article.title}\n\n${article.body}\n`);
+
+  stopIfRequested();
+
+  // 自己チェック通過後にだけ画像を作る（NG記事に画像費用をかけない）
+  let images = [];
+  if (check.ok || dryRun) {
+    const r = await generateImages(article.body, base);
+    article.body = r.body;
+    images = r.images;
+    log(`画像: ${images.length}枚生成`);
+    for (const e of r.errors) log(`  警告: ${e}`);
+    if (r.errors.length && !dryRun) await notifySlack(`画像の一部を省略: ${r.errors.join(' / ')}`);
+  } else {
+    article.body = stripImageMarkers(article.body);
+  }
+  const localMd = images.reduce((md, im) => md.replace(im.marker, `![${im.alt}](${path.basename(im.file)})`), article.body);
+  fs.writeFileSync(`${base}.md`, `# ${article.title}\n\n${localMd}\n`);
   fs.writeFileSync(`${base}.check.json`, JSON.stringify(check, null, 2));
   log(`ローカル保存: ${base}.md`);
 
   stopIfRequested();
 
   const publish = check.ok && !dryRun;
-  const { draftUrl, publishedUrl } = await postToNote({ ...article, tags, publish });
+  const { draftUrl, publishedUrl } = await postToNote({ ...article, images, tags, publish });
   const status = dryRun ? 'dry_run' : publish ? 'published' : 'draft_ng';
   const url = publishedUrl || draftUrl;
   log(`${status}: ${url}`);

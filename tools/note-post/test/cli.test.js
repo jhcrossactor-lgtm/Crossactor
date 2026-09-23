@@ -59,6 +59,11 @@ test('login → storageState保存、dry-runで下書き保存のみ・トピッ
   assert.match(d.title, /テーマA, カンマ入り/);
   assert.match(d.html, /<h2>はじめに<\/h2>/);
   assert.match(d.html, /<strong>太字<\/strong>/);
+  // 画像はマーカー位置（リストの後・太字の前）に差し込まれ、マーカー文字列は残らない
+  assert.match(d.html, /<\/ul>[\s\S]*<img data-name="[^"]+-img1\.png"[\s\S]*<strong>太字/);
+  assert.doesNotMatch(d.html, /image:/);
+  const md = fs.readFileSync(path.join(env.NOTE_OUT_DIR, fs.readdirSync(env.NOTE_OUT_DIR).find((f) => f.endsWith('.md'))), 'utf8');
+  assert.match(md, /!\[AIを使う小さなオフィス\]\(.+-img1\.png\)/);
   assert.match(posted(env), /dry_run/);
   assert.match(fs.readFileSync(env.NOTE_TOPICS_PATH, 'utf8'), /中小企業,\n/); // status空のまま
   // dry-runは1日1本の枠を消費しない
@@ -87,6 +92,16 @@ test('自己チェックNG → 下書きのみ、status=draft_ng', async () => {
   assert.equal(r.status, 0, r.stderr + r.stdout);
   assert.equal(fake.state.published.length, before);
   assert.match(posted(env), /draft_ng/);
+  // NG記事には画像を作らず、マーカーも本文に残さない
+  assert.ok(!fs.readdirSync(env.NOTE_OUT_DIR).some((f) => f.endsWith('.png')));
+  assert.doesNotMatch(fake.state.drafts.at(-1).html, /image:|<img/);
+});
+
+test('NOTE_IMAGE_COUNT=0 なら画像なしで下書き保存', async () => {
+  const env = await loggedIn(sandbox());
+  const r = await run({ ...env, NOTE_IMAGE_COUNT: '0' }, 'run', '--dry-run');
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  assert.doesNotMatch(fake.state.drafts.at(-1).html, /image:|<img/);
 });
 
 test('STOPファイルがあれば何もせず終了', async () => {

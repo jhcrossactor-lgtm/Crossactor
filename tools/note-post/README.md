@@ -1,6 +1,6 @@
 # note-post
 
-noteへの記事自動投稿CLI。topics.csv → Claude APIで記事生成 → 自己チェック → Playwrightで公開。
+noteへの記事自動投稿CLI。topics.csv → Claude APIで記事生成 → 自己チェック → OpenAIで差し込み画像生成 → Playwrightで公開。
 
 ## セットアップ（ローカルPC）
 
@@ -9,6 +9,7 @@ cd tools/note-post
 npm install
 npx playwright install chromium
 export ANTHROPIC_API_KEY=...        # 必須
+export OPENAI_API_KEY=...           # 任意（未設定なら画像なしで続行）
 export SLACK_WEBHOOK_URL=...        # 任意（未設定なら通知はログ出力のみ）
 ```
 
@@ -29,6 +30,17 @@ node src/cli.js run             # 本番。チェックOKなら公開、NGなら
 - 生成記事は `out/YYYY-MM-DD-N.md`、チェック結果は `.check.json` に保存される
 - `STOP` ファイルを置くと実行開始時・ブラウザ操作前に即終了（`touch STOP` / `rm STOP`）
 - 1日の判定はJST。posted.csv に当日の `published` / `draft_ng` があれば終了
+
+## 差し込み画像（OpenAI）
+
+1. Claudeが記事内の画像を入れたい位置に `<!-- image: 英語プロンプト | alt: 日本語説明 -->` を書く（最大 `NOTE_IMAGE_COUNT` 枚）
+2. 自己チェックはこの画像指示も審査する（実在人物・ロゴ・作風模倣はNG）
+3. **チェックOKのときだけ** OpenAI Images API（既定 `gpt-image-2`、1536x1024、quality medium）で生成 → `out/…-imgN.png`
+4. noteエディタの「+」→「画像」→ファイル選択で、マーカー位置に順にアップロード
+
+- 画像生成に失敗した分はその画像だけ省いて投稿を続ける（本番時はSlack通知）
+- dry-run では自己チェックNGでも画像を作る（パイプライン確認のため）
+- ローカルの `out/…md` ではマーカーが `![alt](…-imgN.png)` に置き換わる
 
 ## topics.csv
 
@@ -57,6 +69,9 @@ note UIのセレクタはすべてここに分離している。**現時点の�
 | 変数 | 既定 |
 |---|---|
 | `NOTE_POST_MODEL` | `claude-opus-5` |
+| `NOTE_IMAGE_COUNT` | `2`（`0` で画像無効） |
+| `OPENAI_IMAGE_MODEL` | `gpt-image-2` |
+| `OPENAI_IMAGE_QUALITY` | `medium`（`low` / `high` / `auto`） |
 | `NOTE_HEADLESS` | `1`（`0` でブラウザ表示） |
 | `NOTE_STATE_PATH` | `~/.note-state.json` |
 | `NOTE_TOPICS_PATH` / `NOTE_POSTED_PATH` / `NOTE_STOP_PATH` / `NOTE_OUT_DIR` / `NOTE_SELECTORS_PATH` | このディレクトリ配下 |
@@ -65,7 +80,7 @@ Claude APIはサーバー側フォールバック（`fallbacks: "default"`）を
 
 ## テスト
 
-ダミーnote画面（`test/fake-note.js`）とモックLLMで、login / dry-run / 公開 / NG / STOP / ログイン切れ / セレクタ不一致 を検証する。
+ダミーnote画面（`test/fake-note.js`）とモックLLMで、login / dry-run（画像差し込み含む）/ 公開 / NG / 画像0枚 / STOP / ログイン切れ / セレクタ不一致 を検証する。
 
 ```bash
 npm test                       # GUIのある環境

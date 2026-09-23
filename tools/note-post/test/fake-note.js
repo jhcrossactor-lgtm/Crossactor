@@ -4,6 +4,8 @@ import http from 'node:http';
 const editor = `<!doctype html><meta charset=utf-8><title>editor</title>
 <textarea placeholder="記事タイトル"></textarea>
 <div class="ProseMirror" contenteditable="true" style="min-height:200px"></div>
+<button aria-label="メニューを開く" id=plus>+</button><div id=menu hidden><button id=imgbtn>画像</button></div>
+<input type=file id=file accept="image/*" hidden>
 <button id=save>下書き保存</button><button id=pub>公開に進む</button>
 <div id=toast></div><div id=dlg hidden><input placeholder="ハッシュタグを追加する"><ul id=tags></ul><button id=submit>投稿する</button></div>
 <script>
@@ -15,6 +17,9 @@ save.onclick = async () => {
   history.replaceState(null, '', '/notes/n123/edit'); toast.textContent = '保存しました';
 };
 pub.onclick = () => { dlg.hidden = false; };
+plus.onclick = () => { menu.hidden = false; };
+imgbtn.onclick = () => { menu.hidden = true; file.click(); };
+file.onchange = () => { const f = file.files[0]; body.insertAdjacentHTML('beforeend', '<img data-name="' + f.name + '" src="x">'); file.value = ''; };
 const ti = document.querySelector('#dlg input');
 ti.onkeydown = (e) => { if (e.key === 'Enter') { tags.insertAdjacentHTML('beforeend', '<li>' + ti.value); ti.value = ''; } };
 submit.onclick = async () => {

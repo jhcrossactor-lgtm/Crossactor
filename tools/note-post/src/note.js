@@ -51,9 +51,9 @@ async function need(page, selector, name, timeout = 20000) {
 }
 
 // ProseMirrorにMarkdown→HTMLを貼り付けイベントで流し込む（見出し・リスト・太字を保持）
-async function pasteBody(page, selector, markdown) {
+async function pasteMarkdown(page, selector, markdown) {
+  if (!markdown.trim()) return;
   const html = marked.parse(markdown);
-  await page.locator(selector).first().click();
   await page.evaluate(({ selector, html, markdown }) => {
     const el = document.querySelector(selector);
     el.focus();
@@ -62,15 +62,53 @@ async function pasteBody(page, selector, markdown) {
     dt.setData('text/plain', markdown);
     el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
   }, { selector, html, markdown });
-  const len = await page.locator(selector).first().evaluate((el) => el.innerText.trim().length);
-  if (len < 50) throw new SelectorError(`本文の流し込みに失敗（${len}字しか入っていない）: ${selector}`);
+}
+
+// 本文末尾に空行を作り、エディタの「+」メニュー→画像→ファイル選択でアップロード
+async function insertImage(page, sel, file) {
+  const imgs = page.locator(sel.image.uploadedImage);
+  const before = await imgs.count();
+  await page.keyboard.press('Control+End');
+  await page.keyboard.press('Enter');
+  (await need(page, sel.image.addButton, 'image.addButton')).click();
+  const chooserP = page.waitForEvent('filechooser', { timeout: 15000 });
+  (await need(page, sel.image.menuItem, 'image.menuItem')).click();
+  let chooser;
+  try { chooser = await chooserP; } catch {
+    throw new SelectorError(`画像メニューからファイル選択が開かない: ${sel.image.menuItem}`);
+  }
+  await chooser.setFiles(file);
+  try {
+    await page.waitForFunction(({ s, n }) => document.querySelectorAll(s).length > n,
+      { s: sel.image.uploadedImage, n: before }, { timeout: 60000 });
+  } catch {
+    throw new SelectorError(`画像のアップロード完了を確認できない: ${sel.image.uploadedImage}`);
+  }
+  await page.keyboard.press('Control+End');
+}
+
+// 本文を画像マーカーで分割し、テキスト→画像→テキスト…の順に流し込む
+async function fillBody(page, sel, body, images) {
+  const bodySel = sel.editor.body;
+  await page.locator(bodySel).first().click();
+  let rest = body;
+  for (const img of images) {
+    const at = rest.indexOf(img.marker);
+    if (at < 0) continue;
+    await pasteMarkdown(page, bodySel, rest.slice(0, at));
+    await insertImage(page, sel, img.file);
+    rest = rest.slice(at + img.marker.length);
+  }
+  await pasteMarkdown(page, bodySel, rest);
+  const len = await page.locator(bodySel).first().evaluate((el) => el.innerText.trim().length);
+  if (len < 50) throw new SelectorError(`本文の流し込みに失敗（${len}字しか入っていない）: ${bodySel}`);
 }
 
 /**
- * 記事を下書き保存し、publish=true なら続けて公開する。
+ * 記事（images: 本文中のマーカー位置に差し込む画像）を下書き保存し、publish=true なら続けて公開する。
  * 戻り値: { draftUrl, publishedUrl|null }
  */
-export async function postToNote({ title, body, tags = [], publish = false }) {
+export async function postToNote({ title, body, images = [], tags = [], publish = false }) {
   const sel = loadSelectors();
   if (!fs.existsSync(config.statePath)) {
     throw new LoginExpiredError(`storageStateがない: ${config.statePath}（先に note-post login）`);
@@ -88,7 +126,7 @@ export async function postToNote({ title, body, tags = [], publish = false }) {
     const titleBox = await need(page, sel.editor.title, 'editor.title');
     await titleBox.fill(title);
     await need(page, sel.editor.body, 'editor.body');
-    await pasteBody(page, sel.editor.body, body);
+    await fillBody(page, sel, body, images);
 
     (await need(page, sel.editor.saveDraftButton, 'editor.saveDraftButton')).click();
     await need(page, sel.editor.draftSavedToast, 'editor.draftSavedToast', 15000);

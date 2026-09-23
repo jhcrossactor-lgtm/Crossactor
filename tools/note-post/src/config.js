@@ -19,6 +19,10 @@ export const config = {
   headless: process.env.NOTE_HEADLESS !== '0',
   chromiumPath: process.env.NOTE_CHROMIUM_PATH || undefined,
   mockLlm: process.env.NOTE_POST_MOCK_LLM === '1',
+  // 差し込み画像（OpenAI）。0枚で無効
+  imageCount: Number(process.env.NOTE_IMAGE_COUNT ?? 2),
+  imageModel: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2',
+  imageQuality: process.env.OPENAI_IMAGE_QUALITY || 'medium',
 };
 
 export function loadSelectors() {

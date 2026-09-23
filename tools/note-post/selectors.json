@@ -19,5 +19,10 @@
     "tagInput": "input[placeholder='ハッシュタグを追加する']",
     "submitButton": "button:has-text('投稿する')",
     "publishedUrlPattern": "/n/"
+  },
+  "image": {
+    "addButton": "button[aria-label='メニューを開く']",
+    "menuItem": "button:has-text('画像')",
+    "uploadedImage": "div.ProseMirror img"
   }
 }
