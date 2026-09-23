@@ -1,0 +1,23 @@
+{
+  "_comment": "noteのUI変更時はここだけ差し替える。値はPlaywrightのセレクタ文字列。2026-09時点で実画面未検証（確証なし）。初回ログイン後に --dry-run で要確認。",
+  "urls": {
+    "login": "https://note.com/login",
+    "newNote": "https://note.com/notes/new",
+    "loginUrlPattern": "/login"
+  },
+  "login": {
+    "loggedInMarker": "a[href='/notes/new'], button:has-text('投稿')"
+  },
+  "editor": {
+    "title": "textarea[placeholder='記事タイトル']",
+    "body": "div.ProseMirror[contenteditable='true']",
+    "saveDraftButton": "button:has-text('下書き保存')",
+    "draftSavedToast": "text=保存しました"
+  },
+  "publish": {
+    "openPublishButton": "button:has-text('公開に進む')",
+    "tagInput": "input[placeholder='ハッシュタグを追加する']",
+    "submitButton": "button:has-text('投稿する')",
+    "publishedUrlPattern": "/n/"
+  }
+}

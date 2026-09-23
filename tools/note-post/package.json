@@ -1,0 +1,23 @@
+{
+  "name": "note-post",
+  "version": "0.1.0",
+  "description": "noteへの記事自動投稿CLI（Claude API生成＋自己チェック＋Playwright投稿）",
+  "type": "module",
+  "bin": {
+    "note-post": "src/cli.js"
+  },
+  "scripts": {
+    "login": "node src/cli.js login",
+    "run": "node src/cli.js run",
+    "dry": "node src/cli.js run --dry-run",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "marked": "^14.0.0",
+    "playwright": "^1.56.1"
+  }
+}
