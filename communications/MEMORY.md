@@ -41,3 +41,25 @@ claude.ai アカウント側スキルへの書き込み手段は存在しない�
 `skills/inspo-mcp/README.md`（導入手順・ツール15件一覧・貼り付け用ブロック）
 `skills/inspo-mcp/patched/`（追記済みSKILL.md全文）
 `communications/logs/2026-09-16.md`（経緯）
+
+---
+
+## 2026-09-24 — AI相棒クロス Phase1 開始（`cross/`）
+
+**決定**
+- 音声対話AI「クロス」を `cross/` 配下に新規プロジェクトとして開始。仕様は `cross/CLAUDE.md`
+- ステップ順：①テキスト会話 → ②音声合成 → ③音声認識 → ④3D部屋＋2Dキャラ。各ステップでほせもやんの動作確認を待ってから次へ進む
+- Step① は実装済み。ほせもやんの動作確認待ち
+
+**理由・設計判断**
+- `G:\ClaudeLocal\cross` はクラウド環境から到達不能 → リポジトリ内 `cross/` に置く。独立リポジトリにしたければフォルダごとコピーして `git init`
+- system prompt は `persona.md`+`knowledge.md` を `scripts/deploy.mjs` で `prompt.ts` に焼く（Edge Function から外部ファイルを読む手段が不安定なため）
+- 上位モデルは thinking オフ + effort low（遅延優先）。既定 Haiku 4.5 は effort 非対応
+
+**却下した選択肢**
+- `verify_jwt = false` の公開エンドポイント → Anthropic キーの無断消費リスクで却下
+- Supabase `static_files` で md を同梱 → 動作保証が取れず却下
+
+**注意**
+- `.env` と `config.local.js` は gitignore。キーは絶対にコミットしない
+- Azure の日本語音声に関西弁ネイティブは無い。Step② はイントネーション妥協前提

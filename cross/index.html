@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>クロス — Crossactor</title>
+<style>
+  :root {
+    --bg: #0b0713;
+    --accent: #a855f7;
+    --user: #7dd3fc;
+    --ai: #f9a8d4;
+    --error: #f87171;
+    --text: #f4f1fa;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    font-size: 28px; /* 撮影で潰れないよう最小28px */
+  }
+
+  /* 部屋（Step④でthree.jsキャンバスに置き換え。今は仮の夜景グラデーション） */
+  #room {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 8%, rgba(168,85,247,.35), transparent 70%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(30,20,60,.9), transparent 70%),
+      linear-gradient(180deg, #120a24 0%, #0b0713 60%, #06040c 100%);
+  }
+  #room::after { /* 天井際の紫の間接照明の仮表現 */
+    content: ""; position: absolute; left: 10%; right: 10%; top: 0; height: 6px;
+    background: var(--accent); filter: blur(10px); opacity: .8;
+  }
+
+  /* キャラ仮表示（Step④で2Dビルボードに置き換え） */
+  #chara {
+    position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%);
+    width: 340px; height: 340px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #c084fc, #6d28d9 60%, #3b0764);
+    box-shadow: 0 0 80px rgba(168,85,247,.45);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; font-weight: 700; letter-spacing: .1em;
+    transition: transform .6s ease, box-shadow .6s ease;
+  }
+  body[data-state="thinking"] #chara { transform: translate(-50%,-50%) scale(.92); box-shadow: 0 0 40px rgba(168,85,247,.3); }
+  body[data-state="speaking"] #chara { transform: translate(-50%,-50%) scale(1.06); box-shadow: 0 0 120px rgba(249,168,212,.5); }
+  body[data-state="listening"] #chara { box-shadow: 0 0 120px rgba(125,211,252,.5); }
+
+  /* 隅の表示 */
+  #brand { position: fixed; left: 32px; top: 24px; font-weight: 700; opacity: .8; }
+  #brand small { display: block; font-size: 28px; font-weight: 400; opacity: .7; }
+  #status {
+    position: fixed; right: 32px; top: 24px; display: flex; gap: 16px; align-items: center;
+  }
+  .chip {
+    padding: 8px 20px; border-radius: 999px; border: 2px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.06); font-size: 28px; cursor: pointer; color: var(--text);
+  }
+  .chip.on { border-color: var(--accent); background: rgba(168,85,247,.25); }
+  #state-chip { cursor: default; }
+  body[data-state="idle"] #state-chip { border-color: rgba(255,255,255,.25); }
+  body[data-state="listening"] #state-chip { border-color: var(--user); color: var(--user); }
+  body[data-state="thinking"] #state-chip { border-color: var(--accent); color: #d8b4fe; }
+  body[data-state="speaking"] #state-chip { border-color: var(--ai); color: var(--ai); }
+
+  /* 字幕：画面下1/3、中央70%幅 */
+  #subtitles {
+    position: fixed; left: 15%; right: 15%; bottom: 120px; height: 30vh;
+    display: flex; flex-direction: column; justify-content: flex-end; gap: 20px;
+    text-align: center; pointer-events: none;
+  }
+  #subtitles.hidden { display: none; }
+  .sub {
+    font-weight: 700; line-height: 1.35;
+    text-shadow: 0 2px 12px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,1);
+    word-break: break-word;
+  }
+  #sub-user { font-size: 40px; color: var(--user); min-height: 1.4em; }
+  #sub-user.interim { opacity: .6; }
+  #sub-ai { font-size: 46px; color: var(--ai); min-height: 1.4em; }
+  #sub-ai.error { color: var(--error); }
+
+  /* テキスト入力（開発用。Tキーで表示切替） */
+  #input-bar {
+    position: fixed; left: 15%; right: 15%; bottom: 28px; display: flex; gap: 12px;
+  }
+  #input-bar.hidden { display: none; }
+  #input {
+    flex: 1; font: inherit; font-size: 28px; padding: 14px 20px; border-radius: 14px;
+    border: 2px solid rgba(255,255,255,.25); background: rgba(0,0,0,.55); color: var(--text);
+    outline: none;
+  }
+  #input:focus { border-color: var(--accent); }
+  #send {
+    font: inherit; font-size: 28px; padding: 14px 28px; border-radius: 14px; border: 0;
+    background: var(--accent); color: white; cursor: pointer;
+  }
+  #send:disabled { opacity: .4; cursor: default; }
+
+  #help {
+    position: fixed; left: 50%; top: 32px; transform: translateX(-50%);
+    font-size: 28px; opacity: .45; white-space: nowrap;
+  }
+</style>
+</head>
+<body data-state="idle">
+  <div id="room"></div>
+  <div id="chara">クロス</div>
+
+  <div id="brand">Crossactor<small id="chara-name">クロス</small></div>
+  <div id="status">
+    <div id="state-chip" class="chip">idle</div>
+    <div id="model-chip" class="chip" title="上位モデルへ切替（クリック / Mキー）">Haiku</div>
+  </div>
+
+  <div id="subtitles">
+    <div id="sub-user" class="sub"></div>
+    <div id="sub-ai" class="sub"></div>
+  </div>
+
+  <form id="input-bar" autocomplete="off">
+    <input id="input" type="text" placeholder="ここに話しかける（Enterで送信 / Escで中断）">
+    <button id="send" type="submit">送信</button>
+  </form>
+  <div id="help">S:字幕 M:モデル T:入力欄 Esc:中断</div>
+
+  <script src="config.js"></script>
+  <script>
+    // config.local.js（.envから生成、gitignore済）があれば上書き読み込み
+    document.write('<script src="config.local.js" onerror="this.remove()"><\/script>');
+  </script>
+  <script>
+  (() => {
+    const CFG = window.CROSS_CONFIG;
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      body: document.body, subUser: $("sub-user"), subAi: $("sub-ai"), subtitles: $("subtitles"),
+      input: $("input"), send: $("send"), form: $("input-bar"), stateChip: $("state-chip"),
+      modelChip: $("model-chip"), charaName: $("chara-name"),
+    };
+    els.charaName.textContent = CFG.charaName;
+    for (const [k, v] of Object.entries(CFG.colors)) document.documentElement.style.setProperty(`--${k}`, v);
+
+    // ---------- 状態管理（Step④でカメラ・ポーズ制御をここに接続） ----------
+    const state = { current: "idle", history: [], upperModel: false, abort: null, idleTimer: null };
+    const listeners = [];
+    function setState(next) {
+      if (state.current === next) return;
+      state.current = next;
+      els.body.dataset.state = next;
+      els.stateChip.textContent = next;
+      listeners.forEach((fn) => fn(next));
+      armIdleTimer();
+    }
+    function armIdleTimer() {
+      clearTimeout(state.idleTimer);
+      if (state.current === "idle" || state.current === "thinking" || state.current === "speaking") return;
+      state.idleTimer = setTimeout(() => setState("idle"), CFG.idleTimeoutMs);
+    }
+    window.cross = { setState, onState: (fn) => listeners.push(fn), state };
+
+    // ---------- 字幕 ----------
+    function showUser(text, interim = false) {
+      els.subUser.textContent = text;
+      els.subUser.classList.toggle("interim", interim);
+    }
+    function showAi(text, isError = false) {
+      els.subAi.textContent = text;
+      els.subAi.classList.toggle("error", isError);
+    }
+
+    // ---------- モデル切替 ----------
+    function setUpper(on) {
+      state.upperModel = on;
+      els.modelChip.textContent = on ? "Sonnet" : "Haiku";
+      els.modelChip.classList.toggle("on", on);
+    }
+    els.modelChip.addEventListener("click", () => setUpper(!state.upperModel));
+
+    // ---------- 文区切り検出（Step②でTTSキューに接続） ----------
+    const sentenceHooks = [];
+    window.cross.onSentence = (fn) => sentenceHooks.push(fn);
+    function makeSentenceSplitter() {
+      let buf = "";
+      return {
+        push(delta) {
+          buf += delta;
+          let m;
+          while ((m = buf.match(/^[\s\S]*?[。！？!?]+[」）]?/))) {
+            const s = m[0].trim();
+            buf = buf.slice(m[0].length);
+            if (s) sentenceHooks.forEach((fn) => fn(s));
+          }
+        },
+        flush() {
+          const s = buf.trim(); buf = "";
+          if (s) sentenceHooks.forEach((fn) => fn(s));
+        },
+      };
+    }
+
+    // ---------- /chat ストリーム ----------
+    async function ask(text) {
+      text = text.trim();
+      if (!text || state.abort) return;
+      if (!CFG.supabaseAnonKey || CFG.supabaseUrl.includes("YOUR_PROJECT_REF")) {
+        showAi("config.local.js に Supabase の URL と anon key が要る。.env を置いて node scripts/deploy.mjs --build", true);
+        return;
+      }
+      showUser(text);
+      showAi("");
+      setState("thinking");
+      state.history.push({ role: "user", content: text });
+
+      const ctrl = new AbortController();
+      state.abort = ctrl;
+      els.send.disabled = true;
+      const splitter = makeSentenceSplitter();
+      let reply = "";
+      let firstDeltaAt = 0;
+      const t0 = performance.now();
+
+      try {
+        const res = await fetch(`${CFG.supabaseUrl}/functions/v1/chat`, {
+          method: "POST",
+          signal: ctrl.signal,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${CFG.supabaseAnonKey}`,
+            "apikey": CFG.supabaseAnonKey,
+          },
+          body: JSON.stringify({
+            messages: state.history.slice(-CFG.historyTurns * 2),
+            model: state.upperModel ? "upper" : undefined,
+          }),
+        });
+        if (!res.ok || !res.body) {
+          const msg = await res.text().catch(() => "");
+          throw new Error(`HTTP ${res.status} ${msg}`.trim());
+        }
+
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let carry = "";
+        outer: while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          carry += dec.decode(value, { stream: true });
+          const lines = carry.split("\n");
+          carry = lines.pop();
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const ev = JSON.parse(line.slice(6));
+            if (ev.type === "delta") {
+              if (!firstDeltaAt) { firstDeltaAt = performance.now(); setState("speaking"); }
+              reply += ev.text;
+              showAi(reply);
+              splitter.push(ev.text);
+            } else if (ev.type === "start") {
+              console.log("[chat] model:", ev.model);
+            } else if (ev.type === "done") {
+              console.log("[chat] done", ev.stop_reason, ev.usage,
+                `first token ${Math.round(firstDeltaAt - t0)}ms / total ${Math.round(performance.now() - t0)}ms`);
+              if (ev.stop_reason === "refusal" && !reply) reply = "それは答えられへんな。別の聞き方にしよか。";
+              break outer;
+            } else if (ev.type === "error") {
+              throw new Error(ev.message);
+            }
+          }
+        }
+        splitter.flush();
+        if (reply) {
+          showAi(reply);
+          state.history.push({ role: "assistant", content: reply });
+        } else {
+          showAi("（返答が空やった。もう一回言うてくれるか）", true);
+          state.history.pop();
+        }
+      } catch (e) {
+        if (e.name === "AbortError") {
+          if (reply) state.history.push({ role: "assistant", content: reply });
+          else state.history.pop();
+          showAi(reply ? reply + "…" : "");
+        } else {
+          console.error(e);
+          showAi(`エラー: ${e.message}`, true);
+          state.history.pop();
+        }
+      } finally {
+        state.history = state.history.slice(-CFG.historyTurns * 2);
+        state.abort = null;
+        els.send.disabled = false;
+        setState("listening");
+        els.input.focus();
+      }
+    }
+    window.cross.ask = ask;
+    window.cross.interrupt = () => state.abort?.abort();
+
+    // ---------- 入力 ----------
+    els.form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const v = els.input.value;
+      els.input.value = "";
+      ask(v);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { window.cross.interrupt(); return; }
+      if (e.target === els.input) return;
+      const k = e.key.toLowerCase();
+      if (k === "s") els.subtitles.classList.toggle("hidden");
+      if (k === "m") setUpper(!state.upperModel);
+      if (k === "t") { els.form.classList.toggle("hidden"); if (!els.form.classList.contains("hidden")) els.input.focus(); }
+    });
+    window.cross.onSentence((s) => console.log("[sentence]", s));
+    els.input.focus();
+  })();
+  </script>
+</body>
+</html>

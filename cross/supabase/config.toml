@@ -1,0 +1,15 @@
+# クロス — Edge Functions のみ使う最小構成
+project_id = "cross"
+
+[api]
+enabled = true
+port = 54321
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+deno_version = 2
+
+[functions.chat]
+# anon key を Authorization ヘッダで要求する（APIキーの無断消費を抑止）
+verify_jwt = true
