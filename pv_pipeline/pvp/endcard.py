@@ -130,11 +130,13 @@ def render_bull_shine_card(
     if bg_gamma != 1.0:
         bg = np.power(bg, bg_gamma) * float(cfg.get("bg_gamma_gain", 1.0))
 
-    title, sub = cfg["title"], cfg["subtitle"]
-    ta, tg, tb, trgb = _layer(title, width, height, work, "title")
-    sa, sg, sb, srgb = _layer(sub, width, height, work, "subtitle")
-    x0, x1 = min(tb[0], sb[0]), max(tb[2], sb[2])
-    y0 = min(tb[1], sb[1])
+    # subtitle は省略できる（ロゴ画像1枚で施設名が完結する場合など）
+    layers = [(_layer(cfg["title"], width, height, work, "title"), tl["title_in"])]
+    if cfg.get("subtitle"):
+        layers.append((_layer(cfg["subtitle"], width, height, work, "subtitle"), tl["sub_in"]))
+    boxes = [b for (_, _, b, _), _ in layers]
+    x0, x1 = min(b[0] for b in boxes), max(b[2] for b in boxes)
+    y0 = min(b[1] for b in boxes)
 
     yy, xx = np.mgrid[0:height, 0:width].astype(np.float32)
     slant = 0.45  # 光の帯の傾き
@@ -183,7 +185,7 @@ def render_bull_shine_card(
             else:
                 band = None
 
-            for alpha, glow, rgb, (t0, t1) in ((ta, tg, trgb, tl["title_in"]), (sa, sg, srgb, tl["sub_in"])):
+            for (alpha, glow, _bbox, rgb), (t0, t1) in layers:
                 a_in = _ramp(t, t0, t1)
                 if a_in <= 0:
                     continue
