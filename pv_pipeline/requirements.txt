@@ -5,3 +5,5 @@ pillow>=10.0
 pillow-heif>=0.16
 # ffmpeg がPATHに無い環境向けの保険。通常は brew/apt で入れたffmpegを使う。
 imageio-ffmpeg>=0.5
+# エンドカード（闘牛・光の反射）の1コマ合成に使う
+numpy>=1.26

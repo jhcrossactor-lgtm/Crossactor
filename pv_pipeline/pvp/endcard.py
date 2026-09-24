@@ -1,5 +1,8 @@
 """闘牛のシルエットを背景に、施設名が現れ、光が走って反射し、最後に沈むエンドカード。
 
+title / subtitle は文字（text）でもロゴ画像（image）でもよい。画像なら透過PNGを
+置き、width で出力幅に対する比を指定する。光の反射・沈み・フェードは文字と同じ演出を通る。
+
 1コマずつ numpy で合成して ffmpeg に流し込む。流れ（既定値、秒）:
   背景が闇から浮かぶ → タイトル2行がゆっくり現れる → 斜めの光がタイトルをなめて反射する
   → 全体がゆっくり沈み、タイトルが「ぎりぎり見える」暗さで止まる
@@ -42,6 +45,46 @@ def _text_layer(item: dict, width: int, height: int, work: Path, name: str):
     nz = np.argwhere(a > 0.05)
     bbox = (left + nz[:, 1].min(), top + nz[:, 0].min(), left + nz[:, 1].max(), top + nz[:, 0].max())
     return alpha, glow, bbox
+
+
+def _image_layer(item: dict, width: int, height: int):
+    """ロゴ画像を全画面サイズのアルファと色にして、位置と外接矩形を返す。
+
+    item: image（パス）, width（出力幅に対する比。既定 0.4）, x, y（中心。0〜1）
+          alpha_from: "alpha"（既定。透過PNG）/ "luminance"（黒地に白のロゴ）
+    """
+    im = Image.open(item["image"]).convert("RGBA")
+    target_w = max(8, round(float(item.get("width", 0.4)) * width))
+    im = im.resize((target_w, max(1, round(im.height * target_w / im.width))), Image.LANCZOS)
+    tw, th = im.size
+    a = np.asarray(im.getchannel("A"), dtype=np.float32) / 255.0
+    if item.get("alpha_from") == "luminance" or a.max() <= 0:
+        a = np.asarray(im.convert("L"), dtype=np.float32) / 255.0
+    rgb_small = np.asarray(im.convert("RGB"), dtype=np.float32) / 255.0
+
+    cx, cy = float(item.get("x", 0.5)) * width, float(item.get("y", 0.5)) * height
+    left, top = round(cx - tw / 2), round(cy - th / 2)
+    alpha = np.zeros((height, width), dtype=np.float32)
+    rgb = np.zeros((height, width, 3), dtype=np.float32)
+    ys, xs = slice(max(top, 0), min(top + th, height)), slice(max(left, 0), min(left + tw, width))
+    sy, sx = slice(ys.start - top, ys.stop - top), slice(xs.start - left, xs.stop - left)
+    alpha[ys, xs] = a[sy, sx]
+    rgb[ys, xs] = rgb_small[sy, sx]
+    glow = np.asarray(Image.fromarray((alpha * 255).astype(np.uint8)).filter(
+        ImageFilter.GaussianBlur(radius=max(4, th * 0.12))), dtype=np.float32) / 255.0
+    nz = np.argwhere(a > 0.05)
+    if len(nz) == 0:
+        raise ValueError(f"ロゴ画像に不透明な画素が無い: {item['image']}")
+    bbox = (left + nz[:, 1].min(), top + nz[:, 0].min(), left + nz[:, 1].max(), top + nz[:, 0].max())
+    return alpha, glow, bbox, rgb
+
+
+def _layer(item: dict, width: int, height: int, work: Path, name: str):
+    """title / subtitle を1レイヤーにする。image があればロゴ画像、無ければ文字。"""
+    if item.get("image"):
+        return _image_layer(item, width, height)
+    alpha, glow, bbox = _text_layer(item, width, height, work, name)
+    return alpha, glow, bbox, None      # 文字は白（level で明るさを決める）
 
 
 def render_bull_shine_card(
@@ -88,8 +131,8 @@ def render_bull_shine_card(
         bg = np.power(bg, bg_gamma) * float(cfg.get("bg_gamma_gain", 1.0))
 
     title, sub = cfg["title"], cfg["subtitle"]
-    ta, tg, tb = _text_layer(title, width, height, work, "title")
-    sa, sg, sb = _text_layer(sub, width, height, work, "subtitle")
+    ta, tg, tb, trgb = _layer(title, width, height, work, "title")
+    sa, sg, sb, srgb = _layer(sub, width, height, work, "subtitle")
     x0, x1 = min(tb[0], sb[0]), max(tb[2], sb[2])
     y0 = min(tb[1], sb[1])
 
@@ -140,7 +183,7 @@ def render_bull_shine_card(
             else:
                 band = None
 
-            for alpha, glow, (t0, t1) in ((ta, tg, tl["title_in"]), (sa, sg, tl["sub_in"])):
+            for alpha, glow, rgb, (t0, t1) in ((ta, tg, trgb, tl["title_in"]), (sa, sg, srgb, tl["sub_in"])):
                 a_in = _ramp(t, t0, t1)
                 if a_in <= 0:
                     continue
@@ -148,7 +191,9 @@ def render_bull_shine_card(
                 A = np.roll(alpha, shift, axis=0) * a_in
                 G = np.roll(glow, shift, axis=0) * a_in
                 level = text_level * (1 - dim) + text_dim * dim
-                color = np.ones(3, dtype=np.float32) * level
+                # 文字は白、ロゴ画像はその画像の色をそのまま使う（明るさは同じ level で制御）
+                color = (np.roll(rgb, shift, axis=0) if rgb is not None
+                         else np.ones(3, dtype=np.float32)) * level
                 frame = frame * (1 - A[..., None]) + color * A[..., None]
                 if band is not None:
                     frame = frame + (A * band * 0.9 * shine_gain)[..., None] * gold    # 文字面が金色に光る

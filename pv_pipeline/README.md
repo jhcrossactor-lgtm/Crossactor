@@ -310,6 +310,22 @@ Windows PowerShell 5.1 は BOM の無い `.ps1` を ANSI(CP932) として読む�
 日本語が文字化けして構文エラーになる。`scripts/check_ps1_bom.py`
 （`selftest.sh` から自動で走る）で検出できる。
 
+## エンドカードにロゴ画像を使う
+
+`config.yaml` の `assemble.end_card` の `title` / `subtitle` は、文字（`text`）の代わりに
+ロゴ画像（`image`）を置ける。光の反射・沈み・フェードは文字と同じ演出を通る。
+
+```yaml
+end_card:
+  title:    {image: input/logo.png, width: 0.42, x: 0.5, y: 0.5}   # width は出力幅に対する比
+  subtitle: {text: "TOKUNOSHIMA", font: TrajanPro-Regular.otf, size: 0.021, tracking: 0.85, x: 0.5, y: 0.59}
+```
+
+- 透過PNGを推奨。黒地に白で透過が無いロゴは `alpha_from: luminance` を足す
+- 画像の色はそのまま使われる（明るさだけ演出で変わる）。白いロゴなら文字と同じ見え方になる
+- 縦型（`variants.vertical.end_card`）は別に指定する。`width` の比を大きめにする
+- エンドカードは API を叩かないので、`python run.py --stage 3` だけで数十秒で確認できる
+
 ## 人物の一貫性
 
 `cuts.yaml` の `stage1_order`（既定 `02 → 03 → 05 → 04 → 07 → 09`）の順に生成する。
