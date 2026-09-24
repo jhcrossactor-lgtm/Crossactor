@@ -41,3 +41,21 @@ claude.ai アカウント側スキルへの書き込み手段は存在しない�
 `skills/inspo-mcp/README.md`（導入手順・ツール15件一覧・貼り付け用ブロック）
 `skills/inspo-mcp/patched/`（追記済みSKILL.md全文）
 `communications/logs/2026-09-16.md`（経緯）
+
+## 2026-09-24 — Google Drive のゴミ箱操作は確認不要（例外あり）
+
+**決定**
+`mcp__Google_Drive__trash_file` は今後、ほせもやんの都度確認なしで実行してよい。
+例外: システムが異常をきたしうるファイル（`.claude` 配下・設定ファイル・スクリプト本体・venv など）は事前確認を取る。
+
+**理由**
+ミラー再初期化で量産された複製文書 148 件を 1 件ずつ確認していては作業にならない。
+ゴミ箱は 30 日間復元可能で、誤操作のコストが低い。
+
+**実装**
+`.claude/settings.json` の `permissions.allow` に追加（Claude Code 側のプロンプトを抑止）。
+
+**関連する運用ルール（同日確定）**
+- venv は `G:\ClaudeLocal\venvs\`（Drive 同期外）に置く。G: は exFAT でジャンクション不可のため Drive 配下には置かない
+- Google Drive for Desktop は マイドライブを `G:\google drive_jh` に**ミラーリング**。「パソコン」バックアップには登録しない
+- ミラー再初期化は .gdoc/.gsheet を同名複製する。再初期化した日は作成日時で複製を洗い出してゴミ箱へ
