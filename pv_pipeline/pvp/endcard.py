@@ -51,16 +51,22 @@ def _image_layer(item: dict, width: int, height: int):
     """ロゴ画像を全画面サイズのアルファと色にして、位置と外接矩形を返す。
 
     item: image（パス）, width（出力幅に対する比。既定 0.4）, x, y（中心。0〜1）
-          alpha_from: "alpha"（既定。透過PNG）/ "luminance"（黒地に白のロゴ）
+          alpha_from: "alpha"（既定。透過PNG）/ "luminance"（黒地に白のロゴ）/ "darkness"（白地に黒のロゴ）
+          color: [255,255,255] を付けると画像の色を捨ててその色で描く
     """
     im = Image.open(item["image"]).convert("RGBA")
     target_w = max(8, round(float(item.get("width", 0.4)) * width))
     im = im.resize((target_w, max(1, round(im.height * target_w / im.width))), Image.LANCZOS)
     tw, th = im.size
     a = np.asarray(im.getchannel("A"), dtype=np.float32) / 255.0
-    if item.get("alpha_from") == "luminance" or a.max() <= 0:
-        a = np.asarray(im.convert("L"), dtype=np.float32) / 255.0
+    mode = item.get("alpha_from", "alpha")
+    if mode == "luminance" or (mode == "alpha" and a.max() <= 0):
+        a = np.asarray(im.convert("L"), dtype=np.float32) / 255.0          # 黒地に白のロゴ
+    elif mode == "darkness":
+        a = 1.0 - np.asarray(im.convert("L"), dtype=np.float32) / 255.0    # 白地に黒のロゴ
     rgb_small = np.asarray(im.convert("RGB"), dtype=np.float32) / 255.0
+    if item.get("color"):                                                    # 色を指定色で塗り潰す（白地ロゴを白く出す等）
+        rgb_small = np.ones_like(rgb_small) * (np.array(item["color"], dtype=np.float32) / 255.0)
 
     cx, cy = float(item.get("x", 0.5)) * width, float(item.get("y", 0.5)) * height
     left, top = round(cx - tw / 2), round(cy - th / 2)

@@ -100,13 +100,13 @@ assemble:
     shine_gain: 1.0
     # 沈んで（dim）ぎりぎり見える暗さを一瞬保ち、闘牛もタイトルも一緒に黒へ消えて終わる（fade_out）
     timeline: {title_in: [1.0, 3.0], sub_in: [1.9, 3.8], shine: [4.2, 6.2], dim: [6.6, 7.6], fade_out: [7.9, 9.0]}
-    title: {text: "F HEAVENS", font: TrajanPro-Regular.otf, size: 0.058, tracking: 0.28, x: 0.5, y: 0.5}
-    subtitle: {text: "TOKUNOSHIMA", font: TrajanPro-Regular.otf, size: 0.021, tracking: 0.85, x: 0.5, y: 0.59}
-    # 文字の代わりに本物のロゴ画像を置くときは、text の行を image に差し替える（透過PNG推奨）。
-    # width は出力幅に対する比。光の反射・沈み・フェードは文字と同じ演出になる。
-    #   title:    {image: input/logo.png, width: 0.42, x: 0.5, y: 0.5}
+    # 施設名は建物サインのロゴ画像（input/logo.png）を1枚で置く。subtitle は使わない。
+    #   透過PNG → このまま / 黒地に白 → alpha_from: luminance / 白地に黒 → alpha_from: darkness, color: [255,255,255]
+    #   width は出力幅に対する比。大きさ・位置は絵を見て調整する（stage3 だけで確認できる）
+    title: {image: input/logo.png, width: 0.46, x: 0.5, y: 0.5}
+    # 文字に戻すときはこの2行を使う:
+    #   title: {text: "F HEAVENS", font: TrajanPro-Regular.otf, size: 0.058, tracking: 0.28, x: 0.5, y: 0.5}
     #   subtitle: {text: "TOKUNOSHIMA", font: TrajanPro-Regular.otf, size: 0.021, tracking: 0.85, x: 0.5, y: 0.59}
-    # ロゴが黒地に白で透過が無い場合は alpha_from: luminance を足す。
 
 # 別サイズの書き出し。原本（2K）から作り直すので、完成版を切るより鮮明になる
 variants:
@@ -117,8 +117,9 @@ variants:
     end_card:
       bg_scale: 1.25             # 縦型では闘牛を少し大きく
       bg_offset: [0.02, 0.0]
-      title: {text: "F HEAVENS", font: TrajanPro-Regular.otf, size: 0.105, tracking: 0.24, x: 0.5, y: 0.5}
-      subtitle: {text: "TOKUNOSHIMA", font: TrajanPro-Regular.otf, size: 0.038, tracking: 0.7, x: 0.5, y: 0.56}
+      title: {image: input/logo.png, width: 0.8, x: 0.5, y: 0.5}   # 縦型は幅いっぱい寄りに
+      # title: {text: "F HEAVENS", font: TrajanPro-Regular.otf, size: 0.105, tracking: 0.24, x: 0.5, y: 0.5}
+      # subtitle: {text: "TOKUNOSHIMA", font: TrajanPro-Regular.otf, size: 0.038, tracking: 0.7, x: 0.5, y: 0.56}
 
 music:
   enabled: true
