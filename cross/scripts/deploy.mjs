@@ -4,7 +4,7 @@
 //   node scripts/deploy.mjs --secrets  … 上記に加え .env のサーバー側キーを Supabase Secrets に送る
 //   node scripts/deploy.mjs --build    … 生成のみ（デプロイしない）
 //
-// 前提：Node 18+、Supabase CLI がインストール済みで `supabase link` 済み。
+// 前提：Node 18+。Supabase CLI は PATH に無ければ npx 経由で自動実行。`supabase link` 済みであること。
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
@@ -51,9 +51,16 @@ if (existsSync(envPath)) {
 
 if (args.has("--build")) process.exit(0);
 
-function run(cmd, cmdArgs) {
-  console.log(`$ ${cmd} ${cmdArgs.join(" ")}`);
-  const r = spawnSync(cmd, cmdArgs, { cwd: ROOT, stdio: "inherit", shell: process.platform === "win32" });
+// Supabase CLI の呼び出し。PATH に無ければ `npx supabase` にフォールバック
+const SB = (() => {
+  const probe = spawnSync("supabase", ["--version"], { stdio: "ignore", shell: process.platform === "win32" });
+  return probe.status === 0 ? ["supabase"] : ["npx", "--yes", "supabase@latest"];
+})();
+function run(cmdArgs) {
+  const [cmd, ...pre] = SB;
+  const all = [...pre, ...cmdArgs];
+  console.log(`$ ${cmd} ${all.join(" ")}`);
+  const r = spawnSync(cmd, all, { cwd: ROOT, stdio: "inherit", shell: process.platform === "win32" });
   if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
@@ -66,8 +73,8 @@ if (args.has("--secrets")) {
     console.error("✖ .env にサーバー側キーが無い");
     process.exit(1);
   }
-  run("supabase", ["secrets", "set", ...pairs]);
+  run(["secrets", "set", ...pairs]);
 }
 
 // 4) デプロイ
-run("supabase", ["functions", "deploy", "chat"]);
+run(["functions", "deploy", "chat"]);
