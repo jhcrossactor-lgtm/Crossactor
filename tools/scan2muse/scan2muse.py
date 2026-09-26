@@ -209,8 +209,10 @@ def join_pages(xmls: List[Path]):
     return joined
 
 
-def build_part_streams(src: Source, part_name):
-    """連結済みの Part に楽器名を付ける。移調楽器は記譜音のまま <transpose> を付ける。"""
+def build_part_streams(src: Source, part_name, concert_pitch: bool = False):
+    """連結済みの Part に楽器名を付ける。移調楽器は記譜音のまま <transpose> を付ける。
+    concert_pitch=True（Score in C など実音表記の楽譜）のときは、読み取った音を実音とみなし、
+    MusicXML 書き出し時に music21 が記譜音へ移調する。"""
     from instruments import make_instrument
     from music21 import instrument
 
@@ -225,7 +227,7 @@ def build_part_streams(src: Source, part_name):
         part.insert(0, inst)
         part.partName = inst.partName
         part.partAbbreviation = inst.partAbbreviation
-        part.atSoundingPitch = False  # oemer が読むのは記譜音
+        part.atSoundingPitch = concert_pitch  # 通常は記譜音（False）。実音表記の総譜なら True
     return parts
 
 
@@ -284,6 +286,8 @@ def parse_args(argv=None):
     ap.add_argument("--no-deskew", action="store_true", help="oemer の傾き補正を切る（まっすぐな電子PDF向け・高速）")
     ap.add_argument("--no-combine", action="store_true", help="全パートの総譜を作らない")
     ap.add_argument("--force", action="store_true", help="読み取り済みページも oemer をやり直す")
+    ap.add_argument("--concert-pitch", action="store_true",
+                    help="楽譜が実音表記（Score in C）のとき指定。移調楽器のパートを記譜音に移調して出力する")
     return ap.parse_args(argv)
 
 
@@ -357,7 +361,7 @@ def main(argv=None) -> int:
             log.error("    読み取れたページが無いため、このパートは出力しません")
             continue
         try:
-            parts = build_part_streams(src, pn)
+            parts = build_part_streams(src, pn, args.concert_pitch)
             name = safe_filename(f"{pn.order:02d}_{pn.display}" if pn.recognized else pn.display)
             xml_path = work / f"{name}.musicxml"
             write_score(parts, f"{folder.name} - {pn.display}", xml_path)

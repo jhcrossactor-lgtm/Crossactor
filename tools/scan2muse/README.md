@@ -69,6 +69,7 @@ scan2muse.bat "G:\google drive_jh\音楽関係\楽譜\三匹の猫"
 | `--no-deskew` | 傾き補正を切る（まっすぐな電子 PDF 向け。速くなる） |
 | `--no-combine` | 全パートの総譜を作らない |
 | `--force` | 読み取り済みページも oemer をやり直す |
+| `--concert-pitch` | 楽譜が実音表記（Score in C）のとき指定。Tp / Hr などのパートを記譜音に移調して出力する |
 
 ## 3. 出力
 
@@ -122,6 +123,44 @@ oemer は楽器名を読み取らない（どの楽譜も「Piano」として出
 移調楽器（Cl / Sax / Tp / Hr など）は、スキャンした楽譜の記譜音のまま取り込み、MuseScore 側に移調設定を付ける。
 MuseScore の「移調楽器表示」を切り替えると実音でも表示できる。
 
+## 4b. 総譜（スコア）を読む場合
+
+oemer は「1段組に譜表1本（または2本＝ピアノ）」しか扱えず、多段の総譜は `AssertionError` で止まる。
+そのため総譜は **楽器ごとに段を切り出してから** scan2muse に渡す。
+
+```
+cd "G:\ClaudeLocal\scan2muse"
+py prepare_pages.py "<総譜.pdf>" --out "work\<曲名>\straight" --staves 10
+py extract_staff.py "work\<曲名>\straight" --staves 10 --index 1 --name "Trumpet 1" --out "work\<曲名>\parts_in\<曲名>_parts"
+py extract_staff.py "work\<曲名>\straight" --staves 10 --index 2 --name "Trumpet 2" --out "work\<曲名>\parts_in\<曲名>_parts"
+（… 楽器の数だけ --index と --name を変えて繰り返す。全部同じ出力フォルダに入れる）
+scan2muse.bat "work\<曲名>\parts_in\<曲名>_parts" --out "<楽譜フォルダ>\scan2muse_出力" --no-deskew --concert-pitch
+```
+
+全楽器を1つのフォルダに入れて scan2muse を1回走らせると、パート譜と総譜（`<曲名>_parts_総譜.mscz`）が両方できる。
+`--concert-pitch` は楽譜が「Score in C」（実音表記）のときだけ付ける。
+
+| 段階 | 内容 |
+|---|---|
+| `prepare_pages.py` | 全ページの向きを揃え（五線が横・音部記号が左）、とじ目側の五線の湾曲を補正。段の位置を `_layout.json`、確認用一覧を `_contact.png` に出す。`--staves` は1段組の譜表数 |
+| `extract_staff.py` | 各段組の `--index` 番目の譜表を切り出し、線間隔 13px・約340万画素の「パート譜風ページ」にする。3ページ分を1枚にまとめる（`--per-image`） |
+| `scan2muse.bat` | 上の出力フォルダをそのまま渡す。ファイル名の楽器名からパート名が付く |
+
+- 譜表数が `--staves` の倍数でないページ（休みの楽器が省略された段組）は飛ばして `_skipped.txt` に記録する。そのページの楽器割り当ては別途判断が要る
+- 埋め込み画像が PDF の表示と違う向きで保存されていることがある（表示上は正しくても画像は逆さ）。prepare_pages.py は画像の中身で判定するので問題ない
+
+### 線間隔 13px に揃える理由（重要）
+
+oemer は入力を 300万〜435万画素に自動でリサイズする（`inference.resize_image`）。
+そのため**入力画像の大きさが、oemer が見る五線の線間隔を決める**。実測（三匹の猫 Tp I・1ページ目）：
+
+| 五線の線間隔（oemer が見るサイズ） | 結果 |
+|---|---|
+| 27px（切り出し段を2倍に拡大した画像） | 12小節中7小節、4分音符が8分・16分に化ける |
+| **13px**（白余白で画素数を調整） | **12小節中11小節、リズムもほぼ正しい** |
+
+`extract_staff.py` はこれを自動で行う。手で画像を作るときも「線間隔 12〜14px × 画素数 340万」に揃えること。
+
 ## 5. 所要時間と精度の目安
 
 - oemer は1ページあたり 3〜4分かかる（CPU、A4・300dpi）。10パート×2ページなら 1時間強
@@ -135,6 +174,9 @@ MuseScore の「移調楽器表示」を切り替えると実音でも表示で�
 | `ConvTranspose ... pads must not contain negative values` | onnxruntime 1.28 以降と oemer のモデルの非互換 | `setup.bat` を実行（`onnxruntime-gpu<1.28` に入れ替え）。CPU版を入れている場合は `py -m pip install "onnxruntime<1.28"` |
 | `py -m oemer` が `No module named oemer.__main__` | oemer 0.1.8 は `-m` 実行に非対応 | scan2muse は `oemer_runner.py` 経由で呼ぶので対処不要 |
 | oemer が `IndexError: invalid index to scalar variable`（bbox.py） | OpenCV 5 で `HoughLinesP` の戻り値の形が変わった | `oemer_runner.py` が自動で互換パッチを当てる。対処不要 |
+| oemer が `'NoneType' object has no attribute '__array_interface__'`（inference.py） | Windows の `cv2.imread` が日本語を含むパスを開けない | `oemer_runner.py` が `imdecode` 版に差し替える。対処不要 |
+| oemer が `AssertionError: 4`（build_system.py の `track_nums == 2`） | 多段の総譜を直接読ませた | 「4b. 総譜を読む場合」の手順で楽器ごとに切り出す |
+| MuseScore が .mscz を開くとクラッシュ | 小節の長さが異常な MusicXML（読み取り失敗）から作った | ログで該当ページを確認し、そのページを除いて作り直す |
 | 初回だけ oemer の開始が遅い | モデル（約 100MB）を GitHub から自動ダウンロードしている | 待つ。2回目以降は不要 |
 | `MuseScore が見つかりません` | 標準以外の場所にインストール | `config.json` にパスを書く（セットアップ参照） |
 
@@ -147,6 +189,8 @@ MuseScore の「移調楽器表示」を切り替えると実音でも表示で�
 | `scan2muse.py` | 本体（収集 → 画像化 → oemer → 結合・楽器名 → MuseScore） |
 | `oemer_runner.py` | oemer を1ページずつ別プロセスで実行（互換パッチ込み） |
 | `instruments.py` | ファイル名 → パート名の判定テーブル |
+| `prepare_pages.py` | 総譜用：ページの向き揃え・湾曲補正・段位置の検出 |
+| `extract_staff.py` | 総譜用：1楽器の段を切り出して scan2muse 用の画像にする |
 | `config.json` | MuseScore のパス（自動生成） |
 
 ## 動作確認の記録（2026-09-26）
