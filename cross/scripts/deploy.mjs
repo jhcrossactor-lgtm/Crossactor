@@ -55,14 +55,25 @@ if (args.has("--build")) process.exit(0);
 
 // Supabase CLI の呼び出し。PATH に無ければ `npx supabase` にフォールバック
 const SB = (() => {
-  const probe = spawnSync("supabase", ["--version"], { stdio: "ignore", shell: process.platform === "win32" });
+  const probe = spawnSync("supabase --version", { stdio: "ignore", shell: true });
   return probe.status === 0 ? ["supabase"] : ["npx", "--yes", "supabase@latest"];
 })();
+// 表示用：KEY=VALUE の VALUE を伏せる（キーが画面・スクショに残らないように）
+function mask(arg) {
+  const m = arg.match(/^([A-Z0-9_]+)=(.*)$/);
+  if (!m) return arg;
+  const v = m[2];
+  return `${m[1]}=${v.length > 8 ? v.slice(0, 4) + "…" + v.slice(-2) : "…"}`;
+}
+function quote(arg) {
+  return /^[\w@%+=:,./-]+$/.test(arg) ? arg : `"${arg.replace(/"/g, '\\"')}"`;
+}
 function run(cmdArgs) {
-  const [cmd, ...pre] = SB;
-  const all = [...pre, ...cmdArgs];
-  console.log(`$ ${cmd} ${all.join(" ")}`);
-  const r = spawnSync(cmd, all, { cwd: ROOT, stdio: "inherit", shell: process.platform === "win32" });
+  const all = [...SB.slice(1), ...cmdArgs];
+  console.log(`$ ${SB[0]} ${all.map(mask).join(" ")}`);
+  // 1本の文字列にして shell 経由で実行（Windows の .cmd 対応。DEP0190 警告も出ない）
+  const line = [SB[0], ...all].map(quote).join(" ");
+  const r = spawnSync(line, { cwd: ROOT, stdio: "inherit", shell: true });
   if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
