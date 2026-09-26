@@ -18,7 +18,8 @@
     margin: 0; height: 100%; overflow: hidden;
     background: var(--bg); color: var(--text);
     font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
-    font-size: 28px; /* 撮影で潰れないよう最小28px */
+    /* 1920×1080 で 28px。短辺に比例させ、背の低い窓やスマホ横持ちでも構図を保つ */
+    font-size: 2.6vmin;
   }
 
   /* 部屋（Step④でthree.jsキャンバスに置き換え。今は仮の夜景グラデーション） */
@@ -36,12 +37,12 @@
 
   /* キャラ仮表示（Step④で2Dビルボードに置き換え） */
   #chara {
-    position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%);
-    width: 340px; height: 340px; border-radius: 50%;
+    position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%);
+    width: 31.5vmin; height: 31.5vmin; border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #c084fc, #6d28d9 60%, #3b0764);
     box-shadow: 0 0 80px rgba(168,85,247,.45);
     display: flex; align-items: center; justify-content: center;
-    font-size: 40px; font-weight: 700; letter-spacing: .1em;
+    font-size: 3.7vmin; font-weight: 700; letter-spacing: .1em;
     transition: transform .6s ease, box-shadow .6s ease;
   }
   body[data-state="thinking"] #chara { transform: translate(-50%,-50%) scale(.92); box-shadow: 0 0 40px rgba(168,85,247,.3); }
@@ -49,14 +50,14 @@
   body[data-state="listening"] #chara { box-shadow: 0 0 120px rgba(125,211,252,.5); }
 
   /* 隅の表示 */
-  #brand { position: fixed; left: 32px; top: 24px; font-weight: 700; opacity: .8; }
-  #brand small { display: block; font-size: 28px; font-weight: 400; opacity: .7; }
+  #brand { position: fixed; left: 1.7vw; top: 2.2vmin; font-weight: 700; opacity: .8; }
+  #brand small { display: block; font-size: 2.6vmin; font-weight: 400; opacity: .7; }
   #status {
-    position: fixed; right: 32px; top: 24px; display: flex; gap: 16px; align-items: center;
+    position: fixed; right: 1.7vw; top: 2.2vmin; display: flex; gap: .8vw; align-items: center;
   }
   .chip {
-    padding: 8px 20px; border-radius: 999px; border: 2px solid rgba(255,255,255,.25);
-    background: rgba(255,255,255,.06); font-size: 28px; cursor: pointer; color: var(--text);
+    padding: .7vmin 1.8vmin; border-radius: 999px; border: 2px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.06); font-size: 2.6vmin; cursor: pointer; color: var(--text);
   }
   .chip.on { border-color: var(--accent); background: rgba(168,85,247,.25); }
   #state-chip { cursor: default; }
@@ -67,8 +68,8 @@
 
   /* 字幕：画面下1/3、中央70%幅 */
   #subtitles {
-    position: fixed; left: 15%; right: 15%; bottom: 120px; height: 30vh;
-    display: flex; flex-direction: column; justify-content: flex-end; gap: 20px;
+    position: fixed; left: 15%; right: 15%; bottom: 12vmin; height: 32vh;
+    display: flex; flex-direction: column; justify-content: flex-end; gap: 1.8vmin;
     text-align: center; pointer-events: none;
   }
   #subtitles.hidden { display: none; }
@@ -77,31 +78,31 @@
     text-shadow: 0 2px 12px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,1);
     word-break: break-word;
   }
-  #sub-user { font-size: 40px; color: var(--user); min-height: 1.4em; }
+  #sub-user { font-size: 3.7vmin; color: var(--user); min-height: 1.4em; }
   #sub-user.interim { opacity: .6; }
-  #sub-ai { font-size: 46px; color: var(--ai); min-height: 1.4em; }
+  #sub-ai { font-size: 4.3vmin; color: var(--ai); min-height: 1.4em; }
   #sub-ai.error { color: var(--error); }
 
   /* テキスト入力（開発用。Tキーで表示切替） */
   #input-bar {
-    position: fixed; left: 15%; right: 15%; bottom: 28px; display: flex; gap: 12px;
+    position: fixed; left: 15%; right: 15%; bottom: 2.6vmin; display: flex; gap: .6vw;
   }
   #input-bar.hidden { display: none; }
   #input {
-    flex: 1; font: inherit; font-size: 28px; padding: 14px 20px; border-radius: 14px;
+    flex: 1; font: inherit; font-size: 2.6vmin; padding: 1.3vmin 1.8vmin; border-radius: 1.3vmin;
     border: 2px solid rgba(255,255,255,.25); background: rgba(0,0,0,.55); color: var(--text);
     outline: none;
   }
   #input:focus { border-color: var(--accent); }
   #send {
-    font: inherit; font-size: 28px; padding: 14px 28px; border-radius: 14px; border: 0;
+    font: inherit; font-size: 2.6vmin; padding: 1.3vmin 2.6vmin; border-radius: 1.3vmin; border: 0;
     background: var(--accent); color: white; cursor: pointer;
   }
   #send:disabled { opacity: .4; cursor: default; }
 
   #help {
-    position: fixed; left: 50%; top: 32px; transform: translateX(-50%);
-    font-size: 28px; opacity: .45; white-space: nowrap;
+    position: fixed; left: 50%; top: 3vmin; transform: translateX(-50%);
+    font-size: 2.6vmin; opacity: .45; white-space: nowrap;
   }
 </style>
 </head>
@@ -173,10 +174,17 @@
     }
 
     // ---------- モデル切替 ----------
+    function modelLabel(id) { return /sonnet/i.test(id) ? "Sonnet" : /haiku/i.test(id) ? "Haiku" : id; }
     function setUpper(on) {
       state.upperModel = on;
       els.modelChip.textContent = on ? "Sonnet" : "Haiku";
       els.modelChip.classList.toggle("on", on);
+    }
+    // 実際に使われたモデルを表示（キーワード自動切替が起きたら「Sonnet ▲」）
+    function showUsedModel(id) {
+      const auto = !state.upperModel && /sonnet/i.test(id);
+      els.modelChip.textContent = modelLabel(id) + (auto ? " ▲" : "");
+      els.modelChip.classList.toggle("on", /sonnet/i.test(id));
     }
     els.modelChip.addEventListener("click", () => setUpper(!state.upperModel));
 
@@ -261,6 +269,7 @@
               splitter.push(ev.text);
             } else if (ev.type === "start") {
               console.log("[chat] model:", ev.model);
+              showUsedModel(ev.model);
             } else if (ev.type === "done") {
               console.log("[chat] done", ev.stop_reason, ev.usage,
                 `first token ${Math.round(firstDeltaAt - t0)}ms / total ${Math.round(performance.now() - t0)}ms`);
