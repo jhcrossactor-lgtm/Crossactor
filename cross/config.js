@@ -27,6 +27,12 @@ window.CROSS_CONFIG = {
     pitch: "-2%",
   },
 
+  // 字幕（テロップ）
+  subtitle: {
+    scale: 1.0,        // 文字サイズ倍率（0.8〜1.5 目安）
+    inputOpen: false,  // 起動時にテキスト入力欄を出すか（Tキーで切替）
+  },
+
   // 色
   colors: {
     bg: "#0b0713",

@@ -51,13 +51,13 @@
 
   /* 隅の表示 */
   #brand { position: fixed; left: 1.7vw; top: 2.2vmin; font-weight: 700; opacity: .8; }
-  #brand small { display: block; font-size: 2.6vmin; font-weight: 400; opacity: .7; }
+  #brand small { display: block; font-size: 2vmin; font-weight: 400; opacity: .7; }
   #status {
     position: fixed; right: 1.7vw; top: 2.2vmin; display: flex; gap: .8vw; align-items: center;
   }
   .chip {
     padding: .7vmin 1.8vmin; border-radius: 999px; border: 2px solid rgba(255,255,255,.25);
-    background: rgba(255,255,255,.06); font-size: 2.6vmin; cursor: pointer; color: var(--text);
+    background: rgba(255,255,255,.06); font-size: 2vmin; cursor: pointer; color: var(--text);
   }
   .chip.on { border-color: var(--accent); background: rgba(168,85,247,.25); }
   #state-chip { cursor: default; }
@@ -66,28 +66,44 @@
   body[data-state="thinking"] #state-chip { border-color: var(--accent); color: #d8b4fe; }
   body[data-state="speaking"] #state-chip { border-color: var(--ai); color: var(--ai); }
 
-  /* 字幕：画面下1/3、中央70%幅 */
+  /* 字幕：画面下のローワーサード。中央70%幅、左寄せ、半透明の帯 */
+  :root { --sub-scale: 1; }
   #subtitles {
-    position: fixed; left: 15%; right: 15%; bottom: 12vmin; height: 32vh;
-    display: flex; flex-direction: column; justify-content: flex-end; gap: 1.8vmin;
-    text-align: center; pointer-events: none;
+    position: fixed; left: 15%; right: 15%; bottom: 5vmin;
+    display: flex; flex-direction: column; align-items: flex-start; gap: .9vmin;
+    pointer-events: none; transition: bottom .25s ease;
   }
+  body.input-open #subtitles { bottom: 12vmin; }
   #subtitles.hidden { display: none; }
   .sub {
-    font-weight: 700; line-height: 1.35;
-    text-shadow: 0 2px 12px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,1);
-    word-break: break-word;
+    display: inline-block; max-width: 100%;
+    padding: .55em .9em .55em 1em; border-radius: .5em;
+    background: rgba(8, 4, 18, .58);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    border-left: .28em solid transparent;
+    font-weight: 500; line-height: 1.4; text-align: left;
+    text-shadow: 0 1px 6px rgba(0,0,0,.8);
+    word-break: break-word; overflow-wrap: anywhere;
   }
-  #sub-user { font-size: 3.7vmin; color: var(--user); min-height: 1.4em; }
-  #sub-user.interim { opacity: .6; }
-  #sub-ai { font-size: 4.3vmin; color: var(--ai); min-height: 1.4em; }
-  #sub-ai.error { color: var(--error); }
+  .sub:empty { display: none; }
+  #sub-user {
+    font-size: calc(1.9vmin * var(--sub-scale)); color: #dbeafe;
+    border-left-color: var(--user); opacity: .9;
+  }
+  #sub-user.interim { opacity: .55; }
+  #sub-ai {
+    font-size: calc(2.5vmin * var(--sub-scale)); color: #fbeaf3;
+    border-left-color: var(--ai); font-weight: 600;
+  }
+  #sub-ai.error { color: #fecaca; border-left-color: var(--error); }
 
   /* テキスト入力（開発用。Tキーで表示切替） */
   #input-bar {
     position: fixed; left: 15%; right: 15%; bottom: 2.6vmin; display: flex; gap: .6vw;
   }
   #input-bar.hidden { display: none; }
+  #input-bar { display: none; }
+  body.input-open #input-bar { display: flex; }
   #input {
     flex: 1; font: inherit; font-size: 2.6vmin; padding: 1.3vmin 1.8vmin; border-radius: 1.3vmin;
     border: 2px solid rgba(255,255,255,.25); background: rgba(0,0,0,.55); color: var(--text);
@@ -102,7 +118,7 @@
 
   #help {
     position: fixed; left: 50%; top: 3vmin; transform: translateX(-50%);
-    font-size: 2.6vmin; opacity: .45; white-space: nowrap;
+    font-size: 1.7vmin; opacity: .35; white-space: nowrap;
   }
 </style>
 </head>
@@ -110,7 +126,7 @@
   <div id="room"></div>
   <div id="chara">クロス</div>
 
-  <div id="brand">Crossactor<small id="chara-name">クロス</small></div>
+  <div id="brand" style="font-size:2.2vmin">Crossactor<small id="chara-name">クロス</small></div>
   <div id="status">
     <div id="state-chip" class="chip">idle</div>
     <div id="model-chip" class="chip" title="上位モデルへ切替（クリック / Mキー）">Haiku</div>
@@ -125,7 +141,7 @@
     <input id="input" type="text" placeholder="ここに話しかける（Enterで送信 / Escで中断）">
     <button id="send" type="submit">送信</button>
   </form>
-  <div id="help">S:字幕 M:モデル T:入力欄 Esc:中断</div>
+  <div id="help">S 字幕　M モデル　T 入力欄　Esc 中断</div>
 
   <script src="config.js"></script>
   <script>
@@ -144,6 +160,8 @@
     els.charaName.textContent = CFG.charaName;
     console.log("[cross] 接続先:", CFG.supabaseUrl, "| publishable key:", CFG.supabasePublishableKey ? CFG.supabasePublishableKey.slice(0, 18) + "…" : "(未設定)");
     for (const [k, v] of Object.entries(CFG.colors)) document.documentElement.style.setProperty(`--${k}`, v);
+    document.documentElement.style.setProperty("--sub-scale", String(CFG.subtitle?.scale ?? 1));
+    if (CFG.subtitle?.inputOpen) document.body.classList.add("input-open");
 
     // ---------- 状態管理（Step④でカメラ・ポーズ制御をここに接続） ----------
     const state = { current: "idle", history: [], upperModel: false, abort: null, idleTimer: null };
@@ -325,10 +343,10 @@
       const k = e.key.toLowerCase();
       if (k === "s") els.subtitles.classList.toggle("hidden");
       if (k === "m") setUpper(!state.upperModel);
-      if (k === "t") { els.form.classList.toggle("hidden"); if (!els.form.classList.contains("hidden")) els.input.focus(); }
+      if (k === "t") { const open = document.body.classList.toggle("input-open"); if (open) els.input.focus(); }
     });
     window.cross.onSentence((s) => console.log("[sentence]", s));
-    els.input.focus();
+    if (document.body.classList.contains("input-open")) els.input.focus();
   })();
   </script>
 </body>
