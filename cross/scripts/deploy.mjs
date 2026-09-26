@@ -1,6 +1,6 @@
 // クロス デプロイ補助スクリプト
 //
-//   node scripts/deploy.mjs            … prompt.ts と config.local.js を生成 → chat 関数をデプロイ
+//   node scripts/deploy.mjs            … prompt.ts と config.local.js を生成 → Edge Functions を全部デプロイ
 //   node scripts/deploy.mjs --secrets  … 上記に加え .env のサーバー側キーを Supabase Secrets に送る
 //   node scripts/deploy.mjs --build    … 生成のみ（デプロイしない）
 //
@@ -97,4 +97,4 @@ if (args.has("--secrets")) {
 }
 
 // 4) デプロイ
-run(["functions", "deploy", "chat"]);
+run(["functions", "deploy"]); // supabase/functions 配下を全部デプロイ（chat, tts）

@@ -9,41 +9,12 @@
 //   {type:"error", message}
 import Anthropic from "@anthropic-ai/sdk";
 import { KNOWLEDGE, PERSONA } from "./prompt.ts";
+import { CORS, gate, json } from "../_shared/auth.ts";
 
 const MODEL_DEFAULT = Deno.env.get("MODEL_DEFAULT") ?? "claude-haiku-4-5-20251001";
 const MODEL_UPPER = Deno.env.get("MODEL_UPPER") ?? "claude-sonnet-5";
 const UPGRADE_KEYWORDS = ["分析", "事業", "計算", "比較"];
 const MAX_MESSAGES = 20; // 直近10往復
-
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cross-key",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-// ---- 認可 ----
-// verify_jwt = false のため、ここで自前に照合する。
-// 1) apikey ヘッダがこのプロジェクトの publishable キー（または legacy anon）と一致すること
-// 2) Secrets に CROSS_ACCESS_KEY があれば、x-cross-key ヘッダがそれと一致すること（合言葉。任意）
-function allowedApiKeys(): Set<string> {
-  const keys = new Set<string>();
-  try {
-    const pub = Deno.env.get("SUPABASE_PUBLISHABLE_KEYS");
-    if (pub) for (const v of Object.values(JSON.parse(pub))) if (typeof v === "string") keys.add(v);
-  } catch { /* 形式不正は無視 */ }
-  const legacy = Deno.env.get("SUPABASE_ANON_KEY");
-  if (legacy) keys.add(legacy);
-  return keys;
-}
-function authorize(req: Request): string | null {
-  const keys = allowedApiKeys();
-  const apikey = req.headers.get("apikey") ?? "";
-  if (keys.size === 0) return "サーバー側に publishable キーが見つからない（SUPABASE_PUBLISHABLE_KEYS 未注入）";
-  if (!apikey || !keys.has(apikey)) return "apikey が不正";
-  const access = Deno.env.get("CROSS_ACCESS_KEY");
-  if (access && req.headers.get("x-cross-key") !== access) return "合言葉が不正";
-  return null;
-}
 
 // system prompt は固定文字列（キャッシュのプレフィックスを崩さないため、時刻等を入れない）
 const SYSTEM_PROMPT = [
@@ -59,13 +30,6 @@ const SYSTEM_PROMPT = [
 ].filter(Boolean).join("\n\n---\n\n");
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
-
-function json(status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...CORS, "Content-Type": "application/json" },
-  });
-}
 
 function normalizeMessages(raw: unknown): ChatMessage[] | null {
   if (!Array.isArray(raw)) return null;
@@ -95,10 +59,8 @@ function pickModel(requested: unknown, lastUserText: string): string {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
-  if (req.method !== "POST") return json(405, { error: "POST only" });
-  const denied = authorize(req);
-  if (denied) return json(401, { error: denied });
+  const blocked = gate(req);
+  if (blocked) return blocked;
 
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) return json(500, { error: "ANTHROPIC_API_KEY が Secrets に未設定" });

@@ -19,10 +19,11 @@ window.CROSS_CONFIG = {
   historyTurns: 10,          // 直近N往復を保持
   idleTimeoutMs: 20000,      // 無発話でidleへ戻るまで
 
-  // 音声（Step②で使用）
+  // 音声（Azure Speech）。enabled:false で音声なし（字幕のみ）
   voice: {
-    name: "ja-JP-KeitaNeural",
-    style: "chat",
+    enabled: true,
+    name: "ja-JP-KeitaNeural",   // 例: ja-JP-DaichiNeural, ja-JP-NaokiNeural, ja-JP-NanamiNeural
+    style: "chat",               // 声が非対応のスタイルは無視される
     rate: "+5%",
     pitch: "-2%",
   },

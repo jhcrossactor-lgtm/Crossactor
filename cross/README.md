@@ -4,7 +4,7 @@ SNS動画用の「見せる」音声対話AI。仕様は `CLAUDE.md`、人格は
 
 ## 進捗
 - [x] ① テキスト会話（`/chat` Edge Function + `index.html` テロップ）— 2026-09-26 動作確認済み
-- [ ] ② 音声合成（`/tts` Azure Speech、文単位キュー再生、口パク用Analyser）
+- [x] ② 音声合成（`/tts` Azure Speech、文単位キュー再生、口パク用Analyser）— 実装済み、動作確認待ち
 - [ ] ③ 音声認識（Web Speech API、ウェイクワード「クロス」、割り込み）
 - [ ] ④ 3Dの部屋と2Dキャラ（three.js、ビルボード、カメラドリー）
 
@@ -50,6 +50,24 @@ GitHub の最新版を取り込む。`.env` と `config.local.js` は消えな�
 powershell -ExecutionPolicy Bypass -File scripts\update.ps1
 node scripts\deploy.mjs
 ```
+
+## Step② 音声合成のセットアップ
+1. Azure ポータルで「Speech」リソースを作成（リージョンは Japan East 推奨、価格レベル Free F0 で可）
+2. リソースの「キーとエンドポイント」から キー1 とリージョン名（例 `japaneast`）を `.env` に入れる
+   ```
+   AZURE_SPEECH_KEY=...
+   AZURE_SPEECH_REGION=japaneast
+   ```
+3. `node scripts/deploy.mjs --secrets`（chat と tts の両方がデプロイされる）
+4. `index.html` を開く → 最初に「クリックまたは Enter で開始」が出る（ブラウザの音声再生許可のため）→ 話しかける
+- 声の種類・話速・高さは `config.js` の `voice` で変更。`enabled: false` で音声なし
+- 再生中は Space か画面タップで即停止
+
+### 動作確認（Step②）
+- [ ] 返答の最初の一文が、字幕の表示とほぼ同時に鳴り始める（コンソール `[tts] ready XXXms`）
+- [ ] 文と文の間が不自然に空かない
+- [ ] 再生中に Space で止まり、すぐ次の発話を受け付ける
+- [ ] 球体が声に合わせて脈打つ（口パクの仮表現）
 
 ## 動作確認（Step①）
 - [ ] 5往復続けて破綻しない（履歴は直近10往復を送る）

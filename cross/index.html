@@ -48,6 +48,23 @@
   body[data-state="thinking"] #chara { transform: translate(-50%,-50%) scale(.92); box-shadow: 0 0 40px rgba(168,85,247,.3); }
   body[data-state="speaking"] #chara { transform: translate(-50%,-50%) scale(1.06); box-shadow: 0 0 120px rgba(249,168,212,.5); }
   body[data-state="listening"] #chara { box-shadow: 0 0 120px rgba(125,211,252,.5); }
+  /* 口パク（Step④で本物のキャラ差分に置き換え）。--mouth は 0〜1 */
+  #chara { --mouth: 0; }
+  body[data-state="speaking"] #chara {
+    transform: translate(-50%,-50%) scale(calc(1.04 + var(--mouth) * 0.06));
+    transition: transform .06s linear, box-shadow .6s ease;
+  }
+
+  /* 開始オーバーレイ（ブラウザの音声再生はクリック後にしか許可されない） */
+  #start {
+    position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+    background: rgba(6, 3, 12, .72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    cursor: pointer; transition: opacity .4s ease;
+  }
+  #start.hidden { opacity: 0; pointer-events: none; }
+  #start .box { text-align: center; }
+  #start .title { font-size: 5vmin; font-weight: 700; letter-spacing: .08em; }
+  #start .hint { font-size: 2.2vmin; opacity: .7; margin-top: 1.5vmin; }
 
   /* 隅の表示 */
   #brand { position: fixed; left: 1.7vw; top: 2.2vmin; font-weight: 700; opacity: .8; }
@@ -125,6 +142,7 @@
 <body data-state="idle">
   <div id="room"></div>
   <div id="chara">クロス</div>
+  <div id="start"><div class="box"><div class="title" id="start-title">クロス</div><div class="hint">クリックまたは Enter で開始</div></div></div>
 
   <div id="brand" style="font-size:2.2vmin">Crossactor<small id="chara-name">クロス</small></div>
   <div id="status">
@@ -141,7 +159,7 @@
     <input id="input" type="text" placeholder="ここに話しかける（Enterで送信 / Escで中断）">
     <button id="send" type="submit">送信</button>
   </form>
-  <div id="help">S 字幕　M モデル　T 入力欄　Esc 中断</div>
+  <div id="help">Space / タップ 割り込み　S 字幕　M モデル　T 入力欄</div>
 
   <script src="config.js"></script>
   <script>
@@ -156,7 +174,9 @@
       body: document.body, subUser: $("sub-user"), subAi: $("sub-ai"), subtitles: $("subtitles"),
       input: $("input"), send: $("send"), form: $("input-bar"), stateChip: $("state-chip"),
       modelChip: $("model-chip"), charaName: $("chara-name"),
+      start: $("start"), startTitle: $("start-title"), chara: $("chara"), room: $("room"),
     };
+    els.startTitle.textContent = CFG.charaName;
     els.charaName.textContent = CFG.charaName;
     console.log("[cross] 接続先:", CFG.supabaseUrl, "| publishable key:", CFG.supabasePublishableKey ? CFG.supabasePublishableKey.slice(0, 18) + "…" : "(未設定)");
     for (const [k, v] of Object.entries(CFG.colors)) document.documentElement.style.setProperty(`--${k}`, v);
@@ -164,7 +184,7 @@
     if (CFG.subtitle?.inputOpen) document.body.classList.add("input-open");
 
     // ---------- 状態管理（Step④でカメラ・ポーズ制御をここに接続） ----------
-    const state = { current: "idle", history: [], upperModel: false, abort: null, idleTimer: null };
+    const state = { current: "idle", history: [], upperModel: false, abort: null, idleTimer: null, streaming: false };
     const listeners = [];
     function setState(next) {
       if (state.current === next) return;
@@ -206,7 +226,131 @@
     }
     els.modelChip.addEventListener("click", () => setUpper(!state.upperModel));
 
-    // ---------- 文区切り検出（Step②でTTSキューに接続） ----------
+    // ---------- 音声（TTS）再生キュー ----------
+    // 文単位で /tts を呼び、届いた順ではなく文の順に途切れなく再生する。
+    // AnalyserNode で再生音量を測り、口パク（--mouth）に流す。
+    const audio = {
+      ctx: null, analyser: null, queue: [], playing: false, current: null,
+      gen: 0,                       // 割り込み時に進める世代番号。古い文は捨てる
+      available: CFG.voice?.enabled !== false,
+      mouth: 0,
+    };
+    const mouthListeners = [];
+    window.cross.onMouth = (fn) => mouthListeners.push(fn);
+
+    function unlockAudio() {
+      if (!audio.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        audio.ctx = new AC();
+        audio.analyser = audio.ctx.createAnalyser();
+        audio.analyser.fftSize = 512;
+        audio.analyser.smoothingTimeConstant = 0.5;
+        audio.analyser.connect(audio.ctx.destination);
+      }
+      if (audio.ctx.state === "suspended") audio.ctx.resume();
+    }
+
+    async function fetchTts(text) {
+      if (!audio.available) return null;
+      try {
+        const res = await fetch(`${CFG.supabaseUrl}/functions/v1/tts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": CFG.supabasePublishableKey,
+            ...(CFG.accessKey ? { "x-cross-key": CFG.accessKey } : {}),
+          },
+          body: JSON.stringify({
+            text,
+            voice: CFG.voice?.name, style: CFG.voice?.style, rate: CFG.voice?.rate, pitch: CFG.voice?.pitch,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          if (err.code === "tts_unconfigured") {
+            audio.available = false;
+            console.warn("[tts] Azure 未設定のため音声なしで続行:", err.error);
+          } else {
+            console.error("[tts] HTTP", res.status, err);
+          }
+          return null;
+        }
+        const buf = await res.arrayBuffer();
+        return await audio.ctx.decodeAudioData(buf);
+      } catch (e) {
+        console.error("[tts]", e);
+        return null;
+      }
+    }
+
+    function enqueueSpeech(text) {
+      if (!audio.ctx || !audio.available) return;
+      const clean = text.replace(/[「」『』（）()\[\]【】*#_`~>|]/g, "").trim();
+      if (!clean || !/[\p{L}\p{N}]/u.test(clean)) return;
+      const t0 = performance.now();
+      const item = { gen: audio.gen, buf: fetchTts(clean).then((b) => { item.ms = Math.round(performance.now() - t0); return b; }) };
+      audio.queue.push(item);
+      pumpSpeech();
+    }
+
+    let mouthRaf = 0;
+    function mouthLoop() {
+      const data = new Uint8Array(audio.analyser.fftSize);
+      const tick = () => {
+        if (!audio.playing) { setMouth(0); mouthRaf = 0; return; }
+        audio.analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) { const v = (data[i] - 128) / 128; sum += v * v; }
+        const rms = Math.sqrt(sum / data.length);          // 0〜1（会話音声はだいたい 0〜0.3）
+        setMouth(Math.min(1, rms * 4));
+        mouthRaf = requestAnimationFrame(tick);
+      };
+      if (!mouthRaf) mouthRaf = requestAnimationFrame(tick);
+    }
+    function setMouth(v) {
+      audio.mouth = v;
+      els.chara.style.setProperty("--mouth", v.toFixed(3));
+      const level = v < 0.08 ? 0 : v < 0.25 ? 1 : v < 0.5 ? 2 : 3;   // mouth_0〜3 に対応
+      mouthListeners.forEach((fn) => fn(level, v));
+    }
+
+    async function pumpSpeech() {
+      if (audio.playing) return;
+      const item = audio.queue.shift();
+      if (!item) { onSpeechDrained(); return; }
+      audio.playing = true;
+      const buf = await item.buf;
+      if (item.gen !== audio.gen) { audio.playing = false; pumpSpeech(); return; }   // 割り込み済み
+      if (buf) {
+        if (item.ms) console.log(`[tts] ready ${item.ms}ms`);
+        setState("speaking");
+        mouthLoop();
+        await new Promise((resolve) => {
+          const src = audio.ctx.createBufferSource();
+          src.buffer = buf;
+          src.connect(audio.analyser);
+          src.onended = resolve;
+          audio.current = src;
+          src.start();
+        });
+        audio.current = null;
+      }
+      audio.playing = false;
+      pumpSpeech();
+    }
+    function stopSpeech() {
+      audio.gen++;
+      audio.queue.length = 0;
+      try { audio.current?.stop(); } catch { /* 既に停止 */ }
+      audio.current = null;
+      audio.playing = false;
+      setMouth(0);
+    }
+    function onSpeechDrained() {
+      if (!state.streaming) setState("listening");
+    }
+
+    // ---------- 文区切り検出 → TTS ----------
     const sentenceHooks = [];
     window.cross.onSentence = (fn) => sentenceHooks.push(fn);
     function makeSentenceSplitter() {
@@ -238,7 +382,9 @@
       }
       showUser(text);
       showAi("");
+      stopSpeech();
       setState("thinking");
+      state.streaming = true;
       state.history.push({ role: "user", content: text });
 
       const ctrl = new AbortController();
@@ -281,7 +427,7 @@
             if (!line.startsWith("data: ")) continue;
             const ev = JSON.parse(line.slice(6));
             if (ev.type === "delta") {
-              if (!firstDeltaAt) { firstDeltaAt = performance.now(); setState("speaking"); }
+              if (!firstDeltaAt) { firstDeltaAt = performance.now(); if (!audio.available) setState("speaking"); }
               reply += ev.text;
               showAi(reply);
               splitter.push(ev.text);
@@ -322,13 +468,21 @@
       } finally {
         state.history = state.history.slice(-CFG.historyTurns * 2);
         state.abort = null;
+        state.streaming = false;
         els.send.disabled = false;
-        setState("listening");
-        els.input.focus();
+        if (!audio.playing && audio.queue.length === 0) setState("listening");   // 音声が残っていれば再生終了時に遷移
+        if (document.body.classList.contains("input-open")) els.input.focus();
       }
     }
     window.cross.ask = ask;
-    window.cross.interrupt = () => state.abort?.abort();
+    window.cross.interrupt = () => {
+      const wasBusy = audio.playing || audio.queue.length || state.abort;
+      stopSpeech();
+      state.abort?.abort();
+      if (wasBusy) setState("listening");
+    };
+    window.cross.speak = (text) => { unlockAudio(); enqueueSpeech(text); };   // デバッグ用：任意の文を喋らせる
+    window.cross.audio = audio;
 
     // ---------- 入力 ----------
     els.form.addEventListener("submit", (e) => {
@@ -337,15 +491,28 @@
       els.input.value = "";
       ask(v);
     });
+    function startSession() {
+      if (els.start.classList.contains("hidden")) return;
+      unlockAudio();
+      els.start.classList.add("hidden");
+      setState("idle");
+      if (document.body.classList.contains("input-open")) els.input.focus();
+    }
+    els.start.addEventListener("click", startSession);
+    // 画面タップで割り込み（オーバーレイ表示中は開始扱い）
+    [els.room, els.chara].forEach((el) => el.addEventListener("click", () => window.cross.interrupt()));
+
     document.addEventListener("keydown", (e) => {
+      if (!els.start.classList.contains("hidden")) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); startSession(); } return; }
       if (e.key === "Escape") { window.cross.interrupt(); return; }
       if (e.target === els.input) return;
+      if (e.key === " ") { e.preventDefault(); window.cross.interrupt(); return; }
       const k = e.key.toLowerCase();
       if (k === "s") els.subtitles.classList.toggle("hidden");
       if (k === "m") setUpper(!state.upperModel);
       if (k === "t") { const open = document.body.classList.toggle("input-open"); if (open) els.input.focus(); }
     });
-    window.cross.onSentence((s) => console.log("[sentence]", s));
+    window.cross.onSentence((s) => { console.log("[sentence]", s); enqueueSpeech(s); });
     if (document.body.classList.contains("input-open")) els.input.focus();
   })();
   </script>
