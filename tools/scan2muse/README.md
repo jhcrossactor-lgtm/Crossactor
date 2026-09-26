@@ -11,8 +11,10 @@ scan2muse.bat "G:\google drive_jh\音楽関係\楽譜\三匹の猫"
 
 ## 1. 初回セットアップ（1回だけ）
 
+道具一式（このフォルダ）は `G:\クロードローカル\scan2muse\` に置く。
+
 ```
-cd <このフォルダ>\tools\scan2muse
+cd "G:\クロードローカル\scan2muse"
 setup.bat
 ```
 
@@ -37,7 +39,7 @@ scan2muse.bat "G:\google drive_jh\音楽関係\楽譜\三匹の猫" --list
 
 「楽器名を判定できず」と出たファイルは、ファイル名を楽器名に変えると判定される（例: `scan001.pdf` → `Clarinet 1.pdf`）。
 
-**② 1ページだけ試す** → `output\三匹の猫\parts\` にできた `.mscz` を MuseScore で開いて確認
+**② 1ページだけ試す** → 楽譜フォルダの中の `scan2muse_出力\parts\` にできた `.mscz` を MuseScore で開いて確認
 
 ```
 scan2muse.bat "G:\google drive_jh\音楽関係\楽譜\三匹の猫" --limit-files 1 --limit-pages 1
@@ -61,7 +63,7 @@ scan2muse.bat "G:\google drive_jh\音楽関係\楽譜\三匹の猫"
 | `--list` | 入力ファイルと判定パート名の一覧だけ表示 |
 | `--limit-files N` | 先頭 N ファイルだけ処理 |
 | `--limit-pages N` | 各ファイルの先頭 N ページだけ処理 |
-| `--out フォルダ` | 出力先（既定: `tools\scan2muse\output`） |
+| `--out フォルダ` | 出力先（既定: 入力フォルダの中の `scan2muse_出力`） |
 | `--dpi N` | PDF → 画像の解像度（既定 300） |
 | `--timeout 秒` | 1ページあたりの oemer 制限時間（既定 1800） |
 | `--no-deskew` | 傾き補正を切る（まっすぐな電子 PDF 向け。速くなる） |
@@ -70,13 +72,19 @@ scan2muse.bat "G:\google drive_jh\音楽関係\楽譜\三匹の猫"
 
 ## 3. 出力
 
+完成品は元の楽譜の隣に、中間ファイルは道具側に分けて置く。
+
 ```
-output\三匹の猫\
-  三匹の猫_総譜.mscz        ← 全パートを標準スコア順に並べた総譜
-  parts\09_Cl 1.mscz        ← パート譜（番号はスコア順）
-  parts\14_Tp 2.mscz
-  scan2muse.log             ← 処理ログ（失敗ページの理由もここ）
-  work\                     ← 中間ファイル（ページ画像・ページ毎の MusicXML）
+G:\google drive_jh\音楽関係\楽譜\三匹の猫\
+  （元の楽譜 PDF）
+  scan2muse_出力\
+    三匹の猫_総譜.mscz      ← 全パートを標準スコア順に並べた総譜
+    parts\09_Cl 1.mscz      ← パート譜（番号はスコア順）
+    parts\14_Tp 2.mscz
+    scan2muse.log           ← 処理ログ（失敗ページの理由もここ）
+
+G:\クロードローカル\scan2muse\work\三匹の猫\
+    ← 中間ファイル（ページ画像・ページ毎の MusicXML）。消しても次回作り直されるだけ
 ```
 
 - 失敗したページは飛ばして続行し、ログ末尾に `[失敗]` として一覧が出る

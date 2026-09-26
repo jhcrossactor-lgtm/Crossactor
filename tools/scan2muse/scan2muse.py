@@ -275,7 +275,7 @@ def setup_logging(log_path: Path) -> None:
 def parse_args(argv=None):
     ap = argparse.ArgumentParser(description="スキャン楽譜 → oemer → MuseScore (.mscz) 一括変換")
     ap.add_argument("folder", help="PDF / PNG / JPG が入ったフォルダ")
-    ap.add_argument("--out", default=str(TOOL_DIR / "output"), help="出力先（既定: scan2muse\\output）")
+    ap.add_argument("--out", help="出力先（既定: 入力フォルダの中の scan2muse_出力）")
     ap.add_argument("--list", action="store_true", help="処理せず、入力ファイルと判定パート名の一覧だけ表示")
     ap.add_argument("--limit-files", type=int, help="先頭 N ファイルだけ処理（動作確認用）")
     ap.add_argument("--limit-pages", type=int, help="各ファイルの先頭 N ページだけ処理（動作確認用）")
@@ -312,7 +312,9 @@ def main(argv=None) -> int:
             print(f"  {pn.display:12s} ← {', '.join(f.name for f in src.files)}{mark}")
         return 0
 
-    job_dir = Path(args.out) / safe_filename(folder.name)
+    # 完成品（.mscz・ログ）は元の楽譜の隣へ、中間ファイルはツール側の work へ置く
+    job_dir = Path(args.out) if args.out else folder / "scan2muse_出力"
+    work_root = TOOL_DIR / "work" / safe_filename(folder.name)
     setup_logging(job_dir / "scan2muse.log")
     log.info("==== scan2muse 開始: %s", folder)
 
@@ -331,7 +333,7 @@ def main(argv=None) -> int:
         pn = identify(src.stem)
         log.info("[%d/%d] %s → パート名「%s」%s", idx, len(sources), src.stem, pn.display,
                  "" if pn.recognized else "（楽器名を判定できず）")
-        work = job_dir / "work" / safe_filename(src.stem)
+        work = work_root / safe_filename(src.stem)
         try:
             render_pages(src, work / "pages", args.dpi, args.limit_pages)
         except Exception as e:  # 壊れたPDF・画像など。このファイルだけ飛ばす
@@ -368,7 +370,7 @@ def main(argv=None) -> int:
         if len(set(measures.values())) > 1:
             log.warning("パートごとの小節数が揃っていません（読み取り誤差）: %s", measures)
         try:
-            xml_path = job_dir / "work" / "_all.musicxml"
+            xml_path = work_root / "_all.musicxml"
             write_score(all_parts, folder.name, xml_path)
             to_mscz(musescore, xml_path, job_dir / f"{safe_filename(folder.name)}_総譜.mscz")
             log.info("総譜 → %s_総譜.mscz（%d パート）", safe_filename(folder.name), len(all_parts))
