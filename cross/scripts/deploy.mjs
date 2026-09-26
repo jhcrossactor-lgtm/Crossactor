@@ -36,6 +36,13 @@ if (existsSync(envPath)) {
     env[m[1]] = m[2].replace(/^["']|["']$/g, "");
   }
   const pubKey = env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY;
+  if (env.SUPABASE_URL) {
+    env.SUPABASE_URL = env.SUPABASE_URL.replace(/\/+$/, "");
+    if (!/^https:\/\/[a-z]{20}\.supabase\.co$/.test(env.SUPABASE_URL)) {
+      console.warn(`⚠ SUPABASE_URL の形式が想定外: ${env.SUPABASE_URL}`);
+      console.warn("  正しい形: https://<20文字のref>.supabase.co （ダッシュボードのURLではない）");
+    }
+  }
   if (env.SUPABASE_URL || pubKey) {
     const local =
       "// 自動生成（.env から）。gitignore 済み。\n" +

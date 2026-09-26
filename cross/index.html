@@ -141,6 +141,7 @@
       modelChip: $("model-chip"), charaName: $("chara-name"),
     };
     els.charaName.textContent = CFG.charaName;
+    console.log("[cross] 接続先:", CFG.supabaseUrl, "| publishable key:", CFG.supabasePublishableKey ? CFG.supabasePublishableKey.slice(0, 18) + "…" : "(未設定)");
     for (const [k, v] of Object.entries(CFG.colors)) document.documentElement.style.setProperty(`--${k}`, v);
 
     // ---------- 状態管理（Step④でカメラ・ポーズ制御をここに接続） ----------
@@ -285,7 +286,10 @@
           showAi(reply ? reply + "…" : "");
         } else {
           console.error(e);
-          showAi(`エラー: ${e.message}`, true);
+          const hint = e.message === "Failed to fetch"
+            ? `（接続先 ${CFG.supabaseUrl} に届いていない。config.local.js の supabaseUrl を確認）`
+            : "";
+          showAi(`エラー: ${e.message}${hint}`, true);
           state.history.pop();
         }
       } finally {
