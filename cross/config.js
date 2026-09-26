@@ -22,10 +22,10 @@ window.CROSS_CONFIG = {
   // 音声（Azure Speech）。enabled:false で音声なし（字幕のみ）
   voice: {
     enabled: true,
-    name: "ja-JP-KeitaNeural",   // 例: ja-JP-DaichiNeural, ja-JP-NaokiNeural, ja-JP-NanamiNeural
-    style: "chat",               // 声が非対応のスタイルは無視される
-    rate: "+5%",
-    pitch: "-2%",
+    name: "ja-JP-NanamiNeural",  // 女声。他: ja-JP-AoiNeural（若い）, ja-JP-MayuNeural（柔らかい）, 男声 ja-JP-KeitaNeural
+    style: "chat",               // Nanami は chat / cheerful / customerservice が使える。非対応の声では無視される
+    rate: "+6%",
+    pitch: "+2%",
   },
 
   // 字幕（テロップ）
