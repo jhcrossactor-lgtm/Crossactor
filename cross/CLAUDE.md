@@ -14,6 +14,7 @@ Phase1 = 会話＋声＋キャラ表示＋字幕。
 ## 会話
 - 既定モデル `claude-haiku-4-5-20251001`
 - 上位モデル `claude-sonnet-5`：画面の切替ボタン or 発話に「分析」「事業」「計算」「比較」を含む場合
+- 最上位 `claude-fable-5-1`（effort high）：画面の切替ボタンで手動選択した時のみ。Secrets の MODEL_UPPER / MODEL_MAX / UPPER_EFFORT / MAX_EFFORT で各段を変更可
 - system prompt は `persona.md`＋`knowledge.md` を結合。プロンプトキャッシュ有効化
 - 会話履歴は直近10往復を保持
 - 返答は短く（1〜3文）。話し言葉、記号・箇条書き・URL禁止

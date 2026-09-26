@@ -147,7 +147,7 @@
   <div id="brand" style="font-size:2.2vmin">Crossactor<small id="chara-name">クロス</small></div>
   <div id="status">
     <div id="state-chip" class="chip">idle</div>
-    <div id="model-chip" class="chip" title="上位モデルへ切替（クリック / Mキー）">Haiku</div>
+    <div id="model-chip" class="chip" title="モデル切替（クリック / Mキー）：auto → Opus → Fable">Haiku (auto)</div>
   </div>
 
   <div id="subtitles">
@@ -184,7 +184,8 @@
     if (CFG.subtitle?.inputOpen) document.body.classList.add("input-open");
 
     // ---------- 状態管理（Step④でカメラ・ポーズ制御をここに接続） ----------
-    const state = { current: "idle", history: [], upperModel: false, abort: null, idleTimer: null, streaming: false };
+    const state = { current: "idle", history: [], tier: "auto", abort: null, idleTimer: null, streaming: false };
+    const TIER_ORDER = ["auto", "upper", "max"];
     const listeners = [];
     function setState(next) {
       if (state.current === next) return;
@@ -212,19 +213,24 @@
     }
 
     // ---------- モデル切替 ----------
-    function modelLabel(id) { return /sonnet/i.test(id) ? "Sonnet" : /haiku/i.test(id) ? "Haiku" : id; }
-    function setUpper(on) {
-      state.upperModel = on;
-      els.modelChip.textContent = on ? "Sonnet" : "Haiku";
-      els.modelChip.classList.toggle("on", on);
+    function modelLabel(id) {
+      return /fable/i.test(id) ? "Fable" : /opus/i.test(id) ? "Opus" : /sonnet/i.test(id) ? "Sonnet" : /haiku/i.test(id) ? "Haiku" : id;
     }
-    // 実際に使われたモデルを表示（キーワード自動切替が起きたら「Sonnet ▲」）
-    function showUsedModel(id) {
-      const auto = !state.upperModel && /sonnet/i.test(id);
+    // 3段：auto（Haiku、キーワードで自動昇格）→ upper（Opus）→ max（Fable）を巡回
+    function setTier(tier) {
+      state.tier = tier;
+      const label = tier === "auto" ? modelLabel(CFG.models.default) + " (auto)" : modelLabel(CFG.models[tier]);
+      els.modelChip.textContent = label;
+      els.modelChip.classList.toggle("on", tier !== "auto");
+    }
+    function cycleTier() { setTier(TIER_ORDER[(TIER_ORDER.indexOf(state.tier) + 1) % TIER_ORDER.length]); }
+    // 実際に使われたモデルを表示（キーワード自動昇格が起きたら「Opus ▲」のように）
+    function showUsedModel(id, tier) {
+      const auto = state.tier === "auto" && tier !== "default";
       els.modelChip.textContent = modelLabel(id) + (auto ? " ▲" : "");
-      els.modelChip.classList.toggle("on", /sonnet/i.test(id));
+      els.modelChip.classList.toggle("on", tier !== "default");
     }
-    els.modelChip.addEventListener("click", () => setUpper(!state.upperModel));
+    els.modelChip.addEventListener("click", cycleTier);
 
     // ---------- 音声（TTS）再生キュー ----------
     // 文単位で /tts を呼び、届いた順ではなく文の順に途切れなく再生する。
@@ -406,7 +412,7 @@
           },
           body: JSON.stringify({
             messages: state.history.slice(-CFG.historyTurns * 2),
-            model: state.upperModel ? "upper" : undefined,
+            model: state.tier === "auto" ? undefined : state.tier,
           }),
         });
         if (!res.ok || !res.body) {
@@ -432,9 +438,10 @@
               showAi(reply);
               splitter.push(ev.text);
             } else if (ev.type === "start") {
-              console.log("[chat] model:", ev.model);
-              showUsedModel(ev.model);
+              console.log("[chat] model:", ev.model, "tier:", ev.tier);
+              showUsedModel(ev.model, ev.tier);
             } else if (ev.type === "done") {
+              showUsedModel(ev.model, ev.tier);
               console.log("[chat] done", ev.stop_reason, ev.usage,
                 `first token ${Math.round(firstDeltaAt - t0)}ms / total ${Math.round(performance.now() - t0)}ms`);
               if (ev.stop_reason === "refusal" && !reply) reply = "それは答えられへんな。別の聞き方にしよか。";
@@ -509,7 +516,7 @@
       if (e.key === " ") { e.preventDefault(); window.cross.interrupt(); return; }
       const k = e.key.toLowerCase();
       if (k === "s") els.subtitles.classList.toggle("hidden");
-      if (k === "m") setUpper(!state.upperModel);
+      if (k === "m") cycleTier();
       if (k === "t") { const open = document.body.classList.toggle("input-open"); if (open) els.input.focus(); }
     });
     window.cross.onSentence((s) => { console.log("[sentence]", s); enqueueSpeech(s); });

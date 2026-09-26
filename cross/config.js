@@ -10,9 +10,12 @@ window.CROSS_CONFIG = {
   accessKey: "",                // 合言葉。Secrets に CROSS_ACCESS_KEY を設定した場合のみ
 
   // 会話
+  // 表示用。実際の選択はサーバー側（Secrets の MODEL_UPPER / MODEL_MAX / UPPER_EFFORT / MAX_EFFORT で変更可）
+  // default: 既定 ／ upper: キーワードで自動昇格 ／ max: チップで手動選択した時のみ
   models: {
     default: "claude-haiku-4-5-20251001",
     upper: "claude-sonnet-5",
+    max: "claude-fable-5-1",
   },
   upgradeKeywords: ["分析", "事業", "計算", "比較"],
   wakeWord: "クロス",

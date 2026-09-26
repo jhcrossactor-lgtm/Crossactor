@@ -11,9 +11,20 @@ import Anthropic from "@anthropic-ai/sdk";
 import { KNOWLEDGE, PERSONA } from "./prompt.ts";
 import { CORS, gate, json } from "../_shared/auth.ts";
 
-const MODEL_DEFAULT = Deno.env.get("MODEL_DEFAULT") ?? "claude-haiku-4-5-20251001";
-const MODEL_UPPER = Deno.env.get("MODEL_UPPER") ?? "claude-sonnet-5";
+// 3段構成：default（既定・Haiku）／upper（キーワードで自動昇格・Sonnet 5）／max（画面から手動で選んだ時のみ・Fable 5.1）
+type Effort = "low" | "medium" | "high" | "xhigh" | "max";
+function effortEnv(name: string, fallback: Effort): Effort {
+  const e = Deno.env.get(name) ?? fallback;
+  return (["low", "medium", "high", "xhigh", "max"] as const).includes(e as Effort) ? (e as Effort) : fallback;
+}
+const TIERS = {
+  default: { model: Deno.env.get("MODEL_DEFAULT") ?? "claude-haiku-4-5-20251001", effort: null as Effort | null },
+  upper:   { model: Deno.env.get("MODEL_UPPER") ?? "claude-sonnet-5", effort: effortEnv("UPPER_EFFORT", "low") },
+  max:     { model: Deno.env.get("MODEL_MAX") ?? "claude-fable-5-1", effort: effortEnv("MAX_EFFORT", "high") },
+} as const;
+type Tier = keyof typeof TIERS;
 const UPGRADE_KEYWORDS = ["分析", "事業", "計算", "比較"];
+const MAX_KEYWORDS: string[] = [];   // max は既定では手動切替のみ（必要なら語を足す）
 const MAX_MESSAGES = 20; // 直近10往復
 
 // system prompt は固定文字列（キャッシュのプレフィックスを崩さないため、時刻等を入れない）
@@ -52,10 +63,11 @@ function normalizeMessages(raw: unknown): ChatMessage[] | null {
   return trimmed;
 }
 
-function pickModel(requested: unknown, lastUserText: string): string {
-  if (requested === "upper") return MODEL_UPPER;
-  if (requested === "default") return MODEL_DEFAULT;
-  return UPGRADE_KEYWORDS.some((k) => lastUserText.includes(k)) ? MODEL_UPPER : MODEL_DEFAULT;
+function pickTier(requested: unknown, lastUserText: string): Tier {
+  if (requested === "max" || requested === "upper" || requested === "default") return requested;
+  if (MAX_KEYWORDS.some((k) => lastUserText.includes(k))) return "max";
+  if (UPGRADE_KEYWORDS.some((k) => lastUserText.includes(k))) return "upper";
+  return "default";
 }
 
 Deno.serve(async (req) => {
@@ -74,7 +86,8 @@ Deno.serve(async (req) => {
   const messages = normalizeMessages(body.messages);
   if (!messages) return json(400, { error: "messages が不正（末尾は user の発話であること）" });
 
-  const model = pickModel(body.model, messages[messages.length - 1].content);
+  const tier = pickTier(body.model, messages[messages.length - 1].content);
+  const { model, effort } = TIERS[tier];
   const client = new Anthropic({ apiKey });
   const encoder = new TextEncoder();
 
@@ -83,30 +96,39 @@ Deno.serve(async (req) => {
       const send = (obj: unknown) =>
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
       try {
-        send({ type: "start", model });
+        send({ type: "start", model, tier });
 
-        const params: Anthropic.MessageStreamParams = {
+        const params: Parameters<typeof client.beta.messages.stream>[0] = {
           model,
-          // 返答は1〜3文。thinkingを使うモデルはその分も含むため余裕を持たせる
           max_tokens: 1024,
           system: [
             { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } },
           ],
           messages,
         };
-        if (!model.includes("haiku")) {
-          // 音声対話は遅延優先。上位モデルは思考オフ・低エフォートで短く返す
+        if (/fable|mythos|opus-5/.test(model)) {
+          // Fable 5.1 / Opus 5.5 / Opus 5：思考は常時オン（thinking は送らない）。深さは effort で制御。
+          // 思考トークンも max_tokens に含まれるため余裕を持たせる。
+          // 安全分類器の拒否（stop_reason: refusal）はサーバー側フォールバックで別モデルに自動退避。
+          params.max_tokens = 8000;
+          params.output_config = { effort: effort ?? "medium" };
+          params.betas = ["server-side-fallback-2026-07-01"];
+          params.fallbacks = "default";
+        } else if (!model.includes("haiku")) {
+          // Sonnet 5 など：音声対話は遅延優先。思考オフ・低エフォートで短く返す
           params.thinking = { type: "disabled" };
-          params.output_config = { effort: "low" };
+          params.output_config = { effort: effort ?? "low" };
         }
+        // Haiku 4.5：effort 非対応。何も付けない
 
-        const s = client.messages.stream(params);
+        const s = client.beta.messages.stream(params);
         s.on("text", (text) => send({ type: "delta", text }));
         const final = await s.finalMessage();
 
         send({
           type: "done",
-          model,
+          model: final.model,   // フォールバックが発動した場合は実際に応答したモデル
+          tier,
           stop_reason: final.stop_reason,
           usage: {
             input: final.usage.input_tokens,
