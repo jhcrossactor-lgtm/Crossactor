@@ -3,7 +3,7 @@
 SNS動画用の「見せる」音声対話AI。仕様は `CLAUDE.md`、人格は `persona.md`。
 
 ## 進捗
-- [x] ① テキスト会話（`/chat` Edge Function + `index.html` 字幕ストリーム）
+- [x] ① テキスト会話（`/chat` Edge Function + `index.html` テロップ）— 2026-09-26 動作確認済み
 - [ ] ② 音声合成（`/tts` Azure Speech、文単位キュー再生、口パク用Analyser）
 - [ ] ③ 音声認識（Web Speech API、ウェイクワード「クロス」、割り込み）
 - [ ] ④ 3Dの部屋と2Dキャラ（three.js、ビルボード、カメラドリー）
@@ -55,6 +55,12 @@ node scripts\deploy.mjs
 - [ ] 5往復続けて破綻しない（履歴は直近10往復を送る）
 - [ ] 「事業の話やけど」と言うと `[chat] model: claude-sonnet-5` になる
 - [ ] 1往復目のレスポンスが体感2秒以内（首トークンのmsを確認）
+
+## よくある間違い
+- `.env` の `SUPABASE_URL` は `https://<20文字のref>.supabase.co`。末尾の `.supabase.co` を落とすと画面に「Failed to fetch」が出る。`node scripts/deploy.mjs --build` が形式を検証して警告する
+- Supabase の API Keys は「Publishable and secret API keys」タブの `sb_publishable_...` を使う。Legacy タブの anon key ではない
+- Anthropic のキー作成画面の「スコープ」は「デフォルトワークスペース」を選ぶ
+- ブラウザが古い画面を出すときは Ctrl+F5 で強制再読み込み
 
 ## 補足
 - 認可：Edge Function 内で `apikey` ヘッダを publishable キーと照合する（新キーは JWT ではないため `verify_jwt = false`）。publishable キーは公開前提の値なので、公開URLで運用する場合は `.env` に `CROSS_ACCESS_KEY`（合言葉）を設定して `--secrets` で送る。画面側は `x-cross-key` ヘッダで送る
