@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>クロス — Crossactor</title>
+<style>
+  :root {
+    --bg: #0b0713;
+    --accent: #a855f7;
+    --user: #7dd3fc;
+    --ai: #f9a8d4;
+    --error: #f87171;
+    --text: #f4f1fa;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    /* 1920×1080 で 28px。短辺に比例させ、背の低い窓やスマホ横持ちでも構図を保つ */
+    font-size: 2.6vmin;
+  }
+
+  /* 部屋（Step④でthree.jsキャンバスに置き換え。今は仮の夜景グラデーション） */
+  #room {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 8%, rgba(168,85,247,.35), transparent 70%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(30,20,60,.9), transparent 70%),
+      linear-gradient(180deg, #120a24 0%, #0b0713 60%, #06040c 100%);
+  }
+  #room::after { /* 天井際の紫の間接照明の仮表現 */
+    content: ""; position: absolute; left: 10%; right: 10%; top: 0; height: 6px;
+    background: var(--accent); filter: blur(10px); opacity: .8;
+  }
+
+  /* キャラ仮表示（Step④で2Dビルボードに置き換え） */
+  #chara {
+    position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%);
+    width: 31.5vmin; height: 31.5vmin; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #c084fc, #6d28d9 60%, #3b0764);
+    box-shadow: 0 0 80px rgba(168,85,247,.45);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3.7vmin; font-weight: 700; letter-spacing: .1em;
+    transition: transform .6s ease, box-shadow .6s ease;
+  }
+  body[data-state="thinking"] #chara { transform: translate(-50%,-50%) scale(.92); box-shadow: 0 0 40px rgba(168,85,247,.3); }
+  body[data-state="speaking"] #chara { transform: translate(-50%,-50%) scale(1.06); box-shadow: 0 0 120px rgba(249,168,212,.5); }
+  body[data-state="listening"] #chara { box-shadow: 0 0 120px rgba(125,211,252,.5); }
+  /* 口パク（Step④で本物のキャラ差分に置き換え）。--mouth は 0〜1 */
+  #chara { --mouth: 0; }
+  body[data-state="speaking"] #chara {
+    transform: translate(-50%,-50%) scale(calc(1.04 + var(--mouth) * 0.06));
+    transition: transform .06s linear, box-shadow .6s ease;
+  }
+
+  /* 開始オーバーレイ（ブラウザの音声再生はクリック後にしか許可されない） */
+  #start {
+    position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+    background: rgba(6, 3, 12, .72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    cursor: pointer; transition: opacity .4s ease;
+  }
+  #start.hidden { opacity: 0; pointer-events: none; }
+  #start .box { text-align: center; }
+  #start .title { font-size: 5vmin; font-weight: 700; letter-spacing: .08em; }
+  #start .hint { font-size: 2.2vmin; opacity: .7; margin-top: 1.5vmin; }
+
+  /* 隅の表示 */
+  #brand { position: fixed; left: 1.7vw; top: 2.2vmin; font-weight: 700; opacity: .8; }
+  #brand small { display: block; font-size: 2vmin; font-weight: 400; opacity: .7; }
+  #status {
+    position: fixed; right: 1.7vw; top: 2.2vmin; display: flex; gap: .8vw; align-items: center;
+  }
+  .chip {
+    padding: .7vmin 1.8vmin; border-radius: 999px; border: 2px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.06); font-size: 2vmin; cursor: pointer; color: var(--text);
+  }
+  .chip.on { border-color: var(--accent); background: rgba(168,85,247,.25); }
+  #state-chip { cursor: default; }
+  body[data-state="idle"] #state-chip { border-color: rgba(255,255,255,.25); }
+  body[data-state="listening"] #state-chip { border-color: var(--user); color: var(--user); }
+  body[data-state="thinking"] #state-chip { border-color: var(--accent); color: #d8b4fe; }
+  body[data-state="speaking"] #state-chip { border-color: var(--ai); color: var(--ai); }
+
+  /* 字幕：画面下のローワーサード。中央70%幅、左寄せ、半透明の帯 */
+  :root { --sub-scale: 1; }
+  #subtitles {
+    position: fixed; left: 15%; right: 15%; bottom: 5vmin;
+    display: flex; flex-direction: column; align-items: flex-start; gap: .9vmin;
+    pointer-events: none; transition: bottom .25s ease;
+  }
+  body.input-open #subtitles { bottom: 12vmin; }
+  #subtitles.hidden { display: none; }
+  .sub {
+    display: inline-block; max-width: 100%;
+    padding: .55em .9em .55em 1em; border-radius: .5em;
+    background: rgba(8, 4, 18, .58);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    border-left: .28em solid transparent;
+    font-weight: 500; line-height: 1.4; text-align: left;
+    text-shadow: 0 1px 6px rgba(0,0,0,.8);
+    word-break: break-word; overflow-wrap: anywhere;
+  }
+  .sub:empty { display: none; }
+  #sub-user {
+    font-size: calc(1.9vmin * var(--sub-scale)); color: #dbeafe;
+    border-left-color: var(--user); opacity: .9;
+  }
+  #sub-user.interim { opacity: .55; }
+  #sub-ai {
+    font-size: calc(2.5vmin * var(--sub-scale)); color: #fbeaf3;
+    border-left-color: var(--ai); font-weight: 600;
+  }
+  #sub-ai.error { color: #fecaca; border-left-color: var(--error); }
+
+  /* テキスト入力（開発用。Tキーで表示切替） */
+  #input-bar {
+    position: fixed; left: 15%; right: 15%; bottom: 2.6vmin; display: flex; gap: .6vw;
+  }
+  #input-bar.hidden { display: none; }
+  #input-bar { display: none; }
+  body.input-open #input-bar { display: flex; }
+  #input {
+    flex: 1; font: inherit; font-size: 2.6vmin; padding: 1.3vmin 1.8vmin; border-radius: 1.3vmin;
+    border: 2px solid rgba(255,255,255,.25); background: rgba(0,0,0,.55); color: var(--text);
+    outline: none;
+  }
+  #input:focus { border-color: var(--accent); }
+  #send {
+    font: inherit; font-size: 2.6vmin; padding: 1.3vmin 2.6vmin; border-radius: 1.3vmin; border: 0;
+    background: var(--accent); color: white; cursor: pointer;
+  }
+  #send:disabled { opacity: .4; cursor: default; }
+
+  #help {
+    position: fixed; left: 50%; top: 3vmin; transform: translateX(-50%);
+    font-size: 1.7vmin; opacity: .35; white-space: nowrap;
+  }
+</style>
+</head>
+<body data-state="idle">
+  <div id="room"></div>
+  <div id="chara">クロス</div>
+  <div id="start"><div class="box"><div class="title" id="start-title">クロス</div><div class="hint">クリックまたは Enter で開始</div></div></div>
+
+  <div id="brand" style="font-size:2.2vmin">Crossactor<small id="chara-name">クロス</small></div>
+  <div id="status">
+    <div id="state-chip" class="chip">idle</div>
+    <div id="model-chip" class="chip" title="モデル切替（クリック / Mキー）：auto → Opus → Fable">Haiku (auto)</div>
+  </div>
+
+  <div id="subtitles">
+    <div id="sub-user" class="sub"></div>
+    <div id="sub-ai" class="sub"></div>
+  </div>
+
+  <form id="input-bar" autocomplete="off">
+    <input id="input" type="text" placeholder="ここに話しかける（Enterで送信 / Escで中断）">
+    <button id="send" type="submit">送信</button>
+  </form>
+  <div id="help">Space / タップ 割り込み　S 字幕　M モデル　T 入力欄</div>
+
+  <script src="config.js"></script>
+  <script>
+    // config.local.js（.envから生成、gitignore済）があれば上書き読み込み
+    document.write('<script src="config.local.js" onerror="this.remove()"><\/script>');
+  </script>
+  <script>
+  (() => {
+    const CFG = window.CROSS_CONFIG;
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      body: document.body, subUser: $("sub-user"), subAi: $("sub-ai"), subtitles: $("subtitles"),
+      input: $("input"), send: $("send"), form: $("input-bar"), stateChip: $("state-chip"),
+      modelChip: $("model-chip"), charaName: $("chara-name"),
+      start: $("start"), startTitle: $("start-title"), chara: $("chara"), room: $("room"),
+    };
+    els.startTitle.textContent = CFG.charaName;
+    els.charaName.textContent = CFG.charaName;
+    console.log("[cross] 接続先:", CFG.supabaseUrl, "| publishable key:", CFG.supabasePublishableKey ? CFG.supabasePublishableKey.slice(0, 18) + "…" : "(未設定)");
+    for (const [k, v] of Object.entries(CFG.colors)) document.documentElement.style.setProperty(`--${k}`, v);
+    document.documentElement.style.setProperty("--sub-scale", String(CFG.subtitle?.scale ?? 1));
+    if (CFG.subtitle?.inputOpen) document.body.classList.add("input-open");
+
+    // ---------- 状態管理（Step④でカメラ・ポーズ制御をここに接続） ----------
+    const state = { current: "idle", history: [], tier: "auto", abort: null, idleTimer: null, streaming: false };
+    const TIER_ORDER = ["auto", "upper", "max"];
+    const listeners = [];
+    function setState(next) {
+      if (state.current === next) return;
+      state.current = next;
+      els.body.dataset.state = next;
+      els.stateChip.textContent = next;
+      listeners.forEach((fn) => fn(next));
+      armIdleTimer();
+    }
+    function armIdleTimer() {
+      clearTimeout(state.idleTimer);
+      if (state.current === "idle" || state.current === "thinking" || state.current === "speaking") return;
+      state.idleTimer = setTimeout(() => setState("idle"), CFG.idleTimeoutMs);
+    }
+    window.cross = { setState, onState: (fn) => listeners.push(fn), state };
+
+    // ---------- 字幕 ----------
+    function showUser(text, interim = false) {
+      els.subUser.textContent = text;
+      els.subUser.classList.toggle("interim", interim);
+    }
+    function showAi(text, isError = false) {
+      els.subAi.textContent = text;
+      els.subAi.classList.toggle("error", isError);
+    }
+
+    // ---------- モデル切替 ----------
+    function modelLabel(id) {
+      return /fable/i.test(id) ? "Fable" : /opus/i.test(id) ? "Opus" : /sonnet/i.test(id) ? "Sonnet" : /haiku/i.test(id) ? "Haiku" : id;
+    }
+    // 3段：auto（Haiku、キーワードで自動昇格）→ upper（Opus）→ max（Fable）を巡回
+    function setTier(tier) {
+      state.tier = tier;
+      const label = tier === "auto" ? modelLabel(CFG.models.default) + " (auto)" : modelLabel(CFG.models[tier]);
+      els.modelChip.textContent = label;
+      els.modelChip.classList.toggle("on", tier !== "auto");
+    }
+    function cycleTier() { setTier(TIER_ORDER[(TIER_ORDER.indexOf(state.tier) + 1) % TIER_ORDER.length]); }
+    // 実際に使われたモデルを表示（キーワード自動昇格が起きたら「Opus ▲」のように）
+    function showUsedModel(id, tier) {
+      const auto = state.tier === "auto" && tier !== "default";
+      els.modelChip.textContent = modelLabel(id) + (auto ? " ▲" : state.tier === "auto" ? " (auto)" : "");
+      els.modelChip.classList.toggle("on", tier !== "default");
+    }
+    els.modelChip.addEventListener("click", cycleTier);
+
+    // ---------- 音声（TTS）再生キュー ----------
+    // 文単位で /tts を呼び、届いた順ではなく文の順に途切れなく再生する。
+    // AnalyserNode で再生音量を測り、口パク（--mouth）に流す。
+    const audio = {
+      ctx: null, analyser: null, queue: [], playing: false, current: null,
+      gen: 0,                       // 割り込み時に進める世代番号。古い文は捨てる
+      available: CFG.voice?.enabled !== false,
+      mouth: 0,
+    };
+    const mouthListeners = [];
+    window.cross.onMouth = (fn) => mouthListeners.push(fn);
+
+    function unlockAudio() {
+      if (!audio.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        audio.ctx = new AC();
+        audio.analyser = audio.ctx.createAnalyser();
+        audio.analyser.fftSize = 512;
+        audio.analyser.smoothingTimeConstant = 0.5;
+        audio.analyser.connect(audio.ctx.destination);
+      }
+      if (audio.ctx.state === "suspended") audio.ctx.resume();
+    }
+
+    // VOICEVOX（ローカルエンジン）：audio_query → synthesis の2段で WAV を得る
+    async function fetchVoicevox(text) {
+      const vv = CFG.voice.voicevox || {};
+      const host = (vv.host || "http://127.0.0.1:50021").replace(/\/+$/, "");
+      const speaker = vv.speaker ?? 3;
+      try {
+        const q = await fetch(`${host}/audio_query?text=${encodeURIComponent(text)}&speaker=${speaker}`, { method: "POST" });
+        if (!q.ok) throw new Error(`audio_query HTTP ${q.status}`);
+        const query = await q.json();
+        if (vv.speedScale != null) query.speedScale = vv.speedScale;
+        if (vv.pitchScale != null) query.pitchScale = vv.pitchScale;
+        if (vv.intonationScale != null) query.intonationScale = vv.intonationScale;
+        if (vv.volumeScale != null) query.volumeScale = vv.volumeScale;
+        query.prePhonemeLength = 0.05; query.postPhonemeLength = 0.05;   // 文間の無音を短く
+        const r = await fetch(`${host}/synthesis?speaker=${speaker}`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(query),
+        });
+        if (!r.ok) throw new Error(`synthesis HTTP ${r.status}`);
+        return await audio.ctx.decodeAudioData(await r.arrayBuffer());
+      } catch (e) {
+        if (e instanceof TypeError) {   // 接続不可（未起動 or file:// で開いている）
+          audio.available = false;
+          console.warn("[voicevox] エンジンに接続できない。VOICEVOX を起動し、画面は http://localhost:8787 で開くこと（node scripts/serve.mjs）", e.message);
+        } else {
+          console.error("[voicevox]", e);
+        }
+        return null;
+      }
+    }
+
+    async function fetchTts(text) {
+      if (!audio.available) return null;
+      if (CFG.voice?.engine === "voicevox") return fetchVoicevox(text);
+      try {
+        const res = await fetch(`${CFG.supabaseUrl}/functions/v1/tts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": CFG.supabasePublishableKey,
+            ...(CFG.accessKey ? { "x-cross-key": CFG.accessKey } : {}),
+          },
+          body: JSON.stringify({
+            text,
+            voice: CFG.voice?.name, style: CFG.voice?.style, rate: CFG.voice?.rate, pitch: CFG.voice?.pitch,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          if (err.code === "tts_unconfigured") {
+            audio.available = false;
+            console.warn("[tts] Azure 未設定のため音声なしで続行:", err.error);
+          } else {
+            console.error("[tts] HTTP", res.status, err);
+          }
+          return null;
+        }
+        const buf = await res.arrayBuffer();
+        return await audio.ctx.decodeAudioData(buf);
+      } catch (e) {
+        console.error("[tts]", e);
+        return null;
+      }
+    }
+
+    function enqueueSpeech(text) {
+      if (!audio.ctx || !audio.available) return;
+      const clean = text.replace(/[「」『』（）()\[\]【】*#_`~>|]/g, "").trim();
+      if (!clean || !/[\p{L}\p{N}]/u.test(clean)) return;
+      const t0 = performance.now();
+      const item = { gen: audio.gen, buf: fetchTts(clean).then((b) => { item.ms = Math.round(performance.now() - t0); return b; }) };
+      audio.queue.push(item);
+      pumpSpeech();
+    }
+
+    let mouthRaf = 0;
+    function mouthLoop() {
+      const data = new Uint8Array(audio.analyser.fftSize);
+      const tick = () => {
+        if (!audio.playing) { setMouth(0); mouthRaf = 0; return; }
+        audio.analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) { const v = (data[i] - 128) / 128; sum += v * v; }
+        const rms = Math.sqrt(sum / data.length);          // 0〜1（会話音声はだいたい 0〜0.3）
+        setMouth(Math.min(1, rms * 4));
+        mouthRaf = requestAnimationFrame(tick);
+      };
+      if (!mouthRaf) mouthRaf = requestAnimationFrame(tick);
+    }
+    function setMouth(v) {
+      audio.mouth = v;
+      els.chara.style.setProperty("--mouth", v.toFixed(3));
+      const level = v < 0.08 ? 0 : v < 0.25 ? 1 : v < 0.5 ? 2 : 3;   // mouth_0〜3 に対応
+      mouthListeners.forEach((fn) => fn(level, v));
+    }
+
+    async function pumpSpeech() {
+      if (audio.playing) return;
+      const item = audio.queue.shift();
+      if (!item) { onSpeechDrained(); return; }
+      audio.playing = true;
+      const buf = await item.buf;
+      if (item.gen !== audio.gen) { audio.playing = false; pumpSpeech(); return; }   // 割り込み済み
+      if (buf) {
+        if (item.ms) console.log(`[tts] ready ${item.ms}ms`);
+        setState("speaking");
+        mouthLoop();
+        await new Promise((resolve) => {
+          const src = audio.ctx.createBufferSource();
+          src.buffer = buf;
+          src.connect(audio.analyser);
+          src.onended = resolve;
+          audio.current = src;
+          src.start();
+        });
+        audio.current = null;
+      }
+      audio.playing = false;
+      pumpSpeech();
+    }
+    function stopSpeech() {
+      audio.gen++;
+      audio.queue.length = 0;
+      try { audio.current?.stop(); } catch { /* 既に停止 */ }
+      audio.current = null;
+      audio.playing = false;
+      setMouth(0);
+    }
+    function onSpeechDrained() {
+      if (!state.streaming) setState("listening");
+    }
+
+    // ---------- 文区切り検出 → TTS ----------
+    const sentenceHooks = [];
+    window.cross.onSentence = (fn) => sentenceHooks.push(fn);
+    function makeSentenceSplitter() {
+      let buf = "";
+      return {
+        push(delta) {
+          buf += delta;
+          let m;
+          while ((m = buf.match(/^[\s\S]*?[。！？!?]+[」）]?/))) {
+            const s = m[0].trim();
+            buf = buf.slice(m[0].length);
+            if (s) sentenceHooks.forEach((fn) => fn(s));
+          }
+        },
+        flush() {
+          const s = buf.trim(); buf = "";
+          if (s) sentenceHooks.forEach((fn) => fn(s));
+        },
+      };
+    }
+
+    // ---------- /chat ストリーム ----------
+    async function ask(text) {
+      text = text.trim();
+      if (!text || state.abort) return;
+      if (!CFG.supabasePublishableKey || CFG.supabaseUrl.includes("YOUR_PROJECT_REF")) {
+        showAi("config.local.js に Supabase の URL と publishable key が要る。.env を置いて node scripts/deploy.mjs --build", true);
+        return;
+      }
+      showUser(text);
+      showAi("");
+      stopSpeech();
+      setState("thinking");
+      state.streaming = true;
+      state.history.push({ role: "user", content: text });
+
+      const ctrl = new AbortController();
+      state.abort = ctrl;
+      els.send.disabled = true;
+      const splitter = makeSentenceSplitter();
+      let reply = "";
+      let firstDeltaAt = 0;
+      const t0 = performance.now();
+
+      try {
+        const res = await fetch(`${CFG.supabaseUrl}/functions/v1/chat`, {
+          method: "POST",
+          signal: ctrl.signal,
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": CFG.supabasePublishableKey,
+            ...(CFG.accessKey ? { "x-cross-key": CFG.accessKey } : {}),
+          },
+          body: JSON.stringify({
+            messages: state.history.slice(-CFG.historyTurns * 2),
+            model: state.tier === "auto" ? undefined : state.tier,
+          }),
+        });
+        if (!res.ok || !res.body) {
+          const msg = await res.text().catch(() => "");
+          throw new Error(`HTTP ${res.status} ${msg}`.trim());
+        }
+
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let carry = "";
+        outer: while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          carry += dec.decode(value, { stream: true });
+          const lines = carry.split("\n");
+          carry = lines.pop();
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const ev = JSON.parse(line.slice(6));
+            if (ev.type === "delta") {
+              if (!firstDeltaAt) { firstDeltaAt = performance.now(); if (!audio.available) setState("speaking"); }
+              reply += ev.text;
+              showAi(reply);
+              splitter.push(ev.text);
+            } else if (ev.type === "start") {
+              console.log("[chat] model:", ev.model, "tier:", ev.tier);
+              showUsedModel(ev.model, ev.tier);
+            } else if (ev.type === "done") {
+              showUsedModel(ev.model, ev.tier);
+              console.log("[chat] done", ev.stop_reason, ev.usage,
+                `first token ${Math.round(firstDeltaAt - t0)}ms / total ${Math.round(performance.now() - t0)}ms`);
+              if (ev.stop_reason === "refusal" && !reply) reply = "それは答えられへんな。別の聞き方にしよか。";
+              break outer;
+            } else if (ev.type === "error") {
+              throw new Error(ev.message);
+            }
+          }
+        }
+        splitter.flush();
+        if (reply) {
+          showAi(reply);
+          state.history.push({ role: "assistant", content: reply });
+        } else {
+          showAi("（返答が空やった。もう一回言うてくれるか）", true);
+          state.history.pop();
+        }
+      } catch (e) {
+        if (e.name === "AbortError") {
+          if (reply) state.history.push({ role: "assistant", content: reply });
+          else state.history.pop();
+          showAi(reply ? reply + "…" : "");
+        } else {
+          console.error(e);
+          const hint = e.message === "Failed to fetch"
+            ? `（接続先 ${CFG.supabaseUrl} に届いていない。config.local.js の supabaseUrl を確認）`
+            : "";
+          showAi(`エラー: ${e.message}${hint}`, true);
+          state.history.pop();
+        }
+      } finally {
+        state.history = state.history.slice(-CFG.historyTurns * 2);
+        state.abort = null;
+        state.streaming = false;
+        els.send.disabled = false;
+        if (!audio.playing && audio.queue.length === 0) setState("listening");   // 音声が残っていれば再生終了時に遷移
+        if (document.body.classList.contains("input-open")) els.input.focus();
+      }
+    }
+    window.cross.ask = ask;
+    window.cross.interrupt = () => {
+      const wasBusy = audio.playing || audio.queue.length || state.abort;
+      stopSpeech();
+      state.abort?.abort();
+      if (wasBusy) setState("listening");
+    };
+    window.cross.speak = (text) => { unlockAudio(); enqueueSpeech(text); };   // デバッグ用：任意の文を喋らせる
+    window.cross.audio = audio;
+
+    // ---------- 入力 ----------
+    els.form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const v = els.input.value;
+      els.input.value = "";
+      ask(v);
+    });
+    function startSession() {
+      if (els.start.classList.contains("hidden")) return;
+      unlockAudio();
+      els.start.classList.add("hidden");
+      setState("idle");
+      if (document.body.classList.contains("input-open")) els.input.focus();
+    }
+    els.start.addEventListener("click", startSession);
+    // 画面タップで割り込み（オーバーレイ表示中は開始扱い）
+    [els.room, els.chara].forEach((el) => el.addEventListener("click", () => window.cross.interrupt()));
+
+    document.addEventListener("keydown", (e) => {
+      if (!els.start.classList.contains("hidden")) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); startSession(); } return; }
+      if (e.key === "Escape") { window.cross.interrupt(); return; }
+      if (e.target === els.input) return;
+      if (e.key === " ") { e.preventDefault(); window.cross.interrupt(); return; }
+      const k = e.key.toLowerCase();
+      if (k === "s") els.subtitles.classList.toggle("hidden");
+      if (k === "m") cycleTier();
+      if (k === "t") { const open = document.body.classList.toggle("input-open"); if (open) els.input.focus(); }
+    });
+    window.cross.onSentence((s) => { console.log("[sentence]", s); enqueueSpeech(s); });
+    if (document.body.classList.contains("input-open")) els.input.focus();
+  })();
+  </script>
+</body>
+</html>

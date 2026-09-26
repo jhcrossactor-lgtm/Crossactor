@@ -1,0 +1,19 @@
+# クロス — Edge Functions のみ使う最小構成
+project_id = "cross"
+
+[api]
+enabled = true
+port = 54321
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+deno_version = 2
+
+[functions.chat]
+# 新しい publishable キー（sb_publishable_...）は JWT ではないため、プラットフォーム側の
+# JWT 検証は使えない。関数内で apikey ヘッダを照合する（index.ts の authorize を参照）
+verify_jwt = false
+
+[functions.tts]
+verify_jwt = false
