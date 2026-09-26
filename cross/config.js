@@ -22,13 +22,27 @@ window.CROSS_CONFIG = {
   historyTurns: 10,          // 直近N往復を保持
   idleTimeoutMs: 20000,      // 無発話でidleへ戻るまで
 
-  // 音声（Azure Speech）。enabled:false で音声なし（字幕のみ）
+  // 音声。engine は "azure"（クラウド、スマホ可）か "voicevox"（PC内のエンジン。http://localhost で開くこと）
+  // enabled:false で音声なし（字幕のみ）
   voice: {
     enabled: true,
+    engine: "azure",
+
+    // --- Azure Speech ---
     name: "ja-JP-NanamiNeural",  // 女声。他: ja-JP-AoiNeural（若い）, ja-JP-MayuNeural（柔らかい）, 男声 ja-JP-KeitaNeural
     style: "chat",               // Nanami は chat / cheerful / customerservice が使える。非対応の声では無視される
     rate: "+6%",
     pitch: "+2%",
+
+    // --- VOICEVOX ---（speaker 一覧は VOICEVOX 起動中に http://127.0.0.1:50021/speakers で確認）
+    voicevox: {
+      host: "http://127.0.0.1:50021",
+      speaker: 16,           // 16 九州そら(ノーマル) / 15 あまあま / 18 ツンツン / 3 ずんだもん / 2 四国めたん / 8 春日部つむぎ
+      speedScale: 1.1,       // 話速（1.0 が標準）
+      pitchScale: 0.0,       // 高さ（-0.15〜0.15）
+      intonationScale: 1.2,  // 抑揚（1.0 が標準）
+      volumeScale: 1.0,
+    },
   },
 
   // 字幕（テロップ）

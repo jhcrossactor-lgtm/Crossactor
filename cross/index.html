@@ -227,7 +227,7 @@
     // 実際に使われたモデルを表示（キーワード自動昇格が起きたら「Opus ▲」のように）
     function showUsedModel(id, tier) {
       const auto = state.tier === "auto" && tier !== "default";
-      els.modelChip.textContent = modelLabel(id) + (auto ? " ▲" : "");
+      els.modelChip.textContent = modelLabel(id) + (auto ? " ▲" : state.tier === "auto" ? " (auto)" : "");
       els.modelChip.classList.toggle("on", tier !== "default");
     }
     els.modelChip.addEventListener("click", cycleTier);
@@ -256,8 +256,39 @@
       if (audio.ctx.state === "suspended") audio.ctx.resume();
     }
 
+    // VOICEVOX（ローカルエンジン）：audio_query → synthesis の2段で WAV を得る
+    async function fetchVoicevox(text) {
+      const vv = CFG.voice.voicevox || {};
+      const host = (vv.host || "http://127.0.0.1:50021").replace(/\/+$/, "");
+      const speaker = vv.speaker ?? 3;
+      try {
+        const q = await fetch(`${host}/audio_query?text=${encodeURIComponent(text)}&speaker=${speaker}`, { method: "POST" });
+        if (!q.ok) throw new Error(`audio_query HTTP ${q.status}`);
+        const query = await q.json();
+        if (vv.speedScale != null) query.speedScale = vv.speedScale;
+        if (vv.pitchScale != null) query.pitchScale = vv.pitchScale;
+        if (vv.intonationScale != null) query.intonationScale = vv.intonationScale;
+        if (vv.volumeScale != null) query.volumeScale = vv.volumeScale;
+        query.prePhonemeLength = 0.05; query.postPhonemeLength = 0.05;   // 文間の無音を短く
+        const r = await fetch(`${host}/synthesis?speaker=${speaker}`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(query),
+        });
+        if (!r.ok) throw new Error(`synthesis HTTP ${r.status}`);
+        return await audio.ctx.decodeAudioData(await r.arrayBuffer());
+      } catch (e) {
+        if (e instanceof TypeError) {   // 接続不可（未起動 or file:// で開いている）
+          audio.available = false;
+          console.warn("[voicevox] エンジンに接続できない。VOICEVOX を起動し、画面は http://localhost:8787 で開くこと（node scripts/serve.mjs）", e.message);
+        } else {
+          console.error("[voicevox]", e);
+        }
+        return null;
+      }
+    }
+
     async function fetchTts(text) {
       if (!audio.available) return null;
+      if (CFG.voice?.engine === "voicevox") return fetchVoicevox(text);
       try {
         const res = await fetch(`${CFG.supabaseUrl}/functions/v1/tts`, {
           method: "POST",

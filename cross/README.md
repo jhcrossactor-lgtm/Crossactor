@@ -63,6 +63,17 @@ node scripts\deploy.mjs
 - 声の種類・話速・高さは `config.js` の `voice` で変更。`enabled: false` で音声なし
 - 再生中は Space か画面タップで即停止
 
+### VOICEVOX を使う場合（PC専用）
+1. VOICEVOX を起動しておく（エンジンが `http://127.0.0.1:50021` で待ち受ける）
+2. `config.js` の `voice.engine` を `"voicevox"` にし、`voice.voicevox.speaker` で声を選ぶ
+3. 画面は `file://` ではなく localhost で開く（ブラウザの制限）
+   ```
+   node scripts\serve.mjs
+   ```
+   → ブラウザで http://localhost:8787
+- キャラごとに利用規約が異なる。動画公開・販売時はクレジット表記（例「VOICEVOX:九州そら」）と各キャラの規約を確認すること
+- スマホからは使えない（エンジンがPC内にあるため）。スマホ運用時は `engine: "azure"` に戻す
+
 ### 動作確認（Step②）
 - [ ] 返答の最初の一文が、字幕の表示とほぼ同時に鳴り始める（コンソール `[tts] ready XXXms`）
 - [ ] 文と文の間が不自然に空かない
