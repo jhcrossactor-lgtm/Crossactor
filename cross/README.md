@@ -44,6 +44,13 @@ cross/
    - `S` 字幕ON/OFF、`T` 入力欄ON/OFF、`Esc` 中断
    - DevTools コンソールに model・首トークンまでのms・キャッシュ読み取りトークン数を出す
 
+## 更新（2回目以降）
+GitHub の最新版を取り込む。`.env` と `config.local.js` は消えない。
+```
+powershell -ExecutionPolicy Bypass -File scripts\update.ps1
+node scripts\deploy.mjs
+```
+
 ## 動作確認（Step①）
 - [ ] 5往復続けて破綻しない（履歴は直近10往復を送る）
 - [ ] 「事業の話やけど」と言うと `[chat] model: claude-sonnet-5` になる
