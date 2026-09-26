@@ -274,7 +274,7 @@ def setup_logging(log_path: Path) -> None:
 
 def parse_args(argv=None):
     ap = argparse.ArgumentParser(description="スキャン楽譜 → oemer → MuseScore (.mscz) 一括変換")
-    ap.add_argument("folder", help="PDF / PNG / JPG が入ったフォルダ")
+    ap.add_argument("folder", help="PDF / PNG / JPG が入ったフォルダ（ファイルを直接指定するとそれだけ処理）")
     ap.add_argument("--out", help="出力先（既定: 入力フォルダの中の scan2muse_出力）")
     ap.add_argument("--list", action="store_true", help="処理せず、入力ファイルと判定パート名の一覧だけ表示")
     ap.add_argument("--limit-files", type=int, help="先頭 N ファイルだけ処理（動作確認用）")
@@ -292,12 +292,19 @@ def main(argv=None) -> int:
     from instruments import identify
 
     args = parse_args(argv)
-    folder = Path(args.folder.strip('"')).expanduser()
+    target = Path(args.folder.strip('"')).expanduser()
+    # ファイルを直接指定した時はそのファイルだけを処理する（同じフォルダに別版の PDF がある場合など）
+    only = target if target.is_file() else None
+    folder = target.parent if only else target
     if not folder.is_dir():
         print(f"[エラー] フォルダが見つかりません: {folder}")
         return 2
 
     sources = collect_sources(folder)
+    if only:
+        sources = [s for s in sources if only in s.files]
+        for s in sources:
+            s.files = [only]
     if args.limit_files:
         sources = sources[:args.limit_files]
     if not sources:

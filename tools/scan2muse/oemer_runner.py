@@ -33,6 +33,24 @@ def _patch_find_lines():
         mod.find_lines = find_lines
 
 
+def _patch_imread():
+    """Windows の cv2.imread は日本語などを含むパスを開けず None を返す
+    （oemer の inference.py で 'NoneType' object has no attribute '__array_interface__' になる）。
+    バイト列で読んで imdecode する版に差し替える。oemer は cv2.imread をモジュール属性として呼ぶので本体を置き換えればよい。"""
+    import cv2
+
+    original = cv2.imread
+
+    def imread(path, flags=cv2.IMREAD_COLOR):
+        try:
+            data = np.fromfile(str(path), dtype=np.uint8)
+        except OSError:
+            return original(path, flags)
+        return cv2.imdecode(data, flags)
+
+    cv2.imread = imread
+
+
 def main():
     if len(sys.argv) < 3:
         print(__doc__)
@@ -41,6 +59,7 @@ def main():
     extra = sys.argv[3:]
 
     os.makedirs(out_dir, exist_ok=True)
+    _patch_imread()
     _patch_find_lines()
     from oemer import ete
 
