@@ -1,4 +1,4 @@
-# クロス 更新スクリプト（Windows PowerShell）
+﻿# クロス 更新スクリプト（Windows PowerShell）
 # GitHub の最新版を取得して、このフォルダに上書きする。.env と config.local.js は残す。
 #   使い方: このフォルダで  powershell -ExecutionPolicy Bypass -File scripts\update.ps1
 param(
