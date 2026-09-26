@@ -41,3 +41,20 @@ claude.ai アカウント側スキルへの書き込み手段は存在しない�
 `skills/inspo-mcp/README.md`（導入手順・ツール15件一覧・貼り付け用ブロック）
 `skills/inspo-mcp/patched/`（追記済みSKILL.md全文）
 `communications/logs/2026-09-16.md`（経緯）
+
+## 2026-09-26 — scan2muse（楽譜スキャン→MuseScore）の構成
+
+**決定**
+`tools/scan2muse/` に oemer 0.1.8 ＋ music21 ＋ MuseScore CLI 構成で構築。1ファイル＝1パート、パート名はファイル名から判定。
+
+**理由**
+oemer は楽器名を読まず全て "Piano" で出力するため、楽器名の情報源はファイル名しかない。
+
+**依存の固定（重要）**
+- onnxruntime は 1.28 未満（1.28 以降は oemer モデルが読めない）
+- oemer は `py -m oemer` 不可 → `oemer_runner.py` 経由
+- OpenCV 5 の HoughLinesP 形状変更はランナーの互換パッチで吸収
+
+**却下した選択肢**
+- oemer 以外の OMR への切替 → ほせもやんの指示で不可
+- 楽譜画像から楽器名を OCR → 精度・依存追加の割に効果が薄いため見送り

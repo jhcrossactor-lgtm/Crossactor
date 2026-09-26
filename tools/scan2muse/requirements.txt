@@ -1,0 +1,6 @@
+# scan2muse の依存パッケージ（setup.bat が入れる）
+oemer==0.1.8
+# onnxruntime 1.28 以降は oemer のモデルを読めない（ConvTranspose の pads エラー）ため固定
+onnxruntime-gpu>=1.20,<1.28
+pymupdf
+music21
