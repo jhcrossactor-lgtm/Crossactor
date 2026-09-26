@@ -11,5 +11,6 @@ policy = "per_worker"
 deno_version = 2
 
 [functions.chat]
-# anon key を Authorization ヘッダで要求する（APIキーの無断消費を抑止）
-verify_jwt = true
+# 新しい publishable キー（sb_publishable_...）は JWT ではないため、プラットフォーム側の
+# JWT 検証は使えない。関数内で apikey ヘッダを照合する（index.ts の authorize を参照）
+verify_jwt = false

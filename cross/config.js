@@ -6,7 +6,8 @@ window.CROSS_CONFIG = {
 
   // Supabase（公開可の値。config.local.js で上書き）
   supabaseUrl: "https://YOUR_PROJECT_REF.supabase.co",
-  supabaseAnonKey: "",
+  supabasePublishableKey: "",   // sb_publishable_... （legacy anon key も可）
+  accessKey: "",                // 合言葉。Secrets に CROSS_ACCESS_KEY を設定した場合のみ
 
   // 会話
   models: {

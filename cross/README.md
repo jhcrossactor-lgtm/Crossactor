@@ -25,7 +25,7 @@ cross/
 
 1. `.env.example` を `.env` にコピーして値を入れる
    - `ANTHROPIC_API_KEY`（必須）
-   - `SUPABASE_URL` / `SUPABASE_ANON_KEY`（Supabase ダッシュボード → Project Settings → API）
+   - `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY`（Supabase ダッシュボード → Project Settings → API Keys →「Publishable and secret API keys」タブの `sb_publishable_...`。Legacy タブの anon key は使わない）
    - `AZURE_SPEECH_KEY` / `AZURE_SPEECH_REGION` は Step② から
 2. Supabase プロジェクトにリンク
    ```
@@ -50,5 +50,5 @@ cross/
 - [ ] 1往復目のレスポンスが体感2秒以内（首トークンのmsを確認）
 
 ## 補足
-- `verify_jwt = true` のため anon key をヘッダで送る。anon key は公開前提の値なので、秘匿性はない。撮影用の限定運用が前提。公開URLにする場合は Step②以降で合言葉チェックを足す
+- 認可：Edge Function 内で `apikey` ヘッダを publishable キーと照合する（新キーは JWT ではないため `verify_jwt = false`）。publishable キーは公開前提の値なので、公開URLで運用する場合は `.env` に `CROSS_ACCESS_KEY`（合言葉）を設定して `--secrets` で送る。画面側は `x-cross-key` ヘッダで送る
 - プロンプトキャッシュは system に `cache_control` を付けているが、Haiku 4.5 は最小キャッシュ長（約2048トークン）未満だと効かない。knowledge.md が育つと効き始める

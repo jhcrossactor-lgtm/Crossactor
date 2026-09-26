@@ -35,12 +35,14 @@ if (existsSync(envPath)) {
     if (!m || line.trim().startsWith("#")) continue;
     env[m[1]] = m[2].replace(/^["']|["']$/g, "");
   }
-  if (env.SUPABASE_URL || env.SUPABASE_ANON_KEY) {
+  const pubKey = env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY;
+  if (env.SUPABASE_URL || pubKey) {
     const local =
       "// 自動生成（.env から）。gitignore 済み。\n" +
       "Object.assign(window.CROSS_CONFIG, {\n" +
       (env.SUPABASE_URL ? `  supabaseUrl: ${JSON.stringify(env.SUPABASE_URL)},\n` : "") +
-      (env.SUPABASE_ANON_KEY ? `  supabaseAnonKey: ${JSON.stringify(env.SUPABASE_ANON_KEY)},\n` : "") +
+      (pubKey ? `  supabasePublishableKey: ${JSON.stringify(pubKey)},\n` : "") +
+      (env.CROSS_ACCESS_KEY ? `  accessKey: ${JSON.stringify(env.CROSS_ACCESS_KEY)},\n` : "") +
       "});\n";
     writeFileSync(join(ROOT, "config.local.js"), local);
     console.log("✔ config.local.js を生成");

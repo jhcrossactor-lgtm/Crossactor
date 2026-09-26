@@ -205,8 +205,8 @@
     async function ask(text) {
       text = text.trim();
       if (!text || state.abort) return;
-      if (!CFG.supabaseAnonKey || CFG.supabaseUrl.includes("YOUR_PROJECT_REF")) {
-        showAi("config.local.js に Supabase の URL と anon key が要る。.env を置いて node scripts/deploy.mjs --build", true);
+      if (!CFG.supabasePublishableKey || CFG.supabaseUrl.includes("YOUR_PROJECT_REF")) {
+        showAi("config.local.js に Supabase の URL と publishable key が要る。.env を置いて node scripts/deploy.mjs --build", true);
         return;
       }
       showUser(text);
@@ -228,8 +228,8 @@
           signal: ctrl.signal,
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${CFG.supabaseAnonKey}`,
-            "apikey": CFG.supabaseAnonKey,
+            "apikey": CFG.supabasePublishableKey,
+            ...(CFG.accessKey ? { "x-cross-key": CFG.accessKey } : {}),
           },
           body: JSON.stringify({
             messages: state.history.slice(-CFG.historyTurns * 2),
