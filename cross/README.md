@@ -111,6 +111,23 @@ window.CROSS_LOCAL = {
 - [ ] 20秒黙ると idle に戻り、以後は呼び名が要る
 - [ ] 認識途中の文字が薄い字幕で流れる
 
+## 収益報告（Notion 連携）
+クロスに「売上どう？」「今月の入金は？」「収益報告して」のように聞くと、Notion の収益管理DBを読んで声で報告し、画面に数字の表（情報パネル）を重ねる。
+
+セットアップ：
+1. https://www.notion.so/profile/integrations で「内部インテグレーション」を作り、シークレット（`ntn_...`）を控える
+2. Notion で「売上DB」と「LINEスタンプ売上DB」を開き、右上「…」→「接続」→ 作ったインテグレーションを追加（両方）
+3. `.env` に追記して `node scripts\deploy.mjs --secrets`
+   ```
+   NOTION_TOKEN=ntn_...
+   NOTION_SALES_DS=売上DBのデータソースID
+   NOTION_LINE_DS=LINEスタンプ売上DBのデータソースID
+   ```
+   データソースIDは Notion の DB ページで「…」→「データソースを管理」に表示される UUID（DBページの URL 末尾の ID とは別物）
+- 反応する語：売上 / 収益 / 入金 / 請求 / 報告 / 利益 / 見積 など（`_shared/notion_revenue.ts` の `REVENUE_KEYWORDS`）
+- 未設定なら「連携が未設定」と短く答える。数字は作らない
+- パネルは喋り終わって数秒で閉じる（`config.js` の `panelLingerMs`）。Space やタップでも閉じる
+
 ## 動作確認（Step①）
 - [ ] 5往復続けて破綻しない（履歴は直近10往復を送る）
 - [ ] 「事業の話やけど」と言うと `[chat] model: claude-sonnet-5` になる

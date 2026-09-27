@@ -24,6 +24,7 @@ window.CROSS_CONFIG = {
   wakeRequired: true,        // false にすると呼びかけ無しで常に反応（W キーでも切替）
   historyTurns: 10,          // 直近N往復を保持
   idleTimeoutMs: 20000,      // 無発話でidleへ戻るまで
+  panelLingerMs: 6000,       // 情報パネルを喋り終わってから閉じるまで
 
   // 音声。engine は "azure"（クラウド、スマホ可）か "voicevox"（PC内のエンジン。http://localhost で開くこと）
   // enabled:false で音声なし（字幕のみ）

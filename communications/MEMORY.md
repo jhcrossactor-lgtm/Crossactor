@@ -148,3 +148,4 @@ deploy.mjs が `supabase secrets set KEY=値` をそのまま echo し、ほせ�
 ## 2026-09-27 — 収益報告は Notion の収益管理DBから
 ほせもやんが Notion に「売上DB」と「LINEスタンプ売上DB」を作成。以後の収益報告はこれを読んで行う。
 手順・データソースID・フォーマットは `ceo_system/revenue_report.md`。数字は DB からのみ。推測で埋めない。
+- 追記：収益報告の定期配信はしない。クロス（音声アプリ）に聞いた時に Notion を読んで答える方式。実装は `cross/supabase/functions/_shared/notion_revenue.ts`

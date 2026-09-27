@@ -10,6 +10,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { KNOWLEDGE, PERSONA } from "./prompt.ts";
 import { CORS, gate, json } from "../_shared/auth.ts";
+import { fetchRevenueSummary, wantsRevenue } from "../_shared/notion_revenue.ts";
 
 // 3段構成：default（既定・Haiku）／upper（キーワードで自動昇格・Sonnet 5）／max（画面から手動で選んだ時のみ・Fable 5.1）
 type Effort = "low" | "medium" | "high" | "xhigh" | "max";
@@ -88,8 +89,21 @@ Deno.serve(async (req) => {
   const messages = normalizeMessages(body.messages);
   if (!messages) return json(400, { error: "messages が不正（末尾は user の発話であること）" });
 
-  const tier = pickTier(body.model, messages[messages.length - 1].content);
+  const lastText = messages[messages.length - 1].content;
+  const tier = pickTier(body.model, lastText);
   const { model, effort } = TIERS[tier];
+
+  // 収益の話なら Notion を読んで文脈に足す（設定が無ければスキップ）
+  let revenue: Awaited<ReturnType<typeof fetchRevenueSummary>> = null;
+  let revenueError = "";
+  if (wantsRevenue(lastText)) {
+    try {
+      revenue = await fetchRevenueSummary();
+    } catch (e) {
+      revenueError = e instanceof Error ? e.message : String(e);
+      console.error("revenue fetch failed:", revenueError);
+    }
+  }
   const client = new Anthropic({ apiKey });
   const encoder = new TextEncoder();
 
@@ -99,12 +113,18 @@ Deno.serve(async (req) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
       try {
         send({ type: "start", model, tier });
+        if (revenue) send({ type: "panel", ...revenue.panel });
 
         const params: Parameters<typeof client.beta.messages.stream>[0] = {
           model,
           max_tokens: 1024,
           system: [
             { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } },
+            // 可変の文脈はキャッシュ対象の後ろに置く
+            ...(revenue ? [{ type: "text" as const, text: revenue.text }] : []),
+            ...(revenueError ? [{ type: "text" as const, text: `収益DBの取得に失敗した（${revenueError}）。数字は答えず、確認が必要と伝えること。` }] : []),
+            ...(!revenue && !revenueError && wantsRevenue(lastText) && !Deno.env.get("NOTION_TOKEN")
+              ? [{ type: "text" as const, text: "収益DBとの連携が未設定。数字は持っていないので、設定が要ると短く伝えること。" }] : []),
           ],
           messages,
         };

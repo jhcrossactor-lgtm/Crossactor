@@ -80,6 +80,25 @@
   #voices footer code { font-size: 1.4vmin; opacity: .8; word-break: break-all; }
   #voices .sample { width: 100%; font: inherit; font-size: 1.6vmin; padding: .6vmin 1vmin; border-radius: .6vmin; border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.4); color: var(--text); }
 
+  /* 情報表示モード：数値・表を画面に重ねる。背後の部屋はぼかす */
+  #panel {
+    position: fixed; left: 50%; top: 46%; transform: translate(-50%, -50%) scale(.96);
+    width: 56vw; max-height: 62vh; z-index: 4; overflow: hidden;
+    background: rgba(12, 7, 24, .78); border: 1px solid rgba(168,85,247,.45); border-radius: 1.4vmin;
+    box-shadow: 0 0 60px rgba(168,85,247,.25), inset 0 0 0 1px rgba(255,255,255,.04);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    opacity: 0; pointer-events: none; transition: opacity .35s ease, transform .35s ease;
+  }
+  #panel.open { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  body.panel-open #room, body.panel-open #chara { filter: blur(6px) brightness(.7); transition: filter .4s ease; }
+  #panel h2 { margin: 0; padding: 1.6vmin 2.4vmin; font-size: 2.6vmin; font-weight: 700; letter-spacing: .06em;
+    border-bottom: 1px solid rgba(255,255,255,.1); color: #e9d5ff; display: flex; justify-content: space-between; }
+  #panel h2 small { font-size: 1.6vmin; opacity: .55; font-weight: 400; }
+  #panel table { width: 100%; border-collapse: collapse; font-size: 2.3vmin; font-variant-numeric: tabular-nums; }
+  #panel td { padding: 1.1vmin 2.4vmin; border-bottom: 1px solid rgba(255,255,255,.06); }
+  #panel td:last-child { text-align: right; font-weight: 700; color: #fff; white-space: nowrap; }
+  #panel tr.sub td { opacity: .7; font-size: 2vmin; padding-top: .5vmin; padding-bottom: .5vmin; }
+
   /* 開始オーバーレイ（ブラウザの音声再生はクリック後にしか許可されない） */
   #start {
     position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
@@ -182,6 +201,8 @@
     <div id="sub-user" class="sub"></div>
     <div id="sub-ai" class="sub"></div>
   </div>
+
+  <section id="panel"><h2><span id="panel-title"></span><small id="panel-note"></small></h2><table><tbody id="panel-body"></tbody></table></section>
 
   <aside id="voices">
     <header><b>声を選ぶ</b><span style="opacity:.6">クリックで試聴 ／ V で閉じる</span></header>
@@ -449,6 +470,33 @@
       if (!state.streaming) setState("listening");
     }
 
+    // ---------- 情報表示モード ----------
+    const panel = { el: $("panel"), title: $("panel-title"), note: $("panel-note"), body: $("panel-body"), timer: null, open: false };
+    function showPanel(data) {
+      panel.title.textContent = data.title || "";
+      panel.note.textContent = data.note || new Date().toLocaleDateString("ja-JP");
+      panel.body.innerHTML = "";
+      for (const r of data.rows || []) {
+        const tr = document.createElement("tr");
+        if (String(r.label).startsWith("　")) tr.className = "sub";
+        const a = document.createElement("td"); a.textContent = r.label;
+        const b = document.createElement("td"); b.textContent = r.value;
+        tr.append(a, b); panel.body.appendChild(tr);
+      }
+      panel.el.classList.add("open"); document.body.classList.add("panel-open"); panel.open = true;
+      clearTimeout(panel.timer);
+    }
+    function hidePanel() {
+      panel.el.classList.remove("open"); document.body.classList.remove("panel-open"); panel.open = false;
+      clearTimeout(panel.timer);
+    }
+    // 喋り終わって listening に戻ったら数秒後に閉じる
+    window.cross.onState((st) => {
+      if (!panel.open) return;
+      if (st === "listening" || st === "idle") { clearTimeout(panel.timer); panel.timer = setTimeout(hidePanel, CFG.panelLingerMs ?? 6000); }
+    });
+    window.cross.panel = { show: showPanel, hide: hidePanel };
+
     // ---------- 文区切り検出 → TTS ----------
     const sentenceHooks = [];
     window.cross.onSentence = (fn) => sentenceHooks.push(fn);
@@ -530,6 +578,8 @@
               reply += ev.text;
               showAi(reply);
               splitter.push(ev.text);
+            } else if (ev.type === "panel") {
+              showPanel(ev);
             } else if (ev.type === "start") {
               console.log("[chat] model:", ev.model, "tier:", ev.tier);
               showUsedModel(ev.model, ev.tier);
@@ -577,6 +627,7 @@
     window.cross.ask = ask;
     window.cross.interrupt = () => {
       const wasBusy = audio.playing || audio.queue.length || state.abort;
+      if (panel.open) hidePanel();
       stopSpeech();
       state.abort?.abort();
       if (wasBusy) setState("listening");
