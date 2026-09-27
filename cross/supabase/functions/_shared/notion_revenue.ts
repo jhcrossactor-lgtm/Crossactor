@@ -145,7 +145,11 @@ export async function fetchRevenueSummary(): Promise<RevenueSummary | null> {
   return { text: lines.join("\n"), panel: { title: "収益サマリー", rows: panelRows }, fetchedAt: now.toISOString() };
 }
 
-export const REVENUE_KEYWORDS = ["売上", "収益", "入金", "請求", "報告", "利益", "儲か", "いくら稼", "未入金", "見積"];
+export const REVENUE_KEYWORDS = [
+  "売上", "売り上げ", "売上げ", "うりあげ", "収益", "収入", "入金", "請求", "報告", "利益", "儲か", "もうか",
+  "稼", "未入金", "見積", "売れ", "お金の状況", "数字どう", "今月の数字", "業績",
+];
 export function wantsRevenue(text: string): boolean {
-  return REVENUE_KEYWORDS.some((k) => text.includes(k));
+  const t = text.replace(/\s/g, "");
+  return REVENUE_KEYWORDS.some((k) => t.includes(k));
 }

@@ -112,7 +112,8 @@ Deno.serve(async (req) => {
       const send = (obj: unknown) =>
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
       try {
-        send({ type: "start", model, tier });
+        const revenueState = revenue ? "loaded" : revenueError ? `error: ${revenueError}` : wantsRevenue(lastText) ? (Deno.env.get("NOTION_TOKEN") ? "empty" : "unconfigured") : "n/a";
+        send({ type: "start", model, tier, revenue: revenueState });
         if (revenue) send({ type: "panel", ...revenue.panel });
 
         const params: Parameters<typeof client.beta.messages.stream>[0] = {

@@ -37,8 +37,16 @@ async function listJapaneseVoices(key: string, region: string): Promise<VoiceInf
 const STYLE_RE = /^[a-z-]{2,32}$/;
 const PROSODY_RE = /^[+-]?\d{1,3}(\.\d+)?%$/;
 
+// 疑問文（？で終わる）は語尾の音程を上げて、会話として自然に聞こえるようにする
+function questionMarkup(text: string): string {
+  const m = text.match(/^([\s\S]*?)([^？?。！!\s]{1,3})([？?]+)$/u);
+  if (!m) return xmlEscape(text);
+  const [, head, tail, q] = m;
+  return `${xmlEscape(head)}<prosody pitch="+18%" rate="-8%">${xmlEscape(tail)}</prosody>${xmlEscape(q)}`;
+}
+
 function buildSsml(text: string, voice: string, style: string, rate: string, pitch: string): string {
-  const inner = `<prosody rate="${rate}" pitch="${pitch}">${xmlEscape(text)}</prosody>`;
+  const inner = `<prosody rate="${rate}" pitch="${pitch}">${questionMarkup(text)}</prosody>`;
   const styled = style ? `<mstts:express-as style="${style}">${inner}</mstts:express-as>` : inner;
   return `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="ja-JP">` +
     `<voice name="${voice}">${styled}</voice></speak>`;

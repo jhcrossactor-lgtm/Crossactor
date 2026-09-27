@@ -581,7 +581,7 @@
             } else if (ev.type === "panel") {
               showPanel(ev);
             } else if (ev.type === "start") {
-              console.log("[chat] model:", ev.model, "tier:", ev.tier);
+              console.log("[chat] model:", ev.model, "tier:", ev.tier, "| revenue:", ev.revenue);
               showUsedModel(ev.model, ev.tier);
             } else if (ev.type === "done") {
               showUsedModel(ev.model, ev.tier);
