@@ -42,7 +42,7 @@ function questionMarkup(text: string): string {
   const m = text.match(/^([\s\S]*?)([^？?。！!\s]{1,3})([？?]+)$/u);
   if (!m) return xmlEscape(text);
   const [, head, tail, q] = m;
-  return `${xmlEscape(head)}<prosody pitch="+18%" rate="-8%">${xmlEscape(tail)}</prosody>${xmlEscape(q)}`;
+  return `${xmlEscape(head)}<prosody pitch="+18%">${xmlEscape(tail)}</prosody>${xmlEscape(q)}`;
 }
 
 function buildSsml(text: string, voice: string, style: string, rate: string, pitch: string): string {
