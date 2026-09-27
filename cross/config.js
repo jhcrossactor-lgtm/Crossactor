@@ -21,6 +21,7 @@ window.CROSS_CONFIG = {
   wakeWord: "クロス",
   wakeWordAliases: ["くろす", "黒須", "クロース", "Cross", "cross"],   // 認識ゆれの吸収
   micAutoStart: true,        // 開始クリックと同時にマイクON
+  wakeRequired: true,        // false にすると呼びかけ無しで常に反応（W キーでも切替）
   historyTurns: 10,          // 直近N往復を保持
   idleTimeoutMs: 20000,      // 無発話でidleへ戻るまで
 

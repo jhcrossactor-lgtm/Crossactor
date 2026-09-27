@@ -198,7 +198,7 @@
     <input id="input" type="text" placeholder="ここに話しかける（Enterで送信 / Escで中断）">
     <button id="send" type="submit">送信</button>
   </form>
-  <div id="help">「クロス」と呼びかけて話す　Space / タップ 割り込み　L マイク　S 字幕　M モデル　T 入力欄　V 声</div>
+  <div id="help">「クロス」と呼びかけて話す　Space / タップ 割り込み　L マイク　W 呼びかけ要否　S 字幕　M モデル　T 入力欄　V 声</div>
 
   <script src="config.js"></script>
   <script>
@@ -597,6 +597,13 @@
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const stt = { rec: null, on: false, running: false, restartTimer: null, wantRestart: false, lastFinalAt: 0, err: "" };
     const WAKE_WORDS = [CFG.wakeWord, ...(CFG.wakeWordAliases || [])].filter(Boolean);
+    stt.wakeRequired = CFG.wakeRequired !== false;
+    // 比較用の正規化：カタカナ→ひらがな、空白と記号を除去、英字は小文字
+    function norm(t) {
+      return t.replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60))
+        .replace(/[\s、。,.!！?？・「」『』（）()]/g, "").toLowerCase();
+    }
+    const WAKE_NORM = WAKE_WORDS.map(norm);
 
     function micLabel() {
       els.micChip.classList.toggle("on", stt.on && !stt.err);
@@ -606,11 +613,19 @@
 
     // 発話からウェイクワードを取り除き、残りを返す。含まなければ null
     function stripWake(text) {
+      // 1) 元の表記で探す
       for (const w of WAKE_WORDS) {
         const i = text.indexOf(w);
         if (i < 0) continue;
-        const rest = (text.slice(0, i) + " " + text.slice(i + w.length)).replace(/^[\s、。,.!！?？さんくんちゃんねえ]+/u, "").trim();
-        return rest;
+        return (text.slice(0, i) + " " + text.slice(i + w.length)).replace(/^[\s、。,.!！?？さんくんちゃんねえ]+/u, "").trim();
+      }
+      // 2) 正規化して探す（「くろす」「クロ ス」「Cross」などのゆれ）
+      const n = norm(text);
+      for (const w of WAKE_NORM) {
+        const i = n.indexOf(w);
+        if (i < 0) continue;
+        // 残りは「元の文からウェイクワード相当を落とした後ろ側」を近似：正規化文字列の後ろ側を返す
+        return n.slice(i + w.length).replace(/^[さんくんちゃんねえ]+/u, "").trim();
       }
       return null;
     }
@@ -619,19 +634,25 @@
       text = text.trim();
       if (!text) return;
       stt.lastFinalAt = performance.now();
+      const rest = stripWake(text);
+      const called = rest !== null;
+      console.log(`[stt] final: "${text}" | state=${state.current} | 呼びかけ=${called ? "あり" : "なし"} | wakeRequired=${stt.wakeRequired}`);
       if (state.current === "idle") {
-        const rest = stripWake(text);
-        if (rest === null) return;                 // 呼ばれていない
+        if (!called && stt.wakeRequired) {          // 呼ばれていない
+          showUser(`${text}　（「${CFG.wakeWord}」と呼びかけてね）`, true);
+          return;
+        }
         setState("listening");
-        if (rest) ask(rest);                        // 「クロス、おはよう」→ 即質問
+        const q = called ? rest : text;
+        if (q) ask(q);                              // 「クロス、おはよう」→ 即質問
         else showUser("（はい）", true);             // 「クロス」だけ → 次の発話を待つ
         return;
       }
       if (state.current === "listening") {
-        const rest = stripWake(text);
-        ask(rest !== null && rest ? rest : text);   // 呼び名付きでもそのまま通す
+        ask(called && rest ? rest : text);          // 呼び名付きでもそのまま通す
+        return;
       }
-      // thinking / speaking 中は認識を止めているので通常ここには来ない
+      console.log("[stt] 無視（応答中）");
     }
 
     function sttStart() {
@@ -647,6 +668,7 @@
           if (r.isFinal) finals.push(r[0].transcript); else interim += r[0].transcript;
         }
         if (interim && (state.current === "idle" || state.current === "listening")) showUser(interim, true);
+        if (finals.length) console.log("[stt] finals:", finals);
         for (const f of finals) handleUtterance(f);
       };
       rec.onerror = (e) => {
@@ -687,7 +709,12 @@
       micLabel();
     }
     els.micChip.addEventListener("click", () => setMic(!stt.on));
-    window.cross.mic = { set: setMic, get on() { return stt.on; }, stt };
+    function setWakeRequired(v) {
+      stt.wakeRequired = v;
+      showUser(v ? `呼びかけ必要：「${CFG.wakeWord}」と呼んでから話す` : "呼びかけ不要：そのまま話せる", true);
+      console.log("[stt] wakeRequired =", v);
+    }
+    window.cross.mic = { set: setMic, get on() { return stt.on; }, stt, setWakeRequired };
 
     // 状態遷移に合わせて認識を止める／再開する
     window.cross.onState((st) => {
@@ -782,6 +809,7 @@
       if (k === "s") els.subtitles.classList.toggle("hidden");
       if (k === "v") toggleVoices();
       if (k === "l") setMic(!stt.on);
+      if (k === "w") setWakeRequired(!stt.wakeRequired);
       if (k === "m") cycleTier();
       if (k === "t") { const open = document.body.classList.toggle("input-open"); if (open) els.input.focus(); }
     });
