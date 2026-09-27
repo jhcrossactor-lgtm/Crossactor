@@ -97,7 +97,7 @@
   #panel table { width: 100%; border-collapse: collapse; font-size: 2.3vmin; font-variant-numeric: tabular-nums; }
   #panel td { padding: 1.1vmin 2.4vmin; border-bottom: 1px solid rgba(255,255,255,.06); }
   #panel td:last-child { text-align: right; font-weight: 700; color: #fff; white-space: nowrap; }
-  #panel tr.sub td { opacity: .7; font-size: 2vmin; padding-top: .5vmin; padding-bottom: .5vmin; }
+  #panel tr.subrow td { opacity: .7; font-size: 2vmin; padding-top: .5vmin; padding-bottom: .5vmin; }
 
   /* 開始オーバーレイ（ブラウザの音声再生はクリック後にしか許可されない） */
   #start {
@@ -181,7 +181,7 @@
 
   #help {
     position: fixed; left: 50%; top: 3vmin; transform: translateX(-50%);
-    font-size: 1.7vmin; opacity: .35; white-space: nowrap;
+    font-size: 1.5vmin; opacity: .35; white-space: nowrap; max-width: 46vw; overflow: hidden; text-overflow: ellipsis;
   }
 </style>
 </head>
@@ -219,7 +219,7 @@
     <input id="input" type="text" placeholder="ここに話しかける（Enterで送信 / Escで中断）">
     <button id="send" type="submit">送信</button>
   </form>
-  <div id="help">「クロス」と呼びかけて話す　Space / タップ 割り込み　L マイク　W 呼びかけ要否　S 字幕　M モデル　T 入力欄　V 声</div>
+  <div id="help">「クロス」と呼びかけて話す ／ Space 割り込み ／ L マイク ／ W 呼びかけ ／ V 声 ／ T 入力 ／ S 字幕 ／ M モデル</div>
 
   <script src="config.js"></script>
   <script>
@@ -478,7 +478,7 @@
       panel.body.innerHTML = "";
       for (const r of data.rows || []) {
         const tr = document.createElement("tr");
-        if (String(r.label).startsWith("　")) tr.className = "sub";
+        if (String(r.label).startsWith("　")) tr.className = "subrow";
         const a = document.createElement("td"); a.textContent = r.label;
         const b = document.createElement("td"); b.textContent = r.value;
         tr.append(a, b); panel.body.appendChild(tr);
