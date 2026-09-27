@@ -74,9 +74,8 @@ Deno.serve(async (req) => {
   const rate = typeof body.rate === "string" && PROSODY_RE.test(body.rate) ? body.rate : "+0%";
   const pitch = typeof body.pitch === "string" && PROSODY_RE.test(body.pitch) ? body.pitch : "+0%";
 
-  let azure: Response;
-  try {
-    azure = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+  const synth = (ssml: string) =>
+    fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
       method: "POST",
       headers: {
         "Ocp-Apim-Subscription-Key": key,
@@ -84,8 +83,17 @@ Deno.serve(async (req) => {
         "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3",
         "User-Agent": "cross-tts",
       },
-      body: buildSsml(text, voice, style, rate, pitch),
+      body: ssml,
     });
+
+  let azure: Response;
+  try {
+    azure = await synth(buildSsml(text, voice, style, rate, pitch));
+    // スタイル非対応の声は 400 になることがある → スタイル無しで一度だけ再試行
+    if (!azure.ok && style) {
+      await azure.body?.cancel();
+      azure = await synth(buildSsml(text, voice, "", rate, pitch));
+    }
   } catch (e) {
     console.error("azure tts fetch failed", e instanceof Error ? e.message : e);
     return json(502, { error: "Azure Speech に接続できない（リージョン名を確認）" });
@@ -93,7 +101,7 @@ Deno.serve(async (req) => {
 
   if (!azure.ok) {
     const detail = (await azure.text().catch(() => "")).slice(0, 300);
-    console.error("azure tts error", azure.status, detail);
+    console.error("azure tts error", azure.status, voice, detail);
     return json(502, { error: `Azure Speech ${azure.status}`, detail });
   }
   return new Response(azure.body, {

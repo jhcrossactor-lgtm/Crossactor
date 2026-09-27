@@ -360,17 +360,19 @@
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
+          audio.lastError = `HTTP ${res.status} ${err.error || ""} ${err.detail || ""}`.trim();
           if (err.code === "tts_unconfigured") {
             audio.available = false;
             console.warn("[tts] Azure 未設定のため音声なしで続行:", err.error);
           } else {
-            console.error("[tts] HTTP", res.status, err);
+            console.error("[tts]", audio.lastError);
           }
           return null;
         }
         const buf = await res.arrayBuffer();
         return await audio.ctx.decodeAudioData(buf);
       } catch (e) {
+        audio.lastError = e.message;
         console.error("[tts]", e);
         return null;
       }
@@ -620,11 +622,12 @@
     async function auditionVoice(name) {
       unlockAudio(); stopSpeech();
       vEls.status.textContent = "生成中…";
-      const saved = CFG.voice.name;
-      CFG.voice.name = name;
+      // 一覧は Azure の声なので、engine 設定に関わらず Azure で試聴する
+      const saved = { name: CFG.voice.name, engine: CFG.voice.engine, available: audio.available };
+      CFG.voice.name = name; CFG.voice.engine = "azure"; audio.available = true; audio.lastError = "";
       const buf = await fetchTts(vEls.sample.value.trim() || "おはよう。うちはクロス。");
-      CFG.voice.name = saved;
-      vEls.status.textContent = buf ? "" : "この声は失敗した（スタイル非対応など）";
+      CFG.voice.name = saved.name; CFG.voice.engine = saved.engine; audio.available = saved.available;
+      vEls.status.textContent = buf ? "" : `失敗: ${audio.lastError || "不明"}`;
       if (!buf) return;
       const src = audio.ctx.createBufferSource(); src.buffer = buf; src.connect(audio.analyser); src.start();
       audio.current = src;
@@ -632,9 +635,10 @@
     vEls.apply.addEventListener("click", () => {
       if (!vp.selected) { vEls.status.textContent = "先にクリックして試聴してから"; return; }
       CFG.voice.name = vp.selected;
-      try { localStorage.setItem("cross.voice", JSON.stringify({ name: vp.selected })); } catch { /* 無視 */ }
+      CFG.voice.engine = "azure"; audio.available = true;
+      try { localStorage.setItem("cross.voice", JSON.stringify({ name: vp.selected, engine: "azure" })); } catch { /* 無視 */ }
       vEls.status.textContent = "保存した（このブラウザ）。他の端末にも効かせるなら →";
-      vEls.snippet.textContent = `config.local.js: window.CROSS_LOCAL = { voice: { name: "${vp.selected}" } };`;
+      vEls.snippet.textContent = `config.local.js: window.CROSS_LOCAL = { voice: { engine: "azure", name: "${vp.selected}" } };`;
       renderVoices();
     });
     function toggleVoices() {
