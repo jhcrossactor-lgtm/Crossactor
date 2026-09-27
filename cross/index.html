@@ -627,6 +627,17 @@
         // 残りは「元の文からウェイクワード相当を落とした後ろ側」を近似：正規化文字列の後ろ側を返す
         return n.slice(i + w.length).replace(/^[さんくんちゃんねえ]+/u, "").trim();
       }
+      // 3) 聞き間違い救済：主ウェイクワードと1文字違いの3文字窓（「ころす」「くろず」「ぐろす」など）。
+      //    idle 中の誤反応は仕様として許容している
+      const main = WAKE_NORM[0] || "";
+      if (main.length >= 3) {
+        for (let i = 0; i + main.length <= n.length; i++) {
+          const win = n.slice(i, i + main.length);
+          let diff = 0;
+          for (let k = 0; k < main.length; k++) if (win[k] !== main[k]) diff++;
+          if (diff <= 1) return n.slice(i + main.length).replace(/^[さんくんちゃんねえ]+/u, "").trim();
+        }
+      }
       return null;
     }
 
@@ -787,6 +798,20 @@
       if (vp.open) loadVoices();
     }
     window.cross.voices = { toggle: toggleVoices, reset: () => { localStorage.removeItem("cross.voice"); location.reload(); } };
+
+    // 起動時にサーバー関数を起こしておく（初回応答が数秒遅れるのを防ぐ）
+    function warmUp() {
+      if (!CFG.supabasePublishableKey) return;
+      for (const fn of ["chat", "tts"]) {
+        fetch(`${CFG.supabaseUrl}/functions/v1/${fn}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": CFG.supabasePublishableKey, "x-cross-warm": "1", ...(CFG.accessKey ? { "x-cross-key": CFG.accessKey } : {}) },
+          body: "{}",
+        }).then((r) => console.log(`[warm] ${fn} ${r.status}`)).catch(() => {});
+      }
+    }
+    warmUp();
+    setInterval(warmUp, 4 * 60 * 1000);   // 放置中も眠らせない
 
     function startSession() {
       if (els.start.classList.contains("hidden")) return;

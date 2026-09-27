@@ -73,6 +73,8 @@ function pickTier(requested: unknown, lastUserText: string): Tier {
 Deno.serve(async (req) => {
   const blocked = gate(req);
   if (blocked) return blocked;
+  // ウォームアップ：画面起動時に呼ばれ、関数のコールドスタートを先に済ませる
+  if (req.headers.get("x-cross-warm") === "1") return json(200, { ok: true, warm: true });
 
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) return json(500, { error: "ANTHROPIC_API_KEY が Secrets に未設定" });

@@ -19,7 +19,7 @@ window.CROSS_CONFIG = {
   },
   upgradeKeywords: ["分析", "事業", "計算", "比較"],
   wakeWord: "クロス",
-  wakeWordAliases: ["くろす", "黒須", "クロース", "Cross", "cross"],   // 認識ゆれの吸収
+  wakeWordAliases: ["くろす", "黒須", "クロース", "クロッス", "黒酢", "プラス", "殺す", "ころす", "Cross", "cross"],   // 認識ゆれ・聞き間違いの吸収（idle 中の誤反応は許容）
   micAutoStart: true,        // 開始クリックと同時にマイクON
   wakeRequired: true,        // false にすると呼びかけ無しで常に反応（W キーでも切替）
   historyTurns: 10,          // 直近N往復を保持
@@ -32,10 +32,10 @@ window.CROSS_CONFIG = {
     engine: "azure",
 
     // --- Azure Speech ---
-    name: "ja-JP-NanamiNeural",  // 女声。他: ja-JP-AoiNeural（若い）, ja-JP-MayuNeural（柔らかい）, 男声 ja-JP-KeitaNeural
-    style: "chat",               // Nanami は chat / cheerful / customerservice が使える。非対応の声では無視される
-    rate: "+6%",
-    pitch: "+2%",
+    name: "ja-JP-KeitaNeural",   // 男声。他: ja-JP-DaichiNeural, ja-JP-NaokiNeural, 女声 ja-JP-NanamiNeural（V キーで試聴・変更可）
+    style: "chat",               // 非対応の声では自動的に外れる
+    rate: "+15%",                // 話速。+10〜+25% が会話向き
+    pitch: "+0%",
 
     // --- VOICEVOX ---（speaker 一覧は VOICEVOX 起動中に http://127.0.0.1:50021/speakers で確認）
     voicevox: {

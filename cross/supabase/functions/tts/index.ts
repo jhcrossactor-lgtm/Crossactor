@@ -47,6 +47,8 @@ function buildSsml(text: string, voice: string, style: string, rate: string, pit
 Deno.serve(async (req) => {
   const blocked = gate(req);
   if (blocked) return blocked;
+  // ウォームアップ：画面起動時に呼ばれ、関数のコールドスタートを先に済ませる
+  if (req.headers.get("x-cross-warm") === "1") return json(200, { ok: true, warm: true });
 
   const key = Deno.env.get("AZURE_SPEECH_KEY");
   const region = Deno.env.get("AZURE_SPEECH_REGION");
