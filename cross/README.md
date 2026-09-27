@@ -13,7 +13,8 @@ SNS動画用の「見せる」音声対話AI。仕様は `CLAUDE.md`、人格は
 cross/
 ├── index.html                 # フロント（単一ファイル）
 ├── config.js                  # 公開設定（キャラ名・モデル・色・voice）
-├── config.local.js            # .env から生成。Supabase URL / anon key（gitignore）
+├── config.env.js              # .env から自動生成。Supabase URL / key（gitignore、手で触らない）
+├── config.local.js            # 自分用の上書き設定。更新で消えない（gitignore）
 ├── persona.md / knowledge.md  # system prompt の素材
 ├── .env                       # サーバー側シークレット（gitignore）
 ├── scripts/deploy.mjs         # prompt.ts 生成 → Secrets → deploy
@@ -63,9 +64,19 @@ node scripts\deploy.mjs
 - 声の種類・話速・高さは `config.js` の `voice` で変更。`enabled: false` で音声なし
 - 再生中は Space か画面タップで即停止
 
+### 自分用の設定は config.local.js に書く
+`config.js` は更新（update.ps1）で上書きされる。声やサイズなど自分の好みは `config.local.js` を作って書く。
+必要な項目だけ書けばよく、`config.js` に深くマージされる。
+```js
+window.CROSS_LOCAL = {
+  voice: { engine: "voicevox", voicevox: { speaker: 16, speedScale: 1.1 } },
+  subtitle: { scale: 1.2 },
+};
+```
+
 ### VOICEVOX を使う場合（PC専用）
 1. VOICEVOX を起動しておく（エンジンが `http://127.0.0.1:50021` で待ち受ける）
-2. `config.js` の `voice.engine` を `"voicevox"` にし、`voice.voicevox.speaker` で声を選ぶ
+2. `config.local.js` に `voice: { engine: "voicevox" }` を書き、`voicevox.speaker` で声を選ぶ（上の例）
 3. 画面は `file://` ではなく localhost で開く（ブラウザの制限）
    ```
    node scripts\serve.mjs

@@ -163,8 +163,24 @@
 
   <script src="config.js"></script>
   <script>
-    // config.local.js（.envから生成、gitignore済）があれば上書き読み込み
+    // 上書き設定を読む（どちらも gitignore 済み。無ければ無視）
+    //   config.env.js   … .env から scripts/deploy.mjs が生成（Supabase の URL / key）
+    //   config.local.js … 手動の上書き。例: window.CROSS_LOCAL = { voice: { engine: "voicevox" } };
+    document.write('<script src="config.env.js" onerror="this.remove()"><\/script>');
     document.write('<script src="config.local.js" onerror="this.remove()"><\/script>');
+  </script>
+  <script>
+    (() => {
+      const merge = (dst, src) => {
+        for (const [k, v] of Object.entries(src || {})) {
+          if (v && typeof v === "object" && !Array.isArray(v) && dst[k] && typeof dst[k] === "object") merge(dst[k], v);
+          else dst[k] = v;
+        }
+        return dst;
+      };
+      merge(window.CROSS_CONFIG, window.CROSS_ENV);
+      merge(window.CROSS_CONFIG, window.CROSS_LOCAL);
+    })();
   </script>
   <script>
   (() => {

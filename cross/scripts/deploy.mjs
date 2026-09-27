@@ -1,6 +1,6 @@
 // クロス デプロイ補助スクリプト
 //
-//   node scripts/deploy.mjs            … prompt.ts と config.local.js を生成 → Edge Functions を全部デプロイ
+//   node scripts/deploy.mjs            … prompt.ts と config.env.js を生成 → Edge Functions を全部デプロイ
 //   node scripts/deploy.mjs --secrets  … 上記に加え .env のサーバー側キーを Supabase Secrets に送る
 //   node scripts/deploy.mjs --build    … 生成のみ（デプロイしない）
 //
@@ -26,7 +26,7 @@ const promptTs =
 writeFileSync(join(ROOT, "supabase/functions/chat/prompt.ts"), promptTs);
 console.log("✔ supabase/functions/chat/prompt.ts を生成");
 
-// 2) .env → config.local.js（フロント用の公開値のみ）
+// 2) .env → config.env.js（フロント用の公開値のみ。手動設定は config.local.js に書く）
 const envPath = join(ROOT, ".env");
 const env = {};
 if (existsSync(envPath)) {
@@ -45,17 +45,17 @@ if (existsSync(envPath)) {
   }
   if (env.SUPABASE_URL || pubKey) {
     const local =
-      "// 自動生成（.env から）。gitignore 済み。\n" +
-      "Object.assign(window.CROSS_CONFIG, {\n" +
+      "// 自動生成（.env から）。gitignore 済み。手で編集しない（手動設定は config.local.js へ）。\n" +
+      "window.CROSS_ENV = {\n" +
       (env.SUPABASE_URL ? `  supabaseUrl: ${JSON.stringify(env.SUPABASE_URL)},\n` : "") +
       (pubKey ? `  supabasePublishableKey: ${JSON.stringify(pubKey)},\n` : "") +
       (env.CROSS_ACCESS_KEY ? `  accessKey: ${JSON.stringify(env.CROSS_ACCESS_KEY)},\n` : "") +
-      "});\n";
-    writeFileSync(join(ROOT, "config.local.js"), local);
-    console.log("✔ config.local.js を生成");
+      "};\n";
+    writeFileSync(join(ROOT, "config.env.js"), local);
+    console.log("✔ config.env.js を生成");
   }
 } else {
-  console.log("ℹ .env が無いので config.local.js はスキップ（.env.example を参照）");
+  console.log("ℹ .env が無いので config.env.js はスキップ（.env.example を参照）");
 }
 
 if (args.has("--build")) process.exit(0);
