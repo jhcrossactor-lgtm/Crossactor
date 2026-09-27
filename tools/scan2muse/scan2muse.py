@@ -37,6 +37,10 @@ PAGE_SUFFIX = re.compile(r"[\s_\-]*(?:p|pg|page|ページ)[\s_\-]*(\d{1,3})$", r
 # onnxruntime 1.28 以降は oemer の unet_big モデル読込時に
 # "ConvTranspose ... pads must not contain negative values" で失敗する（2026-09 確認）
 ORT_MAX_EXCLUSIVE = (1, 28)
+# 1つの音符・休符として認める最長の音価（四分音符=1）。これを超えるものは読み取りミスとみなす
+MAX_NOTE_QL = 8.0
+# 1小節として認める最長の長さ。読み取りミスで小節が結合しても 4小節分（16拍）は超えない
+MAX_MEASURE_QL = 16.0
 
 MUSESCORE_CANDIDATES = [
     r"C:\Program Files\MuseScore 4\bin\MuseScore4.exe",
@@ -191,9 +195,15 @@ def join_pages(xmls: List[Path]):
     """ページごとの MusicXML を時間方向に連結し、music21 の Part のリストを返す（五線ごとに1つ）。"""
     from music21 import converter, stream
 
+    from music21 import note, spanner
+
     joined: List = []
     for page_idx, xml in enumerate(xmls):
         score = converter.parse(str(xml))
+        # oemer が付けるスラー等のスパナーは小節をまたいで参照し合うため、小節単位で複製すると
+        # 書き出し時に "already found in this Stream" で落ちる。読み取り精度にも寄与しないので外す
+        for sp in list(score.recurse().getElementsByClass(spanner.Spanner)):
+            sp.activeSite.remove(sp)
         parts = list(score.parts)
         if page_idx and len(parts) != len(joined):
             log.warning("    %s: 段数が前のページと違います（%d → %d）。先頭から順に連結します",
@@ -204,6 +214,22 @@ def join_pages(xmls: List[Path]):
             target = joined[i]
             for m in part.getElementsByClass(stream.Measure):
                 m = copy.deepcopy(m)
+                # 読み取りミスで数千拍の音符・休符が出ることがあり、MuseScore が開けなくなる（クラッシュ）。
+                # 全音符より長い単独の音価はこの曲種ではあり得ないので、全休符に置き換えて記録する
+                for el in list(m.recurse().notesAndRests):
+                    if el.quarterLength > MAX_NOTE_QL:
+                        log.warning("    %s 小節%s: 長さ %s拍の%sを全休符に置換", xml.name, m.number,
+                                    el.quarterLength, "休符" if el.isRest else "音符")
+                        el.activeSite.replace(el, note.Rest(quarterLength=4.0))
+                # 要素が巨大なオフセットに置かれ小節が数千拍になることもある（声部の中に入っていて上では拾えない）。
+                # 中身は読み取りのゴミなので、小節ごと全休符にする（音部記号・拍子などは残す）
+                if m.duration.quarterLength > MAX_MEASURE_QL:
+                    log.warning("    %s 小節%s: 長さ %s拍 → 中身を全休符に置換", xml.name, m.number, m.duration.quarterLength)
+                    for el in list(m.getElementsByClass((stream.Voice, note.GeneralNote))):
+                        m.remove(el)
+                    m.insert(0, note.Rest(quarterLength=4.0))
+                # 読み取りミスで 5/16 拍のような MusicXML に書けない音価が出ることがある。タイで分割しておく
+                m.splitAtDurations(recurse=True)
                 m.number = len(target.getElementsByClass(stream.Measure)) + 1
                 target.append(m)
     return joined
@@ -229,6 +255,19 @@ def build_part_streams(src: Source, part_name, concert_pitch: bool = False):
         part.partAbbreviation = inst.partAbbreviation
         part.atSoundingPitch = concert_pitch  # 通常は記譜音（False）。実音表記の総譜なら True
     return parts
+
+
+def pad_parts_to_same_length(parts) -> None:
+    """小節数が最大のパートに合わせて、他のパートの末尾に全休符の小節を足す。"""
+    from music21 import note, stream
+
+    longest = max(len(p.getElementsByClass(stream.Measure)) for p in parts)
+    for p in parts:
+        ms = list(p.getElementsByClass(stream.Measure))
+        for i in range(len(ms), longest):
+            m = stream.Measure(number=i + 1)
+            m.append(note.Rest(quarterLength=4.0))
+            p.append(m)
 
 
 def write_score(parts, title: str, xml_path: Path) -> None:
@@ -380,6 +419,9 @@ def main(argv=None) -> int:
         measures = {pn.display: len(parts[0].getElementsByClass("Measure")) for pn, parts in combine}
         if len(set(measures.values())) > 1:
             log.warning("パートごとの小節数が揃っていません（読み取り誤差）: %s", measures)
+            # MuseScore はパートごとに小節数が違う MusicXML を開けない（終了コード 1320）。
+            # 短いパートの末尾を全休符の小節で埋めて揃える
+            pad_parts_to_same_length(all_parts)
         try:
             xml_path = work_root / "_all.musicxml"
             write_score(all_parts, folder.name, xml_path)
