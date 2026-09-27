@@ -75,7 +75,9 @@ export async function fetchRevenueSummary(): Promise<RevenueSummary | null> {
   const sales = await queryDataSource(token, salesDs);
   const items = sales.map((r) => ({
     name: text(r, "案件名"), client: sel(r, "クライアント"), kind: sel(r, "種別"), status: sel(r, "ステータス"),
-    billed: date(r, "請求日"), paid: date(r, "入金日"), amount: num(r, "金額（税抜）") ?? 0, note: text(r, "備考"),
+    billed: date(r, "請求日"), paid: date(r, "入金日"),
+    amount: num(r, "金額（税込）") ?? num(r, "金額（税抜）") ?? num(r, "金額") ?? 0,   // 列名の変更に追従
+    note: text(r, "備考"),
   }));
 
   // 売上の定義：請求額＝売上（入金は追わない）。請求日ベースで集計。見積は「見込み」として別枠
@@ -121,7 +123,7 @@ export async function fetchRevenueSummary(): Promise<RevenueSummary | null> {
 
   const fmtList = (m: Map<string, number>) => [...m.entries()].sort((a, b) => b[1] - a[1]).map(([c, v]) => `${c} ${yen(v)}`).join("、");
   const lines = [
-    `【Notion 収益管理DB 要約（${today} 時点、金額は税抜、請求額＝売上、請求日ベース）】`,
+    `【Notion 収益管理DB 要約（${today} 時点、金額は税込、請求額＝売上、請求日ベース）】`,
     `売上DBの登録件数: ${items.length}件。`,
     `今月（${thisMonth}）の売上: ${monthRows.length}件 合計 ${yen(monthTotal)}。` +
       (monthRows.length ? " 内訳: " + monthRows.map((i) => `${i.name}（${i.client}／${i.kind}／${yen(i.amount)}）`).join("、") + "。" : ""),
