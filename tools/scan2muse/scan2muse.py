@@ -235,7 +235,43 @@ def join_pages(xmls: List[Path]):
     return joined
 
 
-def build_part_streams(src: Source, part_name, concert_pitch: bool = False):
+def rebar(part, time_sig: Optional[str]):
+    """oemer の小節線・拍子を捨て、音符・休符を一列に並べ直して指定の拍子で区切り直す。
+
+    oemer は小節線の取りこぼし・拾いすぎで小節の長さがばらつき、13/8 のような拍子まで付けてくる。
+    最初の拍子（または --time-sig）で機械的に切り直すと、中身が多少ずれてもパート間で小節が揃い、
+    MuseScore 上で原譜と照らして直しやすい。小節をまたぐ音はタイで分割される。"""
+    from music21 import clef, key, meter, stream
+
+    measures = list(part.getElementsByClass(stream.Measure))
+    if not measures:
+        return part, None
+    ts = None
+    if time_sig:
+        ts = meter.TimeSignature(time_sig)
+    else:
+        found = part.recurse().getElementsByClass(meter.TimeSignature)
+        ts = meter.TimeSignature(found[0].ratioString) if found else meter.TimeSignature("4/4")
+    first_clef = part.recurse().getElementsByClass(clef.Clef).first()
+    first_key = part.recurse().getElementsByClass(key.KeySignature).first()
+
+    flat = stream.Part()
+    flat.insert(0, ts)
+    if first_clef:
+        flat.insert(0, copy.deepcopy(first_clef))
+    if first_key:
+        flat.insert(0, copy.deepcopy(first_key))
+    for m in measures:
+        # 声部が複数あるときは最初の声部だけ使う（2つ目以降は読み取りのゴミであることが多い）
+        src = m.voices[0] if m.voices else m
+        for el in sorted(src.notesAndRests, key=lambda e: e.offset):
+            flat.append(copy.deepcopy(el))
+    rebarred = flat.makeMeasures()
+    return rebarred, ts.ratioString
+
+
+def build_part_streams(src: Source, part_name, concert_pitch: bool = False, time_sig: Optional[str] = None,
+                       keep_measures: bool = False):
     """連結済みの Part に楽器名を付ける。移調楽器は記譜音のまま <transpose> を付ける。
     concert_pitch=True（Score in C など実音表記の楽譜）のときは、読み取った音を実音とみなし、
     MusicXML 書き出し時に music21 が記譜音へ移調する。"""
@@ -243,6 +279,15 @@ def build_part_streams(src: Source, part_name, concert_pitch: bool = False):
     from music21 import instrument
 
     parts = join_pages(src.xmls)
+    if not keep_measures:
+        rebarred = []
+        for part in parts:
+            part, used = rebar(part, time_sig)
+            rebarred.append(part)
+        if used:
+            log.info("    拍子 %s で小節を切り直し（%d 小節）", used,
+                     len(rebarred[0].getElementsByClass("Measure")))
+        parts = rebarred
     for i, part in enumerate(parts):
         for old in list(part.recurse().getElementsByClass(instrument.Instrument)):
             old.activeSite.remove(old)
@@ -327,6 +372,9 @@ def parse_args(argv=None):
     ap.add_argument("--force", action="store_true", help="読み取り済みページも oemer をやり直す")
     ap.add_argument("--concert-pitch", action="store_true",
                     help="楽譜が実音表記（Score in C）のとき指定。移調楽器のパートを記譜音に移調して出力する")
+    ap.add_argument("--time-sig", help="小節を切り直す拍子（例 4/4）。省略時は読み取った最初の拍子")
+    ap.add_argument("--keep-measures", action="store_true",
+                    help="oemer の小節線をそのまま使う（既定では最初の拍子で小節を切り直す）")
     return ap.parse_args(argv)
 
 
@@ -400,7 +448,7 @@ def main(argv=None) -> int:
             log.error("    読み取れたページが無いため、このパートは出力しません")
             continue
         try:
-            parts = build_part_streams(src, pn, args.concert_pitch)
+            parts = build_part_streams(src, pn, args.concert_pitch, args.time_sig, args.keep_measures)
             name = safe_filename(f"{pn.order:02d}_{pn.display}" if pn.recognized else pn.display)
             xml_path = work / f"{name}.musicxml"
             write_score(parts, f"{folder.name} - {pn.display}", xml_path)
