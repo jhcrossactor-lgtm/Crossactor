@@ -19,6 +19,8 @@ window.CROSS_CONFIG = {
   },
   upgradeKeywords: ["分析", "事業", "計算", "比較"],
   wakeWord: "クロス",
+  wakeWordAliases: ["くろす", "黒須", "クロース", "Cross", "cross"],   // 認識ゆれの吸収
+  micAutoStart: true,        // 開始クリックと同時にマイクON
   historyTurns: 10,          // 直近N往復を保持
   idleTimeoutMs: 20000,      // 無発話でidleへ戻るまで
 

@@ -103,6 +103,8 @@
   }
   .chip.on { border-color: var(--accent); background: rgba(168,85,247,.25); }
   #state-chip { cursor: default; }
+  #mic-chip.on { border-color: var(--user); color: var(--user); }
+  #mic-chip.err { border-color: var(--error); color: var(--error); }
   body[data-state="idle"] #state-chip { border-color: rgba(255,255,255,.25); }
   body[data-state="listening"] #state-chip { border-color: var(--user); color: var(--user); }
   body[data-state="thinking"] #state-chip { border-color: var(--accent); color: #d8b4fe; }
@@ -167,10 +169,11 @@
 <body data-state="idle">
   <div id="room"></div>
   <div id="chara">クロス</div>
-  <div id="start"><div class="box"><div class="title" id="start-title">クロス</div><div class="hint">クリックまたは Enter で開始</div></div></div>
+  <div id="start"><div class="box"><div class="title" id="start-title">クロス</div><div class="hint">クリックまたは Enter で開始（マイクの許可を求めます）</div></div></div>
 
   <div id="brand" style="font-size:2.2vmin">Crossactor<small id="chara-name">クロス</small></div>
   <div id="status">
+    <div id="mic-chip" class="chip" title="マイク ON/OFF（クリック / Lキー）">🎙 off</div>
     <div id="state-chip" class="chip">idle</div>
     <div id="model-chip" class="chip" title="モデル切替（クリック / Mキー）：auto → Opus → Fable">Haiku (auto)</div>
   </div>
@@ -195,7 +198,7 @@
     <input id="input" type="text" placeholder="ここに話しかける（Enterで送信 / Escで中断）">
     <button id="send" type="submit">送信</button>
   </form>
-  <div id="help">Space / タップ 割り込み　S 字幕　M モデル　T 入力欄　V 声</div>
+  <div id="help">「クロス」と呼びかけて話す　Space / タップ 割り込み　L マイク　S 字幕　M モデル　T 入力欄　V 声</div>
 
   <script src="config.js"></script>
   <script>
@@ -231,6 +234,7 @@
       input: $("input"), send: $("send"), form: $("input-bar"), stateChip: $("state-chip"),
       modelChip: $("model-chip"), charaName: $("chara-name"),
       start: $("start"), startTitle: $("start-title"), chara: $("chara"), room: $("room"),
+      micChip: $("mic-chip"),
     };
     els.startTitle.textContent = CFG.charaName;
     els.charaName.textContent = CFG.charaName;
@@ -587,6 +591,110 @@
       els.input.value = "";
       ask(v);
     });
+    // ---------- 音声認識（Web Speech API） ----------
+    // 常時聞き取り。idle 中はウェイクワード「クロス」を含む発話だけ拾い、listening 中は全発話を質問として送る。
+    // クロスが喋っている間（thinking / speaking）は認識を止め、自分の声を拾わないようにする。
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const stt = { rec: null, on: false, running: false, restartTimer: null, wantRestart: false, lastFinalAt: 0, err: "" };
+    const WAKE_WORDS = [CFG.wakeWord, ...(CFG.wakeWordAliases || [])].filter(Boolean);
+
+    function micLabel() {
+      els.micChip.classList.toggle("on", stt.on && !stt.err);
+      els.micChip.classList.toggle("err", !!stt.err);
+      els.micChip.textContent = stt.err ? `🎙 ${stt.err}` : stt.on ? (stt.running ? "🎙 on" : "🎙 …") : "🎙 off";
+    }
+
+    // 発話からウェイクワードを取り除き、残りを返す。含まなければ null
+    function stripWake(text) {
+      for (const w of WAKE_WORDS) {
+        const i = text.indexOf(w);
+        if (i < 0) continue;
+        const rest = (text.slice(0, i) + " " + text.slice(i + w.length)).replace(/^[\s、。,.!！?？さんくんちゃんねえ]+/u, "").trim();
+        return rest;
+      }
+      return null;
+    }
+
+    function handleUtterance(text) {
+      text = text.trim();
+      if (!text) return;
+      stt.lastFinalAt = performance.now();
+      if (state.current === "idle") {
+        const rest = stripWake(text);
+        if (rest === null) return;                 // 呼ばれていない
+        setState("listening");
+        if (rest) ask(rest);                        // 「クロス、おはよう」→ 即質問
+        else showUser("（はい）", true);             // 「クロス」だけ → 次の発話を待つ
+        return;
+      }
+      if (state.current === "listening") {
+        const rest = stripWake(text);
+        ask(rest !== null && rest ? rest : text);   // 呼び名付きでもそのまま通す
+      }
+      // thinking / speaking 中は認識を止めているので通常ここには来ない
+    }
+
+    function sttStart() {
+      if (!SR) { stt.err = "非対応"; micLabel(); return; }
+      if (!stt.on || stt.running || state.current === "thinking" || state.current === "speaking") return;
+      const rec = new SR();
+      rec.lang = "ja-JP"; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+      rec.onstart = () => { stt.running = true; stt.err = ""; micLabel(); };
+      rec.onresult = (e) => {
+        let interim = "", finals = [];
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const r = e.results[i];
+          if (r.isFinal) finals.push(r[0].transcript); else interim += r[0].transcript;
+        }
+        if (interim && (state.current === "idle" || state.current === "listening")) showUser(interim, true);
+        for (const f of finals) handleUtterance(f);
+      };
+      rec.onerror = (e) => {
+        if (e.error === "not-allowed" || e.error === "service-not-allowed") { stt.err = "マイク拒否"; stt.on = false; }
+        else if (e.error === "audio-capture") { stt.err = "マイク無し"; stt.on = false; }
+        else if (e.error !== "no-speech" && e.error !== "aborted") console.warn("[stt]", e.error);
+        micLabel();
+      };
+      rec.onend = () => {
+        stt.running = false; stt.rec = null; micLabel();
+        // Chrome は無音や時間経過で勝手に止まるので、ON の間は再開し続ける
+        if (stt.on && (state.current === "idle" || state.current === "listening")) scheduleRestart(250);
+      };
+      stt.rec = rec;
+      try { rec.start(); } catch (e) { console.warn("[stt] start failed", e.message); scheduleRestart(800); }
+    }
+    function sttStop() {
+      clearTimeout(stt.restartTimer);
+      if (stt.rec) { try { stt.rec.onend = null; stt.rec.abort(); } catch { /* 無視 */ } }
+      stt.rec = null; stt.running = false; micLabel();
+    }
+    function scheduleRestart(ms) {
+      clearTimeout(stt.restartTimer);
+      stt.restartTimer = setTimeout(() => sttStart(), ms);
+    }
+    async function setMic(on) {
+      stt.on = on;
+      if (on) {
+        if (!SR) { stt.err = "非対応"; micLabel(); return; }
+        if (!window.isSecureContext) { stt.err = "要 localhost/https"; stt.on = false; micLabel(); return; }
+        try {   // 権限を先に取り、エコーキャンセルを効かせる
+          stt.stream = stt.stream || await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+        } catch (e) { stt.err = "マイク拒否"; stt.on = false; micLabel(); return; }
+        sttStart();
+      } else {
+        sttStop();
+      }
+      micLabel();
+    }
+    els.micChip.addEventListener("click", () => setMic(!stt.on));
+    window.cross.mic = { set: setMic, get on() { return stt.on; }, stt };
+
+    // 状態遷移に合わせて認識を止める／再開する
+    window.cross.onState((st) => {
+      if (st === "thinking" || st === "speaking") sttStop();
+      else if (stt.on) scheduleRestart(st === "listening" ? 300 : 100);
+    });
+
     // ---------- 声の試聴パネル ----------
     const vp = { open: false, loaded: false, selected: null, list: [], gen: 0 };
     const vEls = { panel: $("voices"), list: $("voice-list"), sample: $("voice-sample"), apply: $("voice-apply"), status: $("voice-status"), snippet: $("voice-snippet") };
@@ -658,6 +766,7 @@
       unlockAudio();
       els.start.classList.add("hidden");
       setState("idle");
+      if (CFG.micAutoStart !== false) setMic(true);
       if (document.body.classList.contains("input-open")) els.input.focus();
     }
     els.start.addEventListener("click", startSession);
@@ -672,6 +781,7 @@
       const k = e.key.toLowerCase();
       if (k === "s") els.subtitles.classList.toggle("hidden");
       if (k === "v") toggleVoices();
+      if (k === "l") setMic(!stt.on);
       if (k === "m") cycleTier();
       if (k === "t") { const open = document.body.classList.toggle("input-open"); if (open) els.input.focus(); }
     });
