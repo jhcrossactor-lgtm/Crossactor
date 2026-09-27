@@ -78,19 +78,22 @@ export async function fetchRevenueSummary(): Promise<RevenueSummary | null> {
     billed: date(r, "請求日"), paid: date(r, "入金日"), amount: num(r, "金額（税抜）") ?? 0, note: text(r, "備考"),
   }));
 
-  const monthRows = items.filter((i) => ym(i.billed) === thisMonth && i.status !== "見積");
-  const monthTotal = monthRows.reduce((s, i) => s + i.amount, 0);
-  const unpaid = items.filter((i) => i.status === "請求済" && !i.paid);
-  const unpaidTotal = unpaid.reduce((s, i) => s + i.amount, 0);
+  // 売上の定義：請求額＝売上（入金は追わない）。請求日ベースで集計。見積は「見込み」として別枠
+  const billedRows = items.filter((i) => i.status !== "見積" && i.billed);
+  const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 7);
+  const sumOf = (rows: typeof items) => rows.reduce((s, i) => s + i.amount, 0);
+  const monthRows = billedRows.filter((i) => ym(i.billed) === thisMonth);
+  const prevRows = billedRows.filter((i) => ym(i.billed) === prevMonth);
+  const ytdRows = billedRows.filter((i) => i.billed.slice(0, 4) === thisYear);
+  const monthTotal = sumOf(monthRows), prevTotal = sumOf(prevRows), ytd = sumOf(ytdRows), allTime = sumOf(billedRows);
   const estimates = items.filter((i) => i.status === "見積");
-  const estTotal = estimates.reduce((s, i) => s + i.amount, 0);
-  const paid = items.filter((i) => i.status === "入金済");
-  const ytd = paid.filter((i) => (i.paid || i.billed).slice(0, 4) === thisYear).reduce((s, i) => s + i.amount, 0);
-  const allTime = paid.reduce((s, i) => s + i.amount, 0);
+  const estTotal = sumOf(estimates);
   const byClient = new Map<string, number>();
-  for (const i of paid) byClient.set(i.client || "その他", (byClient.get(i.client || "その他") ?? 0) + i.amount);
-  const overdue = unpaid.filter((i) => i.billed && (Date.parse(today) - Date.parse(i.billed)) / 86400000 > 30);
+  for (const i of ytdRows) byClient.set(i.client || "その他", (byClient.get(i.client || "その他") ?? 0) + i.amount);
+  const byKind = new Map<string, number>();
+  for (const i of ytdRows) byKind.set(i.kind || "その他", (byKind.get(i.kind || "その他") ?? 0) + i.amount);
   const flagged = items.filter((i) => /要確認/.test(i.note));
+  const noDate = items.filter((i) => i.status !== "見積" && !i.billed);
 
   let lineText = "";
   const lineRows: { label: string; value: string }[] = [];
@@ -116,29 +119,31 @@ export async function fetchRevenueSummary(): Promise<RevenueSummary | null> {
     }
   }
 
+  const fmtList = (m: Map<string, number>) => [...m.entries()].sort((a, b) => b[1] - a[1]).map(([c, v]) => `${c} ${yen(v)}`).join("、");
   const lines = [
-    `【Notion 収益管理DB 要約（${today} 時点、金額は税抜）】`,
+    `【Notion 収益管理DB 要約（${today} 時点、金額は税抜、請求額＝売上、請求日ベース）】`,
     `売上DBの登録件数: ${items.length}件。`,
-    `今月（${thisMonth}、請求日ベース、見積除く）: ${monthRows.length}件 合計 ${yen(monthTotal)}。` +
-      (monthRows.length ? " 内訳: " + monthRows.map((i) => `${i.name}（${i.client}／${yen(i.amount)}／${i.status}）`).join("、") + "。" : ""),
-    `未入金（請求済で入金日なし）: ${unpaid.length}件 合計 ${yen(unpaidTotal)}。` +
-      (unpaid.length ? " " + unpaid.map((i) => `${i.name}（${i.client}／${yen(i.amount)}／請求日${i.billed || "未設定"}）`).join("、") + "。" : "") +
-      (overdue.length ? ` うち請求から30日超: ${overdue.map((i) => i.name).join("、")}。` : ""),
-    `見積中: ${estimates.length}件 合計 ${yen(estTotal)}。`,
-    `入金済の累計: 年初来 ${yen(ytd)}、全期間 ${yen(allTime)}。` +
-      (byClient.size ? " クライアント別: " + [...byClient.entries()].sort((a, b) => b[1] - a[1]).map(([c, v]) => `${c} ${yen(v)}`).join("、") + "。" : ""),
+    `今月（${thisMonth}）の売上: ${monthRows.length}件 合計 ${yen(monthTotal)}。` +
+      (monthRows.length ? " 内訳: " + monthRows.map((i) => `${i.name}（${i.client}／${i.kind}／${yen(i.amount)}）`).join("、") + "。" : ""),
+    `先月（${prevMonth}）の売上: ${prevRows.length}件 合計 ${yen(prevTotal)}。`,
+    `年初来（${thisYear}年）: ${yen(ytd)}。累計: ${yen(allTime)}。`,
+    byClient.size ? `年初来のクライアント別: ${fmtList(byClient)}。` : "",
+    byKind.size ? `年初来の種別: ${fmtList(byKind)}。` : "",
+    `見積中（見込み）: ${estimates.length}件 合計 ${yen(estTotal)}。` +
+      (estimates.length ? " " + estimates.map((i) => `${i.name}（${i.client}／${yen(i.amount)}）`).join("、") + "。" : ""),
+    noDate.length ? `請求日が空の案件（集計から漏れている）: ${noDate.map((i) => i.name).join("、")}。` : "",
     flagged.length ? `備考に「要確認」がある案件: ${flagged.map((i) => `${i.name}（${i.note.slice(0, 40)}）`).join("、")}。` : "",
     lineText,
-    "報告のときは、結論（今月の合計と未入金）を先に、金額は「約」で丸めて言う。要確認や入金遅れがあれば必ず触れる。最大5文まで。",
+    "報告のときは、今月の売上を先に、次に先月比や年初来を短く。金額は「約」で丸めて言う。入金や未入金の話はしない。要確認があれば触れる。最大5文まで。",
   ].filter(Boolean);
 
   const panelRows = [
-    { label: `今月（${thisMonth}）`, value: `${yen(monthTotal)} / ${monthRows.length}件` },
-    { label: "未入金", value: `${yen(unpaidTotal)} / ${unpaid.length}件` },
-    { label: "見積中", value: `${yen(estTotal)} / ${estimates.length}件` },
-    { label: `入金済 ${thisYear}年`, value: yen(ytd) },
-    { label: "入金済 累計", value: yen(allTime) },
+    { label: `今月の売上（${thisMonth}）`, value: `${yen(monthTotal)} / ${monthRows.length}件` },
+    { label: `先月（${prevMonth}）`, value: `${yen(prevTotal)} / ${prevRows.length}件` },
+    { label: `年初来（${thisYear}年）`, value: yen(ytd) },
     ...[...byClient.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([c, v]) => ({ label: `　${c}`, value: yen(v) })),
+    { label: "累計", value: yen(allTime) },
+    { label: "見積中（見込み）", value: `${yen(estTotal)} / ${estimates.length}件` },
     ...lineRows,
   ];
 
