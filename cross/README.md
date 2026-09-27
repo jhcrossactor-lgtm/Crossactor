@@ -74,7 +74,12 @@ window.CROSS_LOCAL = {
 };
 ```
 
-### VOICEVOX を使う場合（PC専用）
+### 声を選ぶ（V キー）
+画面で `V` を押すと、日本語を話せる Azure の声の一覧（ネイティブ約8種＋多言語対応の声）が出る。
+クリックで試聴、「この声にする」でそのブラウザに保存される。他の端末にも効かせるには表示される1行を `config.local.js` に書く。
+元に戻すにはコンソールで `cross.voices.reset()`。
+
+### VOICEVOX を使う場合（PC専用・不採用。参考として残置）
 1. VOICEVOX を起動しておく（エンジンが `http://127.0.0.1:50021` で待ち受ける）
 2. `config.local.js` に `voice: { engine: "voicevox" }` を書き、`voicevox.speaker` で声を選ぶ（上の例）
 3. 画面は `file://` ではなく localhost で開く（ブラウザの制限）

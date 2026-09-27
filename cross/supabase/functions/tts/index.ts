@@ -2,6 +2,7 @@
 //
 // 入力（POST JSON）: { text: string, voice?: string, style?: string, rate?: string, pitch?: string }
 // 出力: audio/mpeg（24kHz 48kbps mono）
+// 一覧: { list: true } → 日本語を話せる声の一覧（JSON）
 import { gate, json, CORS } from "../_shared/auth.ts";
 
 const MAX_CHARS = 400;
@@ -10,7 +11,29 @@ const DEFAULT_VOICE = Deno.env.get("TTS_VOICE") ?? "ja-JP-KeitaNeural";
 function xmlEscape(s: string): string {
   return s.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c]!));
 }
-const VOICE_RE = /^[A-Za-z]{2}-[A-Za-z]{2,4}-[A-Za-z0-9]+Neural$/;
+const VOICE_RE = /^[A-Za-z]{2}-[A-Za-z]{2,4}-[A-Za-z0-9]+(:[A-Za-z0-9]+)?Neural$/;   // 例: ja-JP-NanamiNeural, en-US-Ava:DragonHDLatestNeural
+
+// 日本語を話せる声の一覧（Azure の voices/list を取得し、ja-JP ネイティブ＋多言語対応をフィルタ）。10分キャッシュ
+type VoiceInfo = { name: string; gender: string; locale: string; localeName: string; styles: string[]; native: boolean; type: string };
+let voiceCache: { at: number; list: VoiceInfo[] } | null = null;
+async function listJapaneseVoices(key: string, region: string): Promise<VoiceInfo[]> {
+  if (voiceCache && Date.now() - voiceCache.at < 10 * 60 * 1000) return voiceCache.list;
+  const r = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/voices/list`, {
+    headers: { "Ocp-Apim-Subscription-Key": key },
+  });
+  if (!r.ok) throw new Error(`voices/list HTTP ${r.status}`);
+  // deno-lint-ignore no-explicit-any
+  const all: any[] = await r.json();
+  const list: VoiceInfo[] = all
+    .filter((v) => v.Locale === "ja-JP" || (Array.isArray(v.SecondaryLocaleList) && v.SecondaryLocaleList.includes("ja-JP")))
+    .map((v) => ({
+      name: v.ShortName, gender: v.Gender, locale: v.Locale, localeName: v.LocaleName,
+      styles: Array.isArray(v.StyleList) ? v.StyleList : [], native: v.Locale === "ja-JP", type: v.VoiceType,
+    }))
+    .sort((a, b) => Number(b.native) - Number(a.native) || a.name.localeCompare(b.name));
+  voiceCache = { at: Date.now(), list };
+  return list;
+}
 const STYLE_RE = /^[a-z-]{2,32}$/;
 const PROSODY_RE = /^[+-]?\d{1,3}(\.\d+)?%$/;
 
@@ -29,11 +52,18 @@ Deno.serve(async (req) => {
   const region = Deno.env.get("AZURE_SPEECH_REGION");
   if (!key || !region) return json(503, { error: "AZURE_SPEECH_KEY / AZURE_SPEECH_REGION が Secrets に未設定", code: "tts_unconfigured" });
 
-  let body: { text?: unknown; voice?: unknown; style?: unknown; rate?: unknown; pitch?: unknown };
+  let body: { text?: unknown; voice?: unknown; style?: unknown; rate?: unknown; pitch?: unknown; list?: unknown };
   try {
     body = await req.json();
   } catch {
     return json(400, { error: "JSON body が必要" });
+  }
+  if (body.list === true) {
+    try {
+      return json(200, { voices: await listJapaneseVoices(key, region) });
+    } catch (e) {
+      return json(502, { error: e instanceof Error ? e.message : String(e) });
+    }
   }
   const text = typeof body.text === "string" ? body.text.trim() : "";
   if (!text) return json(400, { error: "text が空" });

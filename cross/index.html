@@ -55,6 +55,31 @@
     transition: transform .06s linear, box-shadow .6s ease;
   }
 
+  /* 声の試聴パネル（Vキー） */
+  #voices {
+    position: fixed; right: 1.7vw; top: 8vmin; bottom: 8vmin; width: 34vw; min-width: 420px; z-index: 5;
+    background: rgba(10, 6, 20, .92); border: 1px solid rgba(255,255,255,.15); border-radius: 1.2vmin;
+    display: none; flex-direction: column; font-size: 1.8vmin;
+  }
+  #voices.open { display: flex; }
+  #voices header { padding: 1.4vmin 1.8vmin; border-bottom: 1px solid rgba(255,255,255,.12); display: flex; justify-content: space-between; align-items: center; }
+  #voices header b { font-size: 2.1vmin; }
+  #voices .list { overflow-y: auto; flex: 1; padding: .6vmin; }
+  #voices .v {
+    display: grid; grid-template-columns: 1fr auto; gap: .3vmin 1vmin; align-items: center;
+    padding: .9vmin 1.2vmin; border-radius: .8vmin; cursor: pointer;
+  }
+  #voices .v:hover { background: rgba(255,255,255,.07); }
+  #voices .v.current { background: rgba(168,85,247,.25); outline: 1px solid var(--accent); }
+  #voices .v .n { font-weight: 600; }
+  #voices .v .m { grid-column: 1 / -1; opacity: .6; font-size: 1.5vmin; }
+  #voices .v .tag { font-size: 1.4vmin; padding: .2vmin .8vmin; border-radius: 999px; background: rgba(255,255,255,.12); }
+  #voices .v .tag.f { background: rgba(249,168,212,.25); } #voices .v .tag.m2 { background: rgba(125,211,252,.25); }
+  #voices footer { padding: 1.2vmin 1.8vmin; border-top: 1px solid rgba(255,255,255,.12); display: flex; gap: 1vmin; align-items: center; flex-wrap: wrap; }
+  #voices footer button { font: inherit; font-size: 1.7vmin; padding: .7vmin 1.6vmin; border-radius: .8vmin; border: 0; background: var(--accent); color: #fff; cursor: pointer; }
+  #voices footer code { font-size: 1.4vmin; opacity: .8; word-break: break-all; }
+  #voices .sample { width: 100%; font: inherit; font-size: 1.6vmin; padding: .6vmin 1vmin; border-radius: .6vmin; border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.4); color: var(--text); }
+
   /* 開始オーバーレイ（ブラウザの音声再生はクリック後にしか許可されない） */
   #start {
     position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
@@ -155,11 +180,22 @@
     <div id="sub-ai" class="sub"></div>
   </div>
 
+  <aside id="voices">
+    <header><b>声を選ぶ</b><span style="opacity:.6">クリックで試聴 ／ V で閉じる</span></header>
+    <div style="padding:.8vmin 1.2vmin"><input class="sample" id="voice-sample" value="おはよう。うちはクロス。今日は何から片付けると？"></div>
+    <div class="list" id="voice-list">読み込み中…</div>
+    <footer>
+      <button id="voice-apply">この声にする</button>
+      <span id="voice-status" style="opacity:.7"></span>
+      <code id="voice-snippet"></code>
+    </footer>
+  </aside>
+
   <form id="input-bar" autocomplete="off">
     <input id="input" type="text" placeholder="ここに話しかける（Enterで送信 / Escで中断）">
     <button id="send" type="submit">送信</button>
   </form>
-  <div id="help">Space / タップ 割り込み　S 字幕　M モデル　T 入力欄</div>
+  <div id="help">Space / タップ 割り込み　S 字幕　M モデル　T 入力欄　V 声</div>
 
   <script src="config.js"></script>
   <script>
@@ -180,6 +216,10 @@
       };
       merge(window.CROSS_CONFIG, window.CROSS_ENV);
       merge(window.CROSS_CONFIG, window.CROSS_LOCAL);
+      try {   // 試聴パネルで選んだ声（ブラウザ保存）。config.local.js より優先
+        const saved = JSON.parse(localStorage.getItem("cross.voice") || "null");
+        if (saved && saved.name) merge(window.CROSS_CONFIG, { voice: saved });
+      } catch { /* 無視 */ }
     })();
   </script>
   <script>
@@ -545,6 +585,65 @@
       els.input.value = "";
       ask(v);
     });
+    // ---------- 声の試聴パネル ----------
+    const vp = { open: false, loaded: false, selected: null, list: [] };
+    const vEls = { panel: $("voices"), list: $("voice-list"), sample: $("voice-sample"), apply: $("voice-apply"), status: $("voice-status"), snippet: $("voice-snippet") };
+    async function loadVoices() {
+      if (vp.loaded) return;
+      try {
+        const res = await fetch(`${CFG.supabaseUrl}/functions/v1/tts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": CFG.supabasePublishableKey, ...(CFG.accessKey ? { "x-cross-key": CFG.accessKey } : {}) },
+          body: JSON.stringify({ list: true }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        vp.list = data.voices; vp.loaded = true;
+        renderVoices();
+      } catch (e) {
+        vEls.list.textContent = `一覧を取得できない: ${e.message}`;
+      }
+    }
+    function renderVoices() {
+      vEls.list.innerHTML = "";
+      for (const v of vp.list) {
+        const el = document.createElement("div");
+        el.className = "v" + (v.name === (vp.selected || CFG.voice.name) ? " current" : "");
+        const short = v.name.replace(/Neural$/, "").replace(/^[a-z]{2}-[A-Z]{2,4}-/, "");
+        const g = v.gender === "Female" ? "女" : v.gender === "Male" ? "男" : v.gender;
+        el.innerHTML = `<span class="n">${short}</span><span class="tag ${v.gender === "Female" ? "f" : "m2"}">${g}</span>` +
+          `<span class="m">${v.native ? "日本語ネイティブ" : "多言語（" + v.localeName + "）"}${v.styles.length ? "　スタイル: " + v.styles.join(", ") : ""}</span>`;
+        el.addEventListener("click", () => { vp.selected = v.name; renderVoices(); auditionVoice(v.name); });
+        vEls.list.appendChild(el);
+      }
+    }
+    async function auditionVoice(name) {
+      unlockAudio(); stopSpeech();
+      vEls.status.textContent = "生成中…";
+      const saved = CFG.voice.name;
+      CFG.voice.name = name;
+      const buf = await fetchTts(vEls.sample.value.trim() || "おはよう。うちはクロス。");
+      CFG.voice.name = saved;
+      vEls.status.textContent = buf ? "" : "この声は失敗した（スタイル非対応など）";
+      if (!buf) return;
+      const src = audio.ctx.createBufferSource(); src.buffer = buf; src.connect(audio.analyser); src.start();
+      audio.current = src;
+    }
+    vEls.apply.addEventListener("click", () => {
+      if (!vp.selected) { vEls.status.textContent = "先にクリックして試聴してから"; return; }
+      CFG.voice.name = vp.selected;
+      try { localStorage.setItem("cross.voice", JSON.stringify({ name: vp.selected })); } catch { /* 無視 */ }
+      vEls.status.textContent = "保存した（このブラウザ）。他の端末にも効かせるなら →";
+      vEls.snippet.textContent = `config.local.js: window.CROSS_LOCAL = { voice: { name: "${vp.selected}" } };`;
+      renderVoices();
+    });
+    function toggleVoices() {
+      vp.open = !vp.open;
+      vEls.panel.classList.toggle("open", vp.open);
+      if (vp.open) loadVoices();
+    }
+    window.cross.voices = { toggle: toggleVoices, reset: () => { localStorage.removeItem("cross.voice"); location.reload(); } };
+
     function startSession() {
       if (els.start.classList.contains("hidden")) return;
       unlockAudio();
@@ -563,6 +662,7 @@
       if (e.key === " ") { e.preventDefault(); window.cross.interrupt(); return; }
       const k = e.key.toLowerCase();
       if (k === "s") els.subtitles.classList.toggle("hidden");
+      if (k === "v") toggleVoices();
       if (k === "m") cycleTier();
       if (k === "t") { const open = document.body.classList.toggle("input-open"); if (open) els.input.focus(); }
     });
