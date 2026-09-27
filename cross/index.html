@@ -873,6 +873,16 @@
       if (document.body.classList.contains("input-open")) els.input.focus();
     }
     els.start.addEventListener("click", startSession);
+    // 自動起動（launch.ps1 経由など）：ブラウザが音声再生を許可していれば、クリック無しで開始する
+    if (CFG.autoStart) {
+      setTimeout(() => {
+        try {
+          unlockAudio();
+          if (audio.ctx.state === "running") startSession();
+          else audio.ctx.resume().then(() => { if (audio.ctx.state === "running") startSession(); });
+        } catch { /* 許可が無ければオーバーレイを残す */ }
+      }, 300);
+    }
     // 画面タップで割り込み（オーバーレイ表示中は開始扱い）
     [els.room, els.chara].forEach((el) => el.addEventListener("click", () => window.cross.interrupt()));
 

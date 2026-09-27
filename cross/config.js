@@ -21,6 +21,7 @@ window.CROSS_CONFIG = {
   wakeWord: "クロス",
   wakeWordAliases: ["くろす", "黒須", "クロース", "クロッス", "黒酢", "プラス", "殺す", "ころす", "Cross", "cross"],   // 認識ゆれ・聞き間違いの吸収（idle 中の誤反応は許容）
   micAutoStart: true,        // 開始クリックと同時にマイクON
+  autoStart: true,           // ブラウザが音声再生を許可していれば「クリックで開始」を省略（launch.ps1 経由の起動用）
   wakeRequired: true,        // false にすると呼びかけ無しで常に反応（W キーでも切替）
   historyTurns: 10,          // 直近N往復を保持
   idleTimeoutMs: 20000,      // 無発話でidleへ戻るまで

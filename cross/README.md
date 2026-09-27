@@ -111,6 +111,17 @@ window.CROSS_LOCAL = {
 - [ ] 20秒黙ると idle に戻り、以後は呼び名が要る
 - [ ] 認識途中の文字が薄い字幕で流れる
 
+## PC起動時に自動で立ち上げる（Windows）
+一度だけ登録する（`G:\ClaudeLocal\cross` で）:
+```
+powershell -ExecutionPolicy Bypass -File scripts\install-autostart.ps1
+```
+以後、ログオン時に配信サーバーが裏で起動し、Chrome（無ければ Edge）がクロス専用のプロファイルで全画面のアプリ窓を開く。
+- 初回だけマイクの「許可」を押す。専用プロファイルなので次回から聞かれない
+- 手動で今すぐ起動: `powershell -ExecutionPolicy Bypass -File scripts\launch.ps1`
+- 解除: `powershell -ExecutionPolicy Bypass -File scripts\uninstall-autostart.ps1`
+- 閉じるのは Alt+F4。サーバーは裏で動き続ける（次回起動時に再利用）
+
 ## 収益報告（Notion 連携）
 クロスに「売上どう？」「今月の入金は？」「収益報告して」のように聞くと、Notion の収益管理DBを読んで声で報告し、画面に数字の表（情報パネル）を重ねる。
 
