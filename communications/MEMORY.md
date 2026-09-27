@@ -132,3 +132,8 @@ deploy.mjs が `supabase secrets set KEY=値` をそのまま echo し、ほせ�
 
 補足（口頭指示）：新システム設計・事業計画は Opus 5.5、話が複雑になりそうで回り道になるくらいなら Fable 5.1（上限 effort 高）、確認作業・軽い調査は Haiku / Sonnet。
 注意：この方針は Cro の作業用。アプリ「クロス」の `/chat` は仕様どおり Haiku 既定・Sonnet 5 上位。Fable は画面のチップで手動選択した時のみ。
+
+## 2026-09-27 — クロスの声は Azure Speech 一本（VOICEVOX は採用しない）
+**決定**：PC・スマホとも Azure（`ja-JP-NanamiNeural`）。VOICEVOX はコードにオプションとして残すが、既定では使わない。
+**理由**：VOICEVOX はエンジンがPC内にしか無く、スマホから使えない。「PCでもスマホでも同じもの」「顧客はキーを貼るだけ」という方針と合わない。
+**却下**：PC=VOICEVOX／スマホ=Azure の併用（端末で声が変わる）、VOICEVOX エンジンのクラウド設置（サーバー費と保守が増え、顧客にも構築を要求する）。
