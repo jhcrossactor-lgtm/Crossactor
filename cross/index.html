@@ -588,7 +588,7 @@
       ask(v);
     });
     // ---------- 声の試聴パネル ----------
-    const vp = { open: false, loaded: false, selected: null, list: [] };
+    const vp = { open: false, loaded: false, selected: null, list: [], gen: 0 };
     const vEls = { panel: $("voices"), list: $("voice-list"), sample: $("voice-sample"), apply: $("voice-apply"), status: $("voice-status"), snippet: $("voice-snippet") };
     async function loadVoices() {
       if (vp.loaded) return;
@@ -621,15 +621,20 @@
     }
     async function auditionVoice(name) {
       unlockAudio(); stopSpeech();
+      const myGen = ++vp.gen;   // 連続クリック時は最後の1つだけ鳴らす（重なるとリバーブのように聞こえる）
       vEls.status.textContent = "生成中…";
       // 一覧は Azure の声なので、engine 設定に関わらず Azure で試聴する
       const saved = { name: CFG.voice.name, engine: CFG.voice.engine, available: audio.available };
       CFG.voice.name = name; CFG.voice.engine = "azure"; audio.available = true; audio.lastError = "";
       const buf = await fetchTts(vEls.sample.value.trim() || "おはよう。うちはクロス。");
       CFG.voice.name = saved.name; CFG.voice.engine = saved.engine; audio.available = saved.available;
+      if (myGen !== vp.gen) return;   // その後に別の声がクリックされた
       vEls.status.textContent = buf ? "" : `失敗: ${audio.lastError || "不明"}`;
       if (!buf) return;
-      const src = audio.ctx.createBufferSource(); src.buffer = buf; src.connect(audio.analyser); src.start();
+      stopSpeech();
+      const src = audio.ctx.createBufferSource(); src.buffer = buf; src.connect(audio.analyser);
+      src.onended = () => { if (audio.current === src) audio.current = null; };
+      src.start();
       audio.current = src;
     }
     vEls.apply.addEventListener("click", () => {
