@@ -19,8 +19,9 @@ function PortOpen($p) {
 # 1) サーバー
 if (-not (PortOpen $Port)) {
   $node = (Get-Command node).Source
-  if (-not $node) { [System.Windows.Forms.MessageBox]::Show("Node.js が見つかりません。nodejs.org から LTS を入れてください。", "クロス") | Out-Null; exit 1 }
-  Start-Process -FilePath $node -ArgumentList "`"$root\scripts\serve.mjs`"" -WorkingDirectory $root -WindowStyle Hidden -Environment @{ PORT = "$Port" }
+  if (-not $node) { Write-Host "Node.js が見つかりません。nodejs.org から LTS を入れてください。"; exit 1 }
+  $env:PORT = "$Port"   # Windows PowerShell 5.1 には -Environment が無いので環境変数で渡す
+  Start-Process -FilePath $node -ArgumentList "`"$root\scripts\serve.mjs`"" -WorkingDirectory $root -WindowStyle Hidden
 }
 
 # 2) 応答待ち（最大15秒）
