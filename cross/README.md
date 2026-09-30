@@ -139,6 +139,27 @@ powershell -ExecutionPolicy Bypass -File scripts\install-autostart.ps1
 - 未設定なら「連携が未設定」と短く答える。数字は作らない
 - パネルは喋り終わって数秒で閉じる（`config.js` の `panelLingerMs`）。Space やタップでも閉じる
 
+## キャラ候補の一括生成（ChatGPT / OpenAI 画像API）
+
+キャラ画像は OpenAI の画像 API で作る。ChatGPT の月額プランとは別に、
+https://platform.openai.com/api-keys で API キーを発行して `.env` に入れる（キーは画面に出さない）。
+
+```
+OPENAI_API_KEY=sk-...
+```
+
+```powershell
+node scripts\gen-chara.mjs --list     # 20 案の一覧
+node scripts\gen-chara.mjs           # 全部生成（1 枚ずつ、既にある番号は飛ばす）
+node scripts\gen-chara.mjs 9-20      # 番号範囲だけ
+node scripts\gen-chara.mjs 3,7,12    # 番号指定
+```
+
+- 出力先：`assets\chara\candidates\NN_slug.png`（git には入れない。Drive に置いて共有）
+- プロンプトは `assets\chara\prompts.json`。共通指示 + 各案の指示を連結して送る
+- 目安：medium 品質で 1 枚あたり数円〜十数円。作り直すときはそのファイルを消してから再実行
+- モデル／品質は `.env` の `OPENAI_IMAGE_MODEL` / `OPENAI_IMAGE_QUALITY`（low/medium/high）で変更
+
 ## 動作確認（Step①）
 - [ ] 5往復続けて破綻しない（履歴は直近10往復を送る）
 - [ ] 「事業の話やけど」と言うと `[chat] model: claude-sonnet-5` になる

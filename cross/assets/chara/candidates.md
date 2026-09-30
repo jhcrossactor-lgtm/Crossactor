@@ -20,7 +20,8 @@
 | 08 | フラットベクター | https://www.canva.com/M/MAHWrto99JE |
 
 Canva の画像生成枠は 08 の直後に上限到達。Gamma は無料枠クレジット 0 で生成不可。
-残り 12 案は下のプロンプトを ChatGPT（画像生成）に貼って作る。
+ほせもやん指示：**Canva ではなく ChatGPT で作る**。→ `node scripts/gen-chara.mjs` で 20 案を OpenAI 画像 API から一括生成する（README 参照）。
+API キーを使わず ChatGPT の画面で作る場合は、下のプロンプトを 1 案ずつ貼る。
 
 ---
 
