@@ -23,6 +23,7 @@ window.CROSS_CONFIG = {
   micAutoStart: true,        // 開始クリックと同時にマイクON
   autoStart: true,           // ブラウザが音声再生を許可していれば「クリックで開始」を省略（launch.ps1 経由の起動用）
   wakeRequired: true,        // false にすると呼びかけ無しで常に反応（W キーでも切替）
+  wakeReply: "はい",         // 「クロ」とだけ呼ばれた時の返事（声で返してから聞き取りに入る）。"" で無言
   historyTurns: 10,          // 直近N往復を保持
   idleTimeoutMs: 20000,      // 無発話でidleへ戻るまで
   panelLingerMs: 6000,       // 情報パネルを喋り終わってから閉じるまで

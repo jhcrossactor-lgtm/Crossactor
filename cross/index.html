@@ -709,8 +709,15 @@
         }
         setState("listening");
         const q = called ? rest : text;
-        if (q) ask(q);                              // 「クロ、おはよう」→ 即質問
-        else showUser("（はい）", true);             // 「クロ」だけ → 次の発話を待つ
+        if (q) { ask(q); return; }                  // 「クロ、おはよう」→ 即質問
+        // 「クロ」だけ → 短く返事してから次の発話を待つ
+        showUser(text, false);
+        const reply = (CFG.wakeReply ?? "はい").trim();
+        if (reply) {
+          showAi(reply);
+          unlockAudio();
+          enqueueSpeech(reply.replace(/[。！？!?]*$/, "") + "。");
+        }
         return;
       }
       if (state.current === "listening") {
