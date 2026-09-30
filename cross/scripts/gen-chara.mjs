@@ -1,6 +1,7 @@
 // クロ キャラ候補の一括生成（OpenAI 画像API）
+// テイスト別：01-08 初期案 / 09-20 追加案 / 21-32 テイスト拡張（レトロ・ドット・アメコミ・SD・サイバーパンク・水墨・クレイ・切り絵・線画・油彩・ノワール・青図面）
 //
-//   node scripts/gen-chara.mjs             … assets/chara/prompts.json の 20 案を全部生成
+//   node scripts/gen-chara.mjs             … assets/chara/prompts.json の 32 案を全部生成
 //   node scripts/gen-chara.mjs 9-20        … 番号範囲だけ
 //   node scripts/gen-chara.mjs 3,7,12      … 番号指定
 //   node scripts/gen-chara.mjs --list      … 一覧だけ表示（生成しない）
