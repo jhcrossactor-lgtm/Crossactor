@@ -1,7 +1,7 @@
-// クロス 設定ファイル
+// クロ 設定ファイル
 // ここに秘密情報（APIキー等）は書かない。config.local.js（gitignore済）で上書き可能。
 window.CROSS_CONFIG = {
-  charaName: "クロス",
+  charaName: "クロ",
   brand: "Crossactor",
 
   // Supabase（公開可の値。config.local.js で上書き）
@@ -18,8 +18,8 @@ window.CROSS_CONFIG = {
     max: "claude-fable-5-1",
   },
   upgradeKeywords: ["分析", "事業", "計算", "比較"],
-  wakeWord: "クロス",
-  wakeWordAliases: ["くろす", "黒須", "クロース", "クロッス", "黒酢", "プラス", "殺す", "ころす", "Cross", "cross"],   // 認識ゆれ・聞き間違いの吸収（idle 中の誤反応は許容）
+  wakeWord: "クロ",
+  wakeWordAliases: ["くろ", "黒", "クロス", "くろす", "クロー", "Cro", "cro"],   // 認識ゆれの吸収（idle 中の誤反応は許容）
   micAutoStart: true,        // 開始クリックと同時にマイクON
   autoStart: true,           // ブラウザが音声再生を許可していれば「クリックで開始」を省略（launch.ps1 経由の起動用）
   wakeRequired: true,        // false にすると呼びかけ無しで常に反応（W キーでも切替）

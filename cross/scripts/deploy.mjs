@@ -1,4 +1,4 @@
-// クロス デプロイ補助スクリプト
+// クロ デプロイ補助スクリプト
 //
 //   node scripts/deploy.mjs            … prompt.ts と config.env.js を生成 → Edge Functions を全部デプロイ
 //   node scripts/deploy.mjs --secrets  … 上記に加え .env のサーバー側キーを Supabase Secrets に送る

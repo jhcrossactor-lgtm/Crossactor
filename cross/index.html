@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>クロス — Crossactor</title>
+<title>クロ — Crossactor</title>
 <style>
   :root {
     --bg: #0b0713;
@@ -187,10 +187,10 @@
 </head>
 <body data-state="idle">
   <div id="room"></div>
-  <div id="chara">クロス</div>
-  <div id="start"><div class="box"><div class="title" id="start-title">クロス</div><div class="hint">クリックまたは Enter で開始（マイクの許可を求めます）</div></div></div>
+  <div id="chara"></div>
+  <div id="start"><div class="box"><div class="title" id="start-title"></div><div class="hint">クリックまたは Enter で開始（マイクの許可を求めます）</div></div></div>
 
-  <div id="brand" style="font-size:2.2vmin">Crossactor<small id="chara-name">クロス</small></div>
+  <div id="brand" style="font-size:2.2vmin">Crossactor<small id="chara-name"></small></div>
   <div id="status">
     <div id="mic-chip" class="chip" title="マイク ON/OFF（クリック / Lキー）">🎙 off</div>
     <div id="state-chip" class="chip">idle</div>
@@ -206,7 +206,7 @@
 
   <aside id="voices">
     <header><b>声を選ぶ</b><span style="opacity:.6">クリックで試聴 ／ V で閉じる</span></header>
-    <div style="padding:.8vmin 1.2vmin"><input class="sample" id="voice-sample" value="おはよう。うちはクロス。今日は何から片付けると？"></div>
+    <div style="padding:.8vmin 1.2vmin"><input class="sample" id="voice-sample" value="おはよう。私はクロ。今日は何から片付けようか？"></div>
     <div class="list" id="voice-list">読み込み中…</div>
     <footer>
       <button id="voice-apply">この声にする</button>
@@ -219,7 +219,7 @@
     <input id="input" type="text" placeholder="ここに話しかける（Enterで送信 / Escで中断）">
     <button id="send" type="submit">送信</button>
   </form>
-  <div id="help">「クロス」と呼びかけて話す ／ Space 割り込み ／ L マイク ／ W 呼びかけ ／ V 声 ／ T 入力 ／ S 字幕 ／ M モデル</div>
+  <div id="help"><span id="help-wake"></span> ／ Space 割り込み ／ L マイク ／ W 呼びかけ ／ V 声 ／ T 入力 ／ S 字幕 ／ M モデル</div>
 
   <script src="config.js"></script>
   <script>
@@ -258,6 +258,9 @@
       micChip: $("mic-chip"),
     };
     els.startTitle.textContent = CFG.charaName;
+    els.chara.textContent = CFG.charaName;
+    document.title = `${CFG.charaName} — ${CFG.brand}`;
+    $("help-wake").textContent = `「${CFG.wakeWord}」と呼びかけて話す`;
     els.charaName.textContent = CFG.charaName;
     console.log("[cross] 接続先:", CFG.supabaseUrl, "| publishable key:", CFG.supabasePublishableKey ? CFG.supabasePublishableKey.slice(0, 18) + "…" : "(未設定)");
     for (const [k, v] of Object.entries(CFG.colors)) document.documentElement.style.setProperty(`--${k}`, v);
@@ -643,8 +646,8 @@
       ask(v);
     });
     // ---------- 音声認識（Web Speech API） ----------
-    // 常時聞き取り。idle 中はウェイクワード「クロス」を含む発話だけ拾い、listening 中は全発話を質問として送る。
-    // クロスが喋っている間（thinking / speaking）は認識を止め、自分の声を拾わないようにする。
+    // 常時聞き取り。idle 中はウェイクワード（config.wakeWord）を含む発話だけ拾い、listening 中は全発話を質問として送る。
+    // クロが喋っている間（thinking / speaking）は認識を止め、自分の声を拾わないようにする。
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const stt = { rec: null, on: false, running: false, restartTimer: null, wantRestart: false, lastFinalAt: 0, err: "" };
     const WAKE_WORDS = [CFG.wakeWord, ...(CFG.wakeWordAliases || [])].filter(Boolean);
@@ -706,8 +709,8 @@
         }
         setState("listening");
         const q = called ? rest : text;
-        if (q) ask(q);                              // 「クロス、おはよう」→ 即質問
-        else showUser("（はい）", true);             // 「クロス」だけ → 次の発話を待つ
+        if (q) ask(q);                              // 「クロ、おはよう」→ 即質問
+        else showUser("（はい）", true);             // 「クロ」だけ → 次の発話を待つ
         return;
       }
       if (state.current === "listening") {
@@ -823,7 +826,7 @@
       // 一覧は Azure の声なので、engine 設定に関わらず Azure で試聴する
       const saved = { name: CFG.voice.name, engine: CFG.voice.engine, available: audio.available };
       CFG.voice.name = name; CFG.voice.engine = "azure"; audio.available = true; audio.lastError = "";
-      const buf = await fetchTts(vEls.sample.value.trim() || "おはよう。うちはクロス。");
+      const buf = await fetchTts(vEls.sample.value.trim() || `おはよう。私は${CFG.charaName}。`);
       CFG.voice.name = saved.name; CFG.voice.engine = saved.engine; audio.available = saved.available;
       if (myGen !== vp.gen) return;   // その後に別の声がクリックされた
       vEls.status.textContent = buf ? "" : `失敗: ${audio.lastError || "不明"}`;

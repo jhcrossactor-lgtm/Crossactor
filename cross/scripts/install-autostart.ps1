@@ -1,4 +1,4 @@
-﻿# クロスをWindowsのスタートアップに登録する（ログオン時に自動起動）
+﻿# クロをWindowsのスタートアップに登録する（ログオン時に自動起動）
 #   powershell -ExecutionPolicy Bypass -File scripts\install-autostart.ps1
 # 解除:  powershell -ExecutionPolicy Bypass -File scripts\uninstall-autostart.ps1
 $ErrorActionPreference = "Stop"

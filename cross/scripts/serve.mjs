@@ -32,5 +32,5 @@ createServer(async (req, res) => {
     res.end("not found: " + rel);
   }
 }).listen(PORT, "127.0.0.1", () => {
-  console.log(`クロス: http://localhost:${PORT}  （終了は Ctrl+C）`);
+  console.log(`クロ: http://localhost:${PORT}  （終了は Ctrl+C）`);
 });
