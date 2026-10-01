@@ -161,6 +161,43 @@ oemer は入力を 300万〜435万画素に自動でリサイズする（`infere
 
 `extract_staff.py` はこれを自動で行う。手で画像を作るときも「線間隔 12〜14px × 画素数 340万」に揃えること。
 
+## 4c. 総譜を Audiveris で読む（推奨・2026-10-01〜）
+
+Audiveris（5.11.0、Java 同梱）は多段の総譜をそのまま読める。三匹の猫（金管10段）で1ページ約30秒、
+パートごとの小節数も揃う。oemer＋切り出し（4b）より速く精度も高いので、総譜はこちらを使う。
+
+```
+cd "G:\ClaudeLocal\scan2muse"
+rem ① 見開き（横長ページ）を左右に分けて 1ページ1枚の PNG にする
+py split_pages.py "<総譜.pdf>" "work\<曲名>\pages"
+rem ② Audiveris でページごとに .mxl にする（1ページ失敗しても他は止まらない）
+"G:\ClaudeLocal\Audiveris\Audiveris\Audiveris.exe" -batch -export -output "work\<曲名>\aud" -- work\<曲名>\pages\page_001.png work\<曲名>\pages\page_002.png ...
+rem ③ 楽章ごとにページを継ぎ合わせ、楽器名を付ける
+py merge_pages.py "work\<曲名>\mvt1.musicxml" --title "<題名>" --drop-fermatas --names "Tp 1,Tp 2,...,Tuba" work\<曲名>\aud\page_001.mxl work\<曲名>\aud\page_002.mxl ...
+rem ④ MuseScore で .mscz にする（終了コード0でも、保存した .mscz を開き直して確かめる）
+"C:\Program Files\MuseScore 4\bin\MuseScore4.exe" -o "<出力>.mscz" "work\<曲名>\mvt1.musicxml"
+"C:\Program Files\MuseScore 4\bin\MuseScore4.exe" -o "work\<曲名>\check.pdf" "<出力>.mscz"
+```
+
+- **楽章の切れ目**: Audiveris は楽章が変わるページを `page_005.mvt1.mxl` / `page_005.mvt2.mxl` のように分けて出す。
+  `mvt1` を前の楽章、`mvt2` を次の楽章に入れる。字下げを楽章の頭と誤認して1段×1小節の断片ができることがあるので、中身の小節数を見て捨てる
+- **段数が違うページ**（楽章の頭で休みの楽器が省略されている等）: `page_013.mxl@4,5,6,7,9` のように、
+  そのページの上から順の段が `--names` の何番目かを書く。書いていない楽器は全休符で埋まる
+- **読み取れないページ**: `GAP:14` と書くと全休符14小節を入れ、先頭パートに「★ここから読み取り失敗ページ」の目印を付ける。後で手入力する
+- `--names` は楽章ごとに楽譜の楽器名に合わせる（楽章によって Flh / Tp 3 などの持ち替えが変わる）
+
+`merge_pages.py` が各ページにかける補正（`audiveris_fix.py` の関数。ログに場所が出る）:
+
+| 補正 | 理由 |
+|---|---|
+| フェルマータを外す（`--drop-fermatas`） | Audiveris は松葉（< >）をフェルマータと読み違える。外した松葉は戻らないので手で付ける。本物のフェルマータも消えるので、ログを見て戻す |
+| 抜けた小節を全休符で補う | パートによって小節が抜けることがある。MuseScore は小節数の違うパートを開けない |
+| 中身の長さから拍子を推定 | 拍子変更（例 2/4→9/8）を読み落とすと、後ろの小節が全部切り詰められて音が消える。音のあるパートの6割以上・3パート以上が同じ長さのときだけ拍子を変える（短くする方向は8割以上）。ページをまたいで引き継ぐ |
+| 崩れた連符を全休符にする | 3連符の1音を読み落とすと小節の長さが半端な分数になり、MuseScore が楽章ごと開かない（Incomplete measure）。その声部のその小節を全休符にする |
+| はみ出しを切る／足りない分を休符で埋める | MuseScore 4 の CLI は拍子と長さの合わない小節があると開かない（終了コード1320） |
+
+1ページだけなら `py audiveris_fix.py <入力.mxl> <出力.musicxml> --names "..." --drop-fermatas` でも同じ補正ができる。
+
 ## 5. 所要時間と精度の目安
 
 - oemer は1ページあたり 3〜4分かかる（CPU、A4・300dpi）。10パート×2ページなら 1時間強
@@ -177,6 +214,8 @@ oemer は入力を 300万〜435万画素に自動でリサイズする（`infere
 | oemer が `'NoneType' object has no attribute '__array_interface__'`（inference.py） | Windows の `cv2.imread` が日本語を含むパスを開けない | `oemer_runner.py` が `imdecode` 版に差し替える。対処不要 |
 | oemer が `AssertionError: 4`（build_system.py の `track_nums == 2`） | 多段の総譜を直接読ませた | 「4b. 総譜を読む場合」の手順で楽器ごとに切り出す |
 | MuseScore が .mscz を開くとクラッシュ | 小節の長さが異常な MusicXML（読み取り失敗）から作った | ログで該当ページを確認し、そのページを除いて作り直す |
+| Audiveris が `Error processing stub ... Measure.purgeVoices()` → `Error in export` | Audiveris 内部の不具合（MeasureStack の NullPointerException）。解像度・余白・段ごとの分割・右端の切りそろえでは直らなかった | そのページは `merge_pages.py` に `GAP:<小節数>` を渡して全休符にし、手入力する |
+| MuseScore の読み込みは終了コード0なのに、保存した .mscz を開き直すと1320 | 崩れた連符など、読み込み時に丸められた小節が保存後に Incomplete measure になる | `merge_pages.py` で作り直す（崩れた連符を全休符にする）。原因の小節は `%LOCALAPPDATA%\MuseScore\MuseScore4\logs` の最新ログに `Incomplete measure: ... measure N, staff M` と出る |
 | 初回だけ oemer の開始が遅い | モデル（約 100MB）を GitHub から自動ダウンロードしている | 待つ。2回目以降は不要 |
 | `MuseScore が見つかりません` | 標準以外の場所にインストール | `config.json` にパスを書く（セットアップ参照） |
 
@@ -191,6 +230,9 @@ oemer は入力を 300万〜435万画素に自動でリサイズする（`infere
 | `instruments.py` | ファイル名 → パート名の判定テーブル |
 | `prepare_pages.py` | 総譜用：ページの向き揃え・湾曲補正・段位置の検出 |
 | `extract_staff.py` | 総譜用：1楽器の段を切り出して scan2muse 用の画像にする |
+| `split_pages.py` | Audiveris 用：PDF を1ページ1枚の PNG に（見開きは左右に分割） |
+| `merge_pages.py` | Audiveris 用：ページごとの .mxl を補正して1楽章の総譜に継ぎ合わせる |
+| `audiveris_fix.py` | Audiveris 用：MuseScore が開ける形にする補正（1ページ単体でも使える） |
 | `config.json` | MuseScore のパス（自動生成） |
 
 ## 動作確認の記録（2026-09-26）
@@ -200,4 +242,5 @@ Linux 環境（Python 3.11 / oemer 0.1.8 / onnxruntime 1.26 / MuseScore 3 CLI（
 - 1ページ: PDF → 画像 → oemer → `.mscz` → MuseScore で再度開けることを確認（パート名 Cl 1、B♭ の移調設定あり）
 - 一括: PDF 1本＋連番画像2枚＋壊れた PDF 1本 → 壊れた PDF はスキップしてログに記録、画像2枚は1パートに連結、総譜も出力
 
-**Windows 実機（MuseScore 4）と実データ「三匹の猫」では未確認。** 上の「使い方②」で最初に確認すること。
+2026-09-27 以降は Windows 実機（Python 3.13 / MuseScore 4）と実データ「三匹の猫」で確認済み。
+2026-10-01: 新スキャン（600dpi・見開き含む20ページ・3楽章）を 4c の手順で楽章ごとの .mscz 3本にし、MuseScore 4 で開き直せることを確認。1ページは Audiveris の不具合で読めず全休符で仮置き。
