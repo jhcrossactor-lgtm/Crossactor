@@ -149,7 +149,7 @@ OPENAI_API_KEY=sk-...
 ```
 
 ```powershell
-node scripts\gen-chara.mjs --list     # 32 案の一覧
+node scripts\gen-chara.mjs --list     # 27 案の一覧
 node scripts\gen-chara.mjs           # 全部生成（1 枚ずつ、既にある番号は飛ばす）
 node scripts\gen-chara.mjs 9-20      # 番号範囲だけ
 node scripts\gen-chara.mjs 3,7,12    # 番号指定
