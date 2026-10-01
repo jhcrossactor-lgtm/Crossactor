@@ -1,0 +1,19 @@
+# 秘密情報（絶対にコミットしない）
+.env
+.env.*
+!.env.example
+config.local.js
+config.env.js
+
+# 生成物・依存
+node_modules/
+.supabase/
+supabase/.temp/
+supabase/.branches/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 生成したキャラ候補画像（Drive に置く。決定稿だけ assets/chara/ 直下に）
+assets/chara/candidates/
