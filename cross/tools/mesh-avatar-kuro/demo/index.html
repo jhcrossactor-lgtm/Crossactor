@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>digital-rise demo</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0d14; color: #cfd6e4; font: 14px/1.5 system-ui, sans-serif; }
+  #stage { position: relative; width: min(100vw, 100vh); aspect-ratio: 1; margin: 0 auto; overflow: hidden; background: radial-gradient(ellipse at 50% 80%, #141a2a 0%, #0b0d14 70%); }
+  /* アバターの代わりのシルエット（実際はここが WebGL キャンバスや img になる） */
+  #avatar { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 46%; height: 78%; z-index: 1;
+    background: linear-gradient(180deg, #2a3350 0%, #1a2238 60%, #121a2c 100%); border-radius: 46% 46% 6% 6% / 30% 30% 4% 4%; }
+  #avatar::before { content: ""; position: absolute; left: 50%; top: -22%; transform: translateX(-50%); width: 52%; aspect-ratio: 1; border-radius: 50%; background: #2a3350; }
+  .digital-rise-back { z-index: 0; } .digital-rise-front { z-index: 2; }
+  #ui { position: fixed; left: 12px; top: 12px; background: rgba(10,12,20,.7); padding: 10px 12px; border-radius: 8px; z-index: 9; }
+  #ui label { display: block; margin: 4px 0; }
+  #stats { font-family: ui-monospace, monospace; font-size: 12px; opacity: .8; white-space: pre; }
+</style>
+</head>
+<body>
+  <div id="stage"><div id="avatar"></div></div>
+  <div id="ui">
+    <label><input type="checkbox" id="speak"> 発話中（粒子量・明るさ UP）</label>
+    <label>声の大きさ <input type="range" id="level" min="0" max="1" step="0.05" value="0.6"></label>
+    <label>粒子の量 <input type="range" id="density" min="0" max="2" step="0.05" value="1"></label>
+    <label><input type="checkbox" id="enabled" checked> エフェクト ON</label>
+    <div id="stats"></div>
+  </div>
+  <script type="module">
+    import { createDigitalRise } from '../studio/src/fx/digital-rise.js';
+    const stage = document.getElementById('stage'), avatar = document.getElementById('avatar');
+    const fx = createDigitalRise({ container: stage, before: avatar });
+    window.fx = fx;
+    document.getElementById('speak').onchange = e => fx.setSpeaking(e.target.checked);
+    document.getElementById('level').oninput = e => fx.setLevel(+e.target.value);
+    document.getElementById('density').oninput = e => fx.setDensity(+e.target.value);
+    document.getElementById('enabled').onchange = e => fx.setEnabled(e.target.checked);
+    fx.setLevel(0.6);
+    const stats = document.getElementById('stats');
+    setInterval(() => { const s = fx.getStats(); stats.textContent = `fps ${s.fps.toFixed(0)}  fx ${s.frameMs.toFixed(2)}ms\nparticles ${s.particles}  density ${s.density.toFixed(2)}  boost ${s.boostRate}`; }, 500);
+  </script>
+</body>
+</html>

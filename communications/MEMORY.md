@@ -156,3 +156,26 @@ deploy.mjs が `supabase secrets set KEY=値` をそのまま echo し、ほせ�
 呼びかけ語も「クロ」（別名：くろ／黒／クロス／クロー／Cro）。2文字なので誤反応は増えるが仕様で許容。
 未決：人格を Cro（AI CEO・ENTJ・男性）に寄せるか、現行の「25歳女性の相棒」のままか。声は Keita（男声）。
 - 追記（2026-09-30）：**音声アプリのクロ＝この Cro（AI CEO）で確定。** persona.md を `organization/ceo_profile.md`（ENTJ・断定・結論先行・対等）を元に音声用へ書き直した。一人称「俺」、声は Keita。25歳女性設定は廃止
+
+---
+
+## 2026-10-10 — クロのアバター化は Mesh Avatar Studio、追加分は `cross/tools/mesh-avatar-kuro/`
+
+**決定**
+ChatGPT で作った立ち絵を shinshin86/mesh-avatar-studio で 2D メッシュアバター化する。
+本体は改変せず、クロ専用の追加キット（配信ページ `stream-fx.html`、粒子エフェクト `digital-rise.js`、
+差分絵合成 `merge-variant.py`、調整メモ、デスクトップ用の作業指示）を `cross/tools/mesh-avatar-kuro/` に置く。
+
+**理由**
+- 待機の振幅・髪の遅れ・発話時の首振りは本体の公開 API（setParameters の重み、setSwayGain、setTalkGain）だけで落とせる。
+  まばたき間隔・呼吸周期は本体定数だが既に揺らぎがあり、改変の必要なし
+- 粒子は Canvas2D の独立レイヤー（背面＋前面）にしたので別アプリ（kaname）へ 2 ファイルのコピーで移植できる
+- ChatGPT の画像編集は全体を微妙に変えるため build-sprites に拒否される → マスク内側だけ合成する前処理が必須
+
+**制約**
+クラウドセッションからはほせもやんのデスクトップ（立ち絵・シート・G:\）に触れない。
+アバター化の本体作業（座標読み・レイヤー生成・ポーズ確認）はデスクトップの Claude で行う。手順書の推奨は Opus 5.5。
+
+**エフェクト初期値**
+色は青系ホログラム（#8fe9ff / #3fb0ff / #cdf6ff / #fff / #6cd0ff）、背面 260・前面 60 粒、発話中 量×1.45 明るさ×1.3、
+60fps を割ると density 自動減。配信ページ既定 calm 0.65 / sway 1.3 / talk 0.6。
