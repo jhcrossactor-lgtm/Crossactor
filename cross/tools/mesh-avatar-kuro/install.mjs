@@ -6,7 +6,7 @@
 //   stream-fx.html            クロ用の配信ページ（粒子エフェクト＋落ち着いた待機動作）
 //   src/fx/*                  エフェクト本体・設定・型・ページのスクリプト
 //   tools/merge-variant.py    ChatGPT の差分絵をマスク内側だけ合成するツール
-import { cpSync, existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -16,13 +16,16 @@ if (!process.argv[2] || !existsSync(join(target, 'package.json')) || !existsSync
   console.error('使い方: node install.mjs <mesh-avatar-studio の clone フォルダ>');
   process.exit(1);
 }
+// 調整済みの設定ファイルは上書きしない（再実行しても粒子の設定が初期値に戻らないように）
+const KEEP = new Set(['src/fx/digital-rise.config.js']);
 const copies = [
   ['studio/stream-fx.html', 'stream-fx.html'],
-  ['studio/src/fx', 'src/fx'],
+  ...readdirSync(join(HERE, 'studio/src/fx')).map(name => [`studio/src/fx/${name}`, `src/fx/${name}`]),
   ['studio/tools/merge-variant.py', 'tools/merge-variant.py'],
 ];
 for (const [from, to] of copies) {
   const src = join(HERE, from), dest = join(target, to);
+  if (KEEP.has(to) && existsSync(dest)) { console.log(`– ${to}（既にあるので残す。初期値に戻すなら消してから再実行）`); continue; }
   mkdirSync(dirname(dest), { recursive: true });
   cpSync(src, dest, { recursive: true, force: true });
   console.log(`✔ ${to}${statSync(src).isDirectory() ? '/' : ''}`);
