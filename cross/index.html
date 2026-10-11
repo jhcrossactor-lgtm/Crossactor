@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>クロ — Crossactor</title>
+<style>
+  :root {
+    --bg: #0b0713;
+    --accent: #a855f7;
+    --user: #7dd3fc;
+    --ai: #f9a8d4;
+    --error: #f87171;
+    --text: #f4f1fa;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    /* 1920×1080 で 28px。短辺に比例させ、背の低い窓やスマホ横持ちでも構図を保つ */
+    font-size: 2.6vmin;
+  }
+
+  /* 部屋（Step④でthree.jsキャンバスに置き換え。今は仮の夜景グラデーション） */
+  #room {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 8%, rgba(168,85,247,.35), transparent 70%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(30,20,60,.9), transparent 70%),
+      linear-gradient(180deg, #120a24 0%, #0b0713 60%, #06040c 100%);
+  }
+  #room::after { /* 天井際の紫の間接照明の仮表現 */
+    content: ""; position: absolute; left: 10%; right: 10%; top: 0; height: 6px;
+    background: var(--accent); filter: blur(10px); opacity: .8;
+  }
+
+  /* キャラ仮表示（Step④で2Dビルボードに置き換え） */
+  #chara {
+    position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%);
+    width: 31.5vmin; height: 31.5vmin; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #c084fc, #6d28d9 60%, #3b0764);
+    box-shadow: 0 0 80px rgba(168,85,247,.45);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3.7vmin; font-weight: 700; letter-spacing: .1em;
+    transition: transform .6s ease, box-shadow .6s ease;
+  }
+  body[data-state="thinking"] #chara { transform: translate(-50%,-50%) scale(.92); box-shadow: 0 0 40px rgba(168,85,247,.3); }
+  body[data-state="speaking"] #chara { transform: translate(-50%,-50%) scale(1.06); box-shadow: 0 0 120px rgba(249,168,212,.5); }
+  body[data-state="listening"] #chara { box-shadow: 0 0 120px rgba(125,211,252,.5); }
+  /* 口パク（Step④で本物のキャラ差分に置き換え）。--mouth は 0〜1 */
+  #chara { --mouth: 0; }
+  body[data-state="speaking"] #chara {
+    transform: translate(-50%,-50%) scale(calc(1.04 + var(--mouth) * 0.06));
+    transition: transform .06s linear, box-shadow .6s ease;
+  }
+
+  /* 声の試聴パネル（Vキー） */
+  #voices {
+    position: fixed; right: 1.7vw; top: 8vmin; bottom: 8vmin; width: 34vw; min-width: 420px; z-index: 5;
+    background: rgba(10, 6, 20, .92); border: 1px solid rgba(255,255,255,.15); border-radius: 1.2vmin;
+    display: none; flex-direction: column; font-size: 1.8vmin;
+  }
+  #voices.open { display: flex; }
+  #voices header { padding: 1.4vmin 1.8vmin; border-bottom: 1px solid rgba(255,255,255,.12); display: flex; justify-content: space-between; align-items: center; }
+  #voices header b { font-size: 2.1vmin; }
+  #voices .list { overflow-y: auto; flex: 1; padding: .6vmin; }
+  #voices .v {
+    display: grid; grid-template-columns: 1fr auto; gap: .3vmin 1vmin; align-items: center;
+    padding: .9vmin 1.2vmin; border-radius: .8vmin; cursor: pointer;
+  }
+  #voices .v:hover { background: rgba(255,255,255,.07); }
+  #voices .v.current { background: rgba(168,85,247,.25); outline: 1px solid var(--accent); }
+  #voices .v .n { font-weight: 600; }
+  #voices .v .m { grid-column: 1 / -1; opacity: .6; font-size: 1.5vmin; }
+  #voices .v .tag { font-size: 1.4vmin; padding: .2vmin .8vmin; border-radius: 999px; background: rgba(255,255,255,.12); }
+  #voices .v .tag.f { background: rgba(249,168,212,.25); } #voices .v .tag.m2 { background: rgba(125,211,252,.25); }
+  #voices footer { padding: 1.2vmin 1.8vmin; border-top: 1px solid rgba(255,255,255,.12); display: flex; gap: 1vmin; align-items: center; flex-wrap: wrap; }
+  #voices footer button { font: inherit; font-size: 1.7vmin; padding: .7vmin 1.6vmin; border-radius: .8vmin; border: 0; background: var(--accent); color: #fff; cursor: pointer; }
+  #voices footer code { font-size: 1.4vmin; opacity: .8; word-break: break-all; }
+  #voices .sample { width: 100%; font: inherit; font-size: 1.6vmin; padding: .6vmin 1vmin; border-radius: .6vmin; border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.4); color: var(--text); }
+
+  /* 情報表示モード：数値・表を画面に重ねる。背後の部屋はぼかす */
+  #panel {
+    position: fixed; left: 50%; top: 46%; transform: translate(-50%, -50%) scale(.96);
+    width: 56vw; max-height: 62vh; z-index: 4; overflow: hidden;
+    background: rgba(12, 7, 24, .78); border: 1px solid rgba(168,85,247,.45); border-radius: 1.4vmin;
+    box-shadow: 0 0 60px rgba(168,85,247,.25), inset 0 0 0 1px rgba(255,255,255,.04);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    opacity: 0; pointer-events: none; transition: opacity .35s ease, transform .35s ease;
+  }
+  #panel.open { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  body.panel-open #room, body.panel-open #chara { filter: blur(6px) brightness(.7); transition: filter .4s ease; }
+  #panel h2 { margin: 0; padding: 1.6vmin 2.4vmin; font-size: 2.6vmin; font-weight: 700; letter-spacing: .06em;
+    border-bottom: 1px solid rgba(255,255,255,.1); color: #e9d5ff; display: flex; justify-content: space-between; }
+  #panel h2 small { font-size: 1.6vmin; opacity: .55; font-weight: 400; }
+  #panel table { width: 100%; border-collapse: collapse; font-size: 2.3vmin; font-variant-numeric: tabular-nums; }
+  #panel td { padding: 1.1vmin 2.4vmin; border-bottom: 1px solid rgba(255,255,255,.06); }
+  #panel td:last-child { text-align: right; font-weight: 700; color: #fff; white-space: nowrap; }
+  #panel tr.subrow td { opacity: .7; font-size: 2vmin; padding-top: .5vmin; padding-bottom: .5vmin; }
+
+  /* 開始オーバーレイ（ブラウザの音声再生はクリック後にしか許可されない） */
+  #start {
+    position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+    background: rgba(6, 3, 12, .72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    cursor: pointer; transition: opacity .4s ease;
+  }
+  #start.hidden { opacity: 0; pointer-events: none; }
+  #start .box { text-align: center; }
+  #start .title { font-size: 5vmin; font-weight: 700; letter-spacing: .08em; }
+  #start .hint { font-size: 2.2vmin; opacity: .7; margin-top: 1.5vmin; }
+
+  /* 隅の表示 */
+  #brand { position: fixed; left: 1.7vw; top: 2.2vmin; font-weight: 700; opacity: .8; }
+  #brand small { display: block; font-size: 2vmin; font-weight: 400; opacity: .7; }
+  #status {
+    position: fixed; right: 1.7vw; top: 2.2vmin; display: flex; gap: .8vw; align-items: center;
+  }
+  .chip {
+    padding: .7vmin 1.8vmin; border-radius: 999px; border: 2px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.06); font-size: 2vmin; cursor: pointer; color: var(--text);
+  }
+  .chip.on { border-color: var(--accent); background: rgba(168,85,247,.25); }
+  #state-chip { cursor: default; }
+  #mic-chip.on { border-color: var(--user); color: var(--user); }
+  #mic-chip.err { border-color: var(--error); color: var(--error); }
+  body[data-state="idle"] #state-chip { border-color: rgba(255,255,255,.25); }
+  body[data-state="listening"] #state-chip { border-color: var(--user); color: var(--user); }
+  body[data-state="thinking"] #state-chip { border-color: var(--accent); color: #d8b4fe; }
+  body[data-state="speaking"] #state-chip { border-color: var(--ai); color: var(--ai); }
+
+  /* 字幕：画面下のローワーサード。中央70%幅、左寄せ、半透明の帯 */
+  :root { --sub-scale: 1; }
+  #subtitles {
+    position: fixed; left: 15%; right: 15%; bottom: 5vmin;
+    display: flex; flex-direction: column; align-items: flex-start; gap: .9vmin;
+    pointer-events: none; transition: bottom .25s ease;
+  }
+  body.input-open #subtitles { bottom: 12vmin; }
+  #subtitles.hidden { display: none; }
+  .sub {
+    display: inline-block; max-width: 100%;
+    padding: .55em .9em .55em 1em; border-radius: .5em;
+    background: rgba(8, 4, 18, .58);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    border-left: .28em solid transparent;
+    font-weight: 500; line-height: 1.4; text-align: left;
+    text-shadow: 0 1px 6px rgba(0,0,0,.8);
+    word-break: break-word; overflow-wrap: anywhere;
+  }
+  .sub:empty { display: none; }
+  #sub-user {
+    font-size: calc(1.9vmin * var(--sub-scale)); color: #dbeafe;
+    border-left-color: var(--user); opacity: .9;
+  }
+  #sub-user.interim { opacity: .55; }
+  #sub-ai {
+    font-size: calc(2.5vmin * var(--sub-scale)); color: #fbeaf3;
+    border-left-color: var(--ai); font-weight: 600;
+  }
+  #sub-ai.error { color: #fecaca; border-left-color: var(--error); }
+
+  /* テキスト入力（開発用。Tキーで表示切替） */
+  #input-bar {
+    position: fixed; left: 15%; right: 15%; bottom: 2.6vmin; display: flex; gap: .6vw;
+  }
+  #input-bar.hidden { display: none; }
+  #input-bar { display: none; }
+  body.input-open #input-bar { display: flex; }
+  #input {
+    flex: 1; font: inherit; font-size: 2.6vmin; padding: 1.3vmin 1.8vmin; border-radius: 1.3vmin;
+    border: 2px solid rgba(255,255,255,.25); background: rgba(0,0,0,.55); color: var(--text);
+    outline: none;
+  }
+  #input:focus { border-color: var(--accent); }
+  #send {
+    font: inherit; font-size: 2.6vmin; padding: 1.3vmin 2.6vmin; border-radius: 1.3vmin; border: 0;
+    background: var(--accent); color: white; cursor: pointer;
+  }
+  #send:disabled { opacity: .4; cursor: default; }
+
+  #help {
+    position: fixed; left: 50%; top: 3vmin; transform: translateX(-50%);
+    font-size: 1.5vmin; opacity: .35; white-space: nowrap; max-width: 54vw; overflow: hidden; text-overflow: ellipsis;
+  }
+</style>
+</head>
+<body data-state="idle">
+  <div id="room"></div>
+  <div id="chara"></div>
+  <div id="start"><div class="box"><div class="title" id="start-title"></div><div class="hint">クリックまたは Enter で開始（マイクの許可を求めます）</div></div></div>
+
+  <div id="brand" style="font-size:2.2vmin">Crossactor<small id="chara-name"></small></div>
+  <div id="status">
+    <div id="mic-chip" class="chip" title="マイク ON/OFF（クリック / Lキー）">🎙 off</div>
+    <div id="state-chip" class="chip">idle</div>
+    <div id="model-chip" class="chip" title="モデル切替（クリック / Mキー）：auto → Opus → Fable">Haiku (auto)</div>
+  </div>
+
+  <div id="subtitles">
+    <div id="sub-user" class="sub"></div>
+    <div id="sub-ai" class="sub"></div>
+  </div>
+
+  <section id="panel"><h2><span id="panel-title"></span><small id="panel-note"></small></h2><table><tbody id="panel-body"></tbody></table></section>
+
+  <aside id="voices">
+    <header><b>声を選ぶ</b><span style="opacity:.6">クリックで試聴 ／ V で閉じる</span></header>
+    <div style="padding:.8vmin 1.2vmin"><input class="sample" id="voice-sample" value="おはよう。私はクロ。今日は何から片付けようか？"></div>
+    <div class="list" id="voice-list">読み込み中…</div>
+    <footer>
+      <button id="voice-apply">この声にする</button>
+      <span id="voice-status" style="opacity:.7"></span>
+      <code id="voice-snippet"></code>
+    </footer>
+  </aside>
+
+  <form id="input-bar" autocomplete="off">
+    <input id="input" type="text" placeholder="ここに話しかける（Enterで送信 / Escで中断）">
+    <button id="send" type="submit">送信</button>
+  </form>
+  <div id="help"><span id="help-wake"></span> ／ Space 割り込み ／ L マイク ／ W 呼びかけ ／ V 声 ／ T 入力 ／ S 字幕 ／ M モデル ／ F11 全画面解除</div>
+
+  <script src="config.js"></script>
+  <script>
+    // 上書き設定を読む（どちらも gitignore 済み。無ければ無視）
+    //   config.env.js   … .env から scripts/deploy.mjs が生成（Supabase の URL / key）
+    //   config.local.js … 手動の上書き。例: window.CROSS_LOCAL = { voice: { engine: "voicevox" } };
+    document.write('<script src="config.env.js" onerror="this.remove()"><\/script>');
+    document.write('<script src="config.local.js" onerror="this.remove()"><\/script>');
+  </script>
+  <script>
+    (() => {
+      const merge = (dst, src) => {
+        for (const [k, v] of Object.entries(src || {})) {
+          if (v && typeof v === "object" && !Array.isArray(v) && dst[k] && typeof dst[k] === "object") merge(dst[k], v);
+          else dst[k] = v;
+        }
+        return dst;
+      };
+      merge(window.CROSS_CONFIG, window.CROSS_ENV);
+      merge(window.CROSS_CONFIG, window.CROSS_LOCAL);
+      try {   // 試聴パネルで選んだ声（ブラウザ保存）。config.local.js より優先
+        const saved = JSON.parse(localStorage.getItem("cross.voice") || "null");
+        if (saved && saved.name) merge(window.CROSS_CONFIG, { voice: saved });
+      } catch { /* 無視 */ }
+    })();
+  </script>
+  <script>
+  (() => {
+    const CFG = window.CROSS_CONFIG;
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      body: document.body, subUser: $("sub-user"), subAi: $("sub-ai"), subtitles: $("subtitles"),
+      input: $("input"), send: $("send"), form: $("input-bar"), stateChip: $("state-chip"),
+      modelChip: $("model-chip"), charaName: $("chara-name"),
+      start: $("start"), startTitle: $("start-title"), chara: $("chara"), room: $("room"),
+      micChip: $("mic-chip"),
+    };
+    els.startTitle.textContent = CFG.charaName;
+    els.chara.textContent = CFG.charaName;
+    document.title = `${CFG.charaName} — ${CFG.brand}`;
+    $("help-wake").textContent = `「${CFG.wakeWord}」と呼びかけて話す`;
+    els.charaName.textContent = CFG.charaName;
+    console.log("[cross] 接続先:", CFG.supabaseUrl, "| publishable key:", CFG.supabasePublishableKey ? CFG.supabasePublishableKey.slice(0, 18) + "…" : "(未設定)");
+    for (const [k, v] of Object.entries(CFG.colors)) document.documentElement.style.setProperty(`--${k}`, v);
+    document.documentElement.style.setProperty("--sub-scale", String(CFG.subtitle?.scale ?? 1));
+    if (CFG.subtitle?.inputOpen) document.body.classList.add("input-open");
+
+    // ---------- 状態管理（Step④でカメラ・ポーズ制御をここに接続） ----------
+    const state = { current: "idle", history: [], tier: "auto", abort: null, idleTimer: null, streaming: false };
+    const TIER_ORDER = ["auto", "upper", "max"];
+    const listeners = [];
+    function setState(next) {
+      if (state.current === next) return;
+      state.current = next;
+      els.body.dataset.state = next;
+      els.stateChip.textContent = next;
+      listeners.forEach((fn) => fn(next));
+      armIdleTimer();
+    }
+    function armIdleTimer() {
+      clearTimeout(state.idleTimer);
+      if (state.current === "idle" || state.current === "thinking" || state.current === "speaking") return;
+      state.idleTimer = setTimeout(() => setState("idle"), CFG.idleTimeoutMs);
+    }
+    window.cross = { setState, onState: (fn) => listeners.push(fn), state };
+
+    // ---------- 字幕 ----------
+    function showUser(text, interim = false) {
+      els.subUser.textContent = text;
+      els.subUser.classList.toggle("interim", interim);
+    }
+    function showAi(text, isError = false) {
+      els.subAi.textContent = text;
+      els.subAi.classList.toggle("error", isError);
+    }
+
+    // ---------- モデル切替 ----------
+    function modelLabel(id) {
+      return /fable/i.test(id) ? "Fable" : /opus/i.test(id) ? "Opus" : /sonnet/i.test(id) ? "Sonnet" : /haiku/i.test(id) ? "Haiku" : id;
+    }
+    // 3段：auto（Haiku、キーワードで自動昇格）→ upper（Opus）→ max（Fable）を巡回
+    function setTier(tier) {
+      state.tier = tier;
+      const label = tier === "auto" ? modelLabel(CFG.models.default) + " (auto)" : modelLabel(CFG.models[tier]);
+      els.modelChip.textContent = label;
+      els.modelChip.classList.toggle("on", tier !== "auto");
+    }
+    function cycleTier() { setTier(TIER_ORDER[(TIER_ORDER.indexOf(state.tier) + 1) % TIER_ORDER.length]); }
+    // 実際に使われたモデルを表示（キーワード自動昇格が起きたら「Opus ▲」のように）
+    function showUsedModel(id, tier) {
+      const auto = state.tier === "auto" && tier !== "default";
+      els.modelChip.textContent = modelLabel(id) + (auto ? " ▲" : state.tier === "auto" ? " (auto)" : "");
+      els.modelChip.classList.toggle("on", tier !== "default");
+    }
+    els.modelChip.addEventListener("click", cycleTier);
+
+    // ---------- 音声（TTS）再生キュー ----------
+    // 文単位で /tts を呼び、届いた順ではなく文の順に途切れなく再生する。
+    // AnalyserNode で再生音量を測り、口パク（--mouth）に流す。
+    const audio = {
+      ctx: null, analyser: null, queue: [], playing: false, current: null,
+      gen: 0,                       // 割り込み時に進める世代番号。古い文は捨てる
+      available: CFG.voice?.enabled !== false,
+      mouth: 0,
+    };
+    const mouthListeners = [];
+    window.cross.onMouth = (fn) => mouthListeners.push(fn);
+
+    function unlockAudio() {
+      if (!audio.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        audio.ctx = new AC();
+        audio.analyser = audio.ctx.createAnalyser();
+        audio.analyser.fftSize = 512;
+        audio.analyser.smoothingTimeConstant = 0.5;
+        audio.analyser.connect(audio.ctx.destination);
+      }
+      if (audio.ctx.state === "suspended") audio.ctx.resume();
+    }
+
+    // VOICEVOX（ローカルエンジン）：audio_query → synthesis の2段で WAV を得る
+    async function fetchVoicevox(text) {
+      const vv = CFG.voice.voicevox || {};
+      const host = (vv.host || "http://127.0.0.1:50021").replace(/\/+$/, "");
+      const speaker = vv.speaker ?? 3;
+      try {
+        const q = await fetch(`${host}/audio_query?text=${encodeURIComponent(text)}&speaker=${speaker}`, { method: "POST" });
+        if (!q.ok) throw new Error(`audio_query HTTP ${q.status}`);
+        const query = await q.json();
+        if (vv.speedScale != null) query.speedScale = vv.speedScale;
+        if (vv.pitchScale != null) query.pitchScale = vv.pitchScale;
+        if (vv.intonationScale != null) query.intonationScale = vv.intonationScale;
+        if (vv.volumeScale != null) query.volumeScale = vv.volumeScale;
+        query.prePhonemeLength = 0.05; query.postPhonemeLength = 0.05;   // 文間の無音を短く
+        const r = await fetch(`${host}/synthesis?speaker=${speaker}`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(query),
+        });
+        if (!r.ok) throw new Error(`synthesis HTTP ${r.status}`);
+        return await audio.ctx.decodeAudioData(await r.arrayBuffer());
+      } catch (e) {
+        if (e instanceof TypeError) {   // 接続不可（未起動 or file:// で開いている）
+          audio.available = false;
+          console.warn("[voicevox] エンジンに接続できない。VOICEVOX を起動し、画面は http://localhost:8787 で開くこと（node scripts/serve.mjs）", e.message);
+        } else {
+          console.error("[voicevox]", e);
+        }
+        return null;
+      }
+    }
+
+    async function fetchTts(text) {
+      if (!audio.available) return null;
+      if (CFG.voice?.engine === "voicevox") return fetchVoicevox(text);
+      try {
+        const res = await fetch(`${CFG.supabaseUrl}/functions/v1/tts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": CFG.supabasePublishableKey,
+            ...(CFG.accessKey ? { "x-cross-key": CFG.accessKey } : {}),
+          },
+          body: JSON.stringify({
+            text,
+            voice: CFG.voice?.name, style: CFG.voice?.style, rate: CFG.voice?.rate, pitch: CFG.voice?.pitch,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          audio.lastError = `HTTP ${res.status} ${err.error || ""} ${err.detail || ""}`.trim();
+          if (err.code === "tts_unconfigured") {
+            audio.available = false;
+            console.warn("[tts] Azure 未設定のため音声なしで続行:", err.error);
+          } else {
+            console.error("[tts]", audio.lastError);
+          }
+          return null;
+        }
+        const buf = await res.arrayBuffer();
+        return await audio.ctx.decodeAudioData(buf);
+      } catch (e) {
+        audio.lastError = e.message;
+        console.error("[tts]", e);
+        return null;
+      }
+    }
+
+    function enqueueSpeech(text) {
+      if (!audio.ctx || !audio.available) return;
+      const clean = text.replace(/[「」『』（）()\[\]【】*#_`~>|]/g, "").trim();
+      if (!clean || !/[\p{L}\p{N}]/u.test(clean)) return;
+      const t0 = performance.now();
+      const item = { gen: audio.gen, buf: fetchTts(clean).then((b) => { item.ms = Math.round(performance.now() - t0); return b; }) };
+      audio.queue.push(item);
+      pumpSpeech();
+    }
+
+    let mouthRaf = 0;
+    function mouthLoop() {
+      const data = new Uint8Array(audio.analyser.fftSize);
+      const tick = () => {
+        if (!audio.playing) { setMouth(0); mouthRaf = 0; return; }
+        audio.analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) { const v = (data[i] - 128) / 128; sum += v * v; }
+        const rms = Math.sqrt(sum / data.length);          // 0〜1（会話音声はだいたい 0〜0.3）
+        setMouth(Math.min(1, rms * 4));
+        mouthRaf = requestAnimationFrame(tick);
+      };
+      if (!mouthRaf) mouthRaf = requestAnimationFrame(tick);
+    }
+    function setMouth(v) {
+      audio.mouth = v;
+      els.chara.style.setProperty("--mouth", v.toFixed(3));
+      const level = v < 0.08 ? 0 : v < 0.25 ? 1 : v < 0.5 ? 2 : 3;   // mouth_0〜3 に対応
+      mouthListeners.forEach((fn) => fn(level, v));
+    }
+
+    async function pumpSpeech() {
+      if (audio.playing) return;
+      const item = audio.queue.shift();
+      if (!item) { onSpeechDrained(); return; }
+      audio.playing = true;
+      const buf = await item.buf;
+      if (item.gen !== audio.gen) { audio.playing = false; pumpSpeech(); return; }   // 割り込み済み
+      if (buf) {
+        if (item.ms) console.log(`[tts] ready ${item.ms}ms`);
+        setState("speaking");
+        mouthLoop();
+        await new Promise((resolve) => {
+          const src = audio.ctx.createBufferSource();
+          src.buffer = buf;
+          src.connect(audio.analyser);
+          src.onended = resolve;
+          audio.current = src;
+          src.start();
+        });
+        audio.current = null;
+      }
+      audio.playing = false;
+      pumpSpeech();
+    }
+    function stopSpeech() {
+      audio.gen++;
+      audio.queue.length = 0;
+      try { audio.current?.stop(); } catch { /* 既に停止 */ }
+      audio.current = null;
+      audio.playing = false;
+      setMouth(0);
+    }
+    function onSpeechDrained() {
+      if (!state.streaming) setState("listening");
+    }
+
+    // ---------- 情報表示モード ----------
+    const panel = { el: $("panel"), title: $("panel-title"), note: $("panel-note"), body: $("panel-body"), timer: null, open: false };
+    function showPanel(data) {
+      panel.title.textContent = data.title || "";
+      panel.note.textContent = data.note || new Date().toLocaleDateString("ja-JP");
+      panel.body.innerHTML = "";
+      for (const r of data.rows || []) {
+        const tr = document.createElement("tr");
+        if (String(r.label).startsWith("　")) tr.className = "subrow";
+        const a = document.createElement("td"); a.textContent = r.label;
+        const b = document.createElement("td"); b.textContent = r.value;
+        tr.append(a, b); panel.body.appendChild(tr);
+      }
+      panel.el.classList.add("open"); document.body.classList.add("panel-open"); panel.open = true;
+      clearTimeout(panel.timer);
+    }
+    function hidePanel() {
+      panel.el.classList.remove("open"); document.body.classList.remove("panel-open"); panel.open = false;
+      clearTimeout(panel.timer);
+    }
+    // 喋り終わって listening に戻ったら数秒後に閉じる
+    window.cross.onState((st) => {
+      if (!panel.open) return;
+      if (st === "listening" || st === "idle") { clearTimeout(panel.timer); panel.timer = setTimeout(hidePanel, CFG.panelLingerMs ?? 6000); }
+    });
+    window.cross.panel = { show: showPanel, hide: hidePanel };
+
+    // ---------- 文区切り検出 → TTS ----------
+    const sentenceHooks = [];
+    window.cross.onSentence = (fn) => sentenceHooks.push(fn);
+    function makeSentenceSplitter() {
+      let buf = "";
+      return {
+        push(delta) {
+          buf += delta;
+          let m;
+          while ((m = buf.match(/^[\s\S]*?[。！？!?]+[」）]?/))) {
+            const s = m[0].trim();
+            buf = buf.slice(m[0].length);
+            if (s) sentenceHooks.forEach((fn) => fn(s));
+          }
+        },
+        flush() {
+          const s = buf.trim(); buf = "";
+          if (s) sentenceHooks.forEach((fn) => fn(s));
+        },
+      };
+    }
+
+    // ---------- /chat ストリーム ----------
+    async function ask(text) {
+      text = text.trim();
+      if (!text || state.abort) return;
+      if (!CFG.supabasePublishableKey || CFG.supabaseUrl.includes("YOUR_PROJECT_REF")) {
+        showAi("config.local.js に Supabase の URL と publishable key が要る。.env を置いて node scripts/deploy.mjs --build", true);
+        return;
+      }
+      showUser(text);
+      showAi("");
+      stopSpeech();
+      setState("thinking");
+      state.streaming = true;
+      state.history.push({ role: "user", content: text });
+
+      const ctrl = new AbortController();
+      state.abort = ctrl;
+      els.send.disabled = true;
+      const splitter = makeSentenceSplitter();
+      let reply = "";
+      let firstDeltaAt = 0;
+      const t0 = performance.now();
+
+      try {
+        const res = await fetch(`${CFG.supabaseUrl}/functions/v1/chat`, {
+          method: "POST",
+          signal: ctrl.signal,
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": CFG.supabasePublishableKey,
+            ...(CFG.accessKey ? { "x-cross-key": CFG.accessKey } : {}),
+          },
+          body: JSON.stringify({
+            messages: state.history.slice(-CFG.historyTurns * 2),
+            model: state.tier === "auto" ? undefined : state.tier,
+          }),
+        });
+        if (!res.ok || !res.body) {
+          const msg = await res.text().catch(() => "");
+          throw new Error(`HTTP ${res.status} ${msg}`.trim());
+        }
+
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let carry = "";
+        outer: while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          carry += dec.decode(value, { stream: true });
+          const lines = carry.split("\n");
+          carry = lines.pop();
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const ev = JSON.parse(line.slice(6));
+            if (ev.type === "delta") {
+              if (!firstDeltaAt) { firstDeltaAt = performance.now(); if (!audio.available) setState("speaking"); }
+              reply += ev.text;
+              showAi(reply);
+              splitter.push(ev.text);
+            } else if (ev.type === "panel") {
+              showPanel(ev);
+            } else if (ev.type === "start") {
+              console.log("[chat] model:", ev.model, "tier:", ev.tier, "| revenue:", ev.revenue);
+              showUsedModel(ev.model, ev.tier);
+            } else if (ev.type === "done") {
+              showUsedModel(ev.model, ev.tier);
+              console.log("[chat] done", ev.stop_reason, ev.usage,
+                `first token ${Math.round(firstDeltaAt - t0)}ms / total ${Math.round(performance.now() - t0)}ms`);
+              if (ev.stop_reason === "refusal" && !reply) reply = "それは答えられへんな。別の聞き方にしよか。";
+              break outer;
+            } else if (ev.type === "error") {
+              throw new Error(ev.message);
+            }
+          }
+        }
+        splitter.flush();
+        if (reply) {
+          showAi(reply);
+          state.history.push({ role: "assistant", content: reply });
+        } else {
+          showAi("（返答が空やった。もう一回言うてくれるか）", true);
+          state.history.pop();
+        }
+      } catch (e) {
+        if (e.name === "AbortError") {
+          if (reply) state.history.push({ role: "assistant", content: reply });
+          else state.history.pop();
+          showAi(reply ? reply + "…" : "");
+        } else {
+          console.error(e);
+          const hint = e.message === "Failed to fetch"
+            ? `（接続先 ${CFG.supabaseUrl} に届いていない。config.local.js の supabaseUrl を確認）`
+            : "";
+          showAi(`エラー: ${e.message}${hint}`, true);
+          state.history.pop();
+        }
+      } finally {
+        state.history = state.history.slice(-CFG.historyTurns * 2);
+        state.abort = null;
+        state.streaming = false;
+        els.send.disabled = false;
+        if (!audio.playing && audio.queue.length === 0) setState("listening");   // 音声が残っていれば再生終了時に遷移
+        if (document.body.classList.contains("input-open")) els.input.focus();
+      }
+    }
+    window.cross.ask = ask;
+    window.cross.interrupt = () => {
+      const wasBusy = audio.playing || audio.queue.length || state.abort;
+      if (panel.open) hidePanel();
+      stopSpeech();
+      state.abort?.abort();
+      if (wasBusy) setState("listening");
+    };
+    window.cross.speak = (text) => { unlockAudio(); enqueueSpeech(text); };   // デバッグ用：任意の文を喋らせる
+    window.cross.audio = audio;
+
+    // ---------- 入力 ----------
+    els.form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const v = els.input.value;
+      els.input.value = "";
+      ask(v);
+    });
+    // ---------- 音声認識（Web Speech API） ----------
+    // 常時聞き取り。idle 中はウェイクワード（config.wakeWord）を含む発話だけ拾い、listening 中は全発話を質問として送る。
+    // クロが喋っている間（thinking / speaking）は認識を止め、自分の声を拾わないようにする。
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const stt = { rec: null, on: false, running: false, restartTimer: null, wantRestart: false, lastFinalAt: 0, err: "" };
+    const WAKE_WORDS = [CFG.wakeWord, ...(CFG.wakeWordAliases || [])].filter(Boolean);
+    stt.wakeRequired = CFG.wakeRequired !== false;
+    // 比較用の正規化：カタカナ→ひらがな、空白と記号を除去、英字は小文字
+    function norm(t) {
+      return t.replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60))
+        .replace(/[\s、。,.!！?？・「」『』（）()]/g, "").toLowerCase();
+    }
+    const WAKE_NORM = WAKE_WORDS.map(norm);
+
+    function micLabel() {
+      els.micChip.classList.toggle("on", stt.on && !stt.err);
+      els.micChip.classList.toggle("err", !!stt.err);
+      els.micChip.textContent = stt.err ? `🎙 ${stt.err}` : stt.on ? (stt.running ? "🎙 on" : "🎙 …") : "🎙 off";
+    }
+
+    // 発話からウェイクワードを取り除き、残りを返す。含まなければ null
+    function stripWake(text) {
+      // 1) 元の表記で探す
+      for (const w of WAKE_WORDS) {
+        const i = text.indexOf(w);
+        if (i < 0) continue;
+        return (text.slice(0, i) + " " + text.slice(i + w.length)).replace(/^[\s、。,.!！?？さんくんちゃんねえ]+/u, "").trim();
+      }
+      // 2) 正規化して探す（「くろす」「クロ ス」「Cross」などのゆれ）
+      const n = norm(text);
+      for (const w of WAKE_NORM) {
+        const i = n.indexOf(w);
+        if (i < 0) continue;
+        // 残りは「元の文からウェイクワード相当を落とした後ろ側」を近似：正規化文字列の後ろ側を返す
+        return n.slice(i + w.length).replace(/^[さんくんちゃんねえ]+/u, "").trim();
+      }
+      // 3) 聞き間違い救済：主ウェイクワードと1文字違いの3文字窓（「ころす」「くろず」「ぐろす」など）。
+      //    idle 中の誤反応は仕様として許容している
+      const main = WAKE_NORM[0] || "";
+      if (main.length >= 3) {
+        for (let i = 0; i + main.length <= n.length; i++) {
+          const win = n.slice(i, i + main.length);
+          let diff = 0;
+          for (let k = 0; k < main.length; k++) if (win[k] !== main[k]) diff++;
+          if (diff <= 1) return n.slice(i + main.length).replace(/^[さんくんちゃんねえ]+/u, "").trim();
+        }
+      }
+      return null;
+    }
+
+    function handleUtterance(text) {
+      text = text.trim();
+      if (!text) return;
+      stt.lastFinalAt = performance.now();
+      const rest = stripWake(text);
+      const called = rest !== null;
+      console.log(`[stt] final: "${text}" | state=${state.current} | 呼びかけ=${called ? "あり" : "なし"} | wakeRequired=${stt.wakeRequired}`);
+      if (state.current === "idle") {
+        if (!called && stt.wakeRequired) {          // 呼ばれていない
+          showUser(`${text}　（「${CFG.wakeWord}」と呼びかけてね）`, true);
+          return;
+        }
+        setState("listening");
+        const q = called ? rest : text;
+        if (q) { ask(q); return; }                  // 「クロ、おはよう」→ 即質問
+        // 「クロ」だけ → 短く返事してから次の発話を待つ
+        showUser(text, false);
+        const reply = (CFG.wakeReply ?? "はい").trim();
+        if (reply) {
+          showAi(reply);
+          unlockAudio();
+          enqueueSpeech(reply.replace(/[。！？!?]*$/, "") + "。");
+        }
+        return;
+      }
+      if (state.current === "listening") {
+        ask(called && rest ? rest : text);          // 呼び名付きでもそのまま通す
+        return;
+      }
+      console.log("[stt] 無視（応答中）");
+    }
+
+    function sttStart() {
+      if (!SR) { stt.err = "非対応"; micLabel(); return; }
+      if (!stt.on || stt.running || state.current === "thinking" || state.current === "speaking") return;
+      const rec = new SR();
+      rec.lang = "ja-JP"; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+      rec.onstart = () => { stt.running = true; stt.err = ""; micLabel(); };
+      rec.onresult = (e) => {
+        let interim = "", finals = [];
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const r = e.results[i];
+          if (r.isFinal) finals.push(r[0].transcript); else interim += r[0].transcript;
+        }
+        if (interim && (state.current === "idle" || state.current === "listening")) showUser(interim, true);
+        if (finals.length) console.log("[stt] finals:", finals);
+        for (const f of finals) handleUtterance(f);
+      };
+      rec.onerror = (e) => {
+        if (e.error === "not-allowed" || e.error === "service-not-allowed") { stt.err = "マイク拒否"; stt.on = false; }
+        else if (e.error === "audio-capture") { stt.err = "マイク無し"; stt.on = false; }
+        else if (e.error !== "no-speech" && e.error !== "aborted") console.warn("[stt]", e.error);
+        micLabel();
+      };
+      rec.onend = () => {
+        stt.running = false; stt.rec = null; micLabel();
+        // Chrome は無音や時間経過で勝手に止まるので、ON の間は再開し続ける
+        if (stt.on && (state.current === "idle" || state.current === "listening")) scheduleRestart(250);
+      };
+      stt.rec = rec;
+      try { rec.start(); } catch (e) { console.warn("[stt] start failed", e.message); scheduleRestart(800); }
+    }
+    function sttStop() {
+      clearTimeout(stt.restartTimer);
+      if (stt.rec) { try { stt.rec.onend = null; stt.rec.abort(); } catch { /* 無視 */ } }
+      stt.rec = null; stt.running = false; micLabel();
+    }
+    function scheduleRestart(ms) {
+      clearTimeout(stt.restartTimer);
+      stt.restartTimer = setTimeout(() => sttStart(), ms);
+    }
+    async function setMic(on) {
+      stt.on = on;
+      if (on) {
+        if (!SR) { stt.err = "非対応"; micLabel(); return; }
+        if (!window.isSecureContext) { stt.err = "要 localhost/https"; stt.on = false; micLabel(); return; }
+        try {   // 権限を先に取り、エコーキャンセルを効かせる
+          stt.stream = stt.stream || await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+        } catch (e) { stt.err = "マイク拒否"; stt.on = false; micLabel(); return; }
+        sttStart();
+      } else {
+        sttStop();
+      }
+      micLabel();
+    }
+    els.micChip.addEventListener("click", () => setMic(!stt.on));
+    function setWakeRequired(v) {
+      stt.wakeRequired = v;
+      showUser(v ? `呼びかけ必要：「${CFG.wakeWord}」と呼んでから話す` : "呼びかけ不要：そのまま話せる", true);
+      console.log("[stt] wakeRequired =", v);
+    }
+    window.cross.mic = { set: setMic, get on() { return stt.on; }, stt, setWakeRequired };
+
+    // 状態遷移に合わせて認識を止める／再開する
+    window.cross.onState((st) => {
+      if (st === "thinking" || st === "speaking") sttStop();
+      else if (stt.on) scheduleRestart(st === "listening" ? 300 : 100);
+    });
+
+    // ---------- 声の試聴パネル ----------
+    const vp = { open: false, loaded: false, selected: null, list: [], gen: 0 };
+    const vEls = { panel: $("voices"), list: $("voice-list"), sample: $("voice-sample"), apply: $("voice-apply"), status: $("voice-status"), snippet: $("voice-snippet") };
+    async function loadVoices() {
+      if (vp.loaded) return;
+      try {
+        const res = await fetch(`${CFG.supabaseUrl}/functions/v1/tts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": CFG.supabasePublishableKey, ...(CFG.accessKey ? { "x-cross-key": CFG.accessKey } : {}) },
+          body: JSON.stringify({ list: true }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        vp.list = data.voices; vp.loaded = true;
+        renderVoices();
+      } catch (e) {
+        vEls.list.textContent = `一覧を取得できない: ${e.message}`;
+      }
+    }
+    function renderVoices() {
+      vEls.list.innerHTML = "";
+      for (const v of vp.list) {
+        const el = document.createElement("div");
+        el.className = "v" + (v.name === (vp.selected || CFG.voice.name) ? " current" : "");
+        const short = v.name.replace(/Neural$/, "").replace(/^[a-z]{2}-[A-Z]{2,4}-/, "");
+        const g = v.gender === "Female" ? "女" : v.gender === "Male" ? "男" : v.gender;
+        el.innerHTML = `<span class="n">${short}</span><span class="tag ${v.gender === "Female" ? "f" : "m2"}">${g}</span>` +
+          `<span class="m">${v.native ? "日本語ネイティブ" : "多言語（" + v.localeName + "）"}${v.styles.length ? "　スタイル: " + v.styles.join(", ") : ""}</span>`;
+        el.addEventListener("click", () => { vp.selected = v.name; renderVoices(); auditionVoice(v.name); });
+        vEls.list.appendChild(el);
+      }
+    }
+    async function auditionVoice(name) {
+      unlockAudio(); stopSpeech();
+      const myGen = ++vp.gen;   // 連続クリック時は最後の1つだけ鳴らす（重なるとリバーブのように聞こえる）
+      vEls.status.textContent = "生成中…";
+      // 一覧は Azure の声なので、engine 設定に関わらず Azure で試聴する
+      const saved = { name: CFG.voice.name, engine: CFG.voice.engine, available: audio.available };
+      CFG.voice.name = name; CFG.voice.engine = "azure"; audio.available = true; audio.lastError = "";
+      const buf = await fetchTts(vEls.sample.value.trim() || `おはよう。私は${CFG.charaName}。`);
+      CFG.voice.name = saved.name; CFG.voice.engine = saved.engine; audio.available = saved.available;
+      if (myGen !== vp.gen) return;   // その後に別の声がクリックされた
+      vEls.status.textContent = buf ? "" : `失敗: ${audio.lastError || "不明"}`;
+      if (!buf) return;
+      stopSpeech();
+      const src = audio.ctx.createBufferSource(); src.buffer = buf; src.connect(audio.analyser);
+      src.onended = () => { if (audio.current === src) audio.current = null; };
+      src.start();
+      audio.current = src;
+    }
+    vEls.apply.addEventListener("click", () => {
+      if (!vp.selected) { vEls.status.textContent = "先にクリックして試聴してから"; return; }
+      CFG.voice.name = vp.selected;
+      CFG.voice.engine = "azure"; audio.available = true;
+      try { localStorage.setItem("cross.voice", JSON.stringify({ name: vp.selected, engine: "azure" })); } catch { /* 無視 */ }
+      vEls.status.textContent = "保存した（このブラウザ）。他の端末にも効かせるなら →";
+      vEls.snippet.textContent = `config.local.js: window.CROSS_LOCAL = { voice: { engine: "azure", name: "${vp.selected}" } };`;
+      renderVoices();
+    });
+    function toggleVoices() {
+      vp.open = !vp.open;
+      vEls.panel.classList.toggle("open", vp.open);
+      if (vp.open) loadVoices();
+    }
+    window.cross.voices = { toggle: toggleVoices, reset: () => { localStorage.removeItem("cross.voice"); location.reload(); } };
+
+    // 起動時にサーバー関数を起こしておく（初回応答が数秒遅れるのを防ぐ）
+    function warmUp() {
+      if (!CFG.supabasePublishableKey) return;
+      for (const fn of ["chat", "tts"]) {
+        fetch(`${CFG.supabaseUrl}/functions/v1/${fn}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": CFG.supabasePublishableKey, "x-cross-warm": "1", ...(CFG.accessKey ? { "x-cross-key": CFG.accessKey } : {}) },
+          body: "{}",
+        }).then((r) => console.log(`[warm] ${fn} ${r.status}`)).catch(() => {});
+      }
+    }
+    warmUp();
+    setInterval(warmUp, 4 * 60 * 1000);   // 放置中も眠らせない
+
+    function startSession() {
+      if (els.start.classList.contains("hidden")) return;
+      unlockAudio();
+      els.start.classList.add("hidden");
+      setState("idle");
+      if (CFG.micAutoStart !== false) setMic(true);
+      if (document.body.classList.contains("input-open")) els.input.focus();
+    }
+    els.start.addEventListener("click", startSession);
+    // 自動起動（launch.ps1 経由など）：ブラウザが音声再生を許可していれば、クリック無しで開始する
+    if (CFG.autoStart) {
+      setTimeout(() => {
+        try {
+          unlockAudio();
+          if (audio.ctx.state === "running") startSession();
+          else audio.ctx.resume().then(() => { if (audio.ctx.state === "running") startSession(); });
+        } catch { /* 許可が無ければオーバーレイを残す */ }
+      }, 300);
+    }
+    // 画面タップで割り込み（オーバーレイ表示中は開始扱い）
+    [els.room, els.chara].forEach((el) => el.addEventListener("click", () => window.cross.interrupt()));
+
+    document.addEventListener("keydown", (e) => {
+      if (!els.start.classList.contains("hidden")) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); startSession(); } return; }
+      if (e.key === "Escape") { window.cross.interrupt(); return; }
+      if (e.target === els.input) return;
+      if (e.key === " ") { e.preventDefault(); window.cross.interrupt(); return; }
+      const k = e.key.toLowerCase();
+      if (k === "s") els.subtitles.classList.toggle("hidden");
+      if (k === "v") toggleVoices();
+      if (k === "l") setMic(!stt.on);
+      if (k === "w") setWakeRequired(!stt.wakeRequired);
+      if (k === "m") cycleTier();
+      if (k === "t") { const open = document.body.classList.toggle("input-open"); if (open) els.input.focus(); }
+    });
+    window.cross.onSentence((s) => { console.log("[sentence]", s); enqueueSpeech(s); });
+    if (document.body.classList.contains("input-open")) els.input.focus();
+  })();
+  </script>
+</body>
+</html>
