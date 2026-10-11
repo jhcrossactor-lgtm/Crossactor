@@ -6,6 +6,7 @@
 //   stream-fx.html            クロ用の配信ページ（粒子エフェクト＋落ち着いた待機動作）
 //   src/fx/*                  エフェクト本体・設定・型・ページのスクリプト
 //   tools/merge-variant.py    ChatGPT の差分絵をマスク内側だけ合成するツール
+//   tools/gen-variants.mjs    OpenAI 画像編集 API で差分絵 7 枚を生成→合成→スプライト化まで一発
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,6 +23,7 @@ const copies = [
   ['studio/stream-fx.html', 'stream-fx.html'],
   ...readdirSync(join(HERE, 'studio/src/fx')).map(name => [`studio/src/fx/${name}`, `src/fx/${name}`]),
   ['studio/tools/merge-variant.py', 'tools/merge-variant.py'],
+  ['studio/tools/gen-variants.mjs', 'tools/gen-variants.mjs'],
 ];
 for (const [from, to] of copies) {
   const src = join(HERE, from), dest = join(target, to);

@@ -15,6 +15,8 @@ mesh-avatar-kuro/
     src/fx/digital-rise.config.js  粒子の設定ファイル（量・速度・色・明るさ・ON/OFF…）
     src/fx/digital-rise.d.ts       型定義
     tools/merge-variant.py         ChatGPT の差分絵を「マスクの内側だけ」source.png に合成
+    tools/gen-variants.mjs         OpenAI 画像編集 API で差分絵 7 枚を生成 → 合成 → build-sprites → render-poses まで一発
+  chatgpt_variants_task.md  API キーを使わず、デスクトップの Claude に ChatGPT の画面を操作させる場合の指示
   demo/index.html        エフェクト単体のデモ（アバター無しで動く。別アプリへ移植する時の見本）
 ```
 
@@ -73,5 +75,11 @@ OBS に入れる時はこの URL をブラウザソースにする。背景は `
 
 1. `desktop_task.md` をデスクトップの Claude に貼る → clone、立ち絵の事前チェック、`docs/agent-guide.md` どおりにアバター化（`projects/kuro/`）
 2. エディタで「ポーズ確認」「口の動き」→ 破綻を直す（`rig-tuning.md` の A）
-3. `variant-prompts.md` で差分絵を ChatGPT に作らせ、`merge-variant.py` → `build-sprites.py` で取り込む
+3. 差分絵 7 枚。**API ルート（推奨）**：`.env` に `OPENAI_API_KEY` を入れて clone 直下で
+   ```powershell
+   uv run tools/variant-requests.py projects/kuro
+   node tools/gen-variants.mjs projects/kuro --ref "C:\Users\<ユーザー名>\Desktop\<キャラクターシート>.png"
+   ```
+   生成 → マスク内側だけ合成 → build-sprites → render-poses まで自動。出来の悪い差分は `--redo <差分名>` で作り直す。
+   画面ルート：`chatgpt_variants_task.md`（デスクトップの Claude に ChatGPT を操作させる）か `variant-prompts.md`（手で貼る）
 4. `install.mjs` でこのキットを入れ、`stream-fx.html?project=kuro` で粒子付きの配信ビューを確認（`rig-tuning.md` の B）
