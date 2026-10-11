@@ -6,6 +6,7 @@
 //   node tools/gen-variants.mjs projects/kuro --ref "C:\Users\me\Desktop\sheet.png"   … 絵柄の参照画像を添える
 //   node tools/gen-variants.mjs projects/kuro --no-build      … 生成と合成だけ（build-sprites / render-poses を回さない）
 //   node tools/gen-variants.mjs projects/kuro --redo mouth_i  … その差分だけ作り直す
+//   node tools/gen-variants.mjs projects/kuro --model gpt-image-1  … モデルを変える（既定 gpt-image-2）
 //
 // 前提：mesh-avatar-studio の直下で実行。Node 22+、uv。先に
 //   uv run tools/variant-requests.py projects/kuro
@@ -62,7 +63,7 @@ const envPath = opts.env ?? (existsSync('G:\\ClaudeLocal\\cross\\.env') ? 'G:\\C
 const env = loadEnv(envPath);
 const apiKey = process.env.OPENAI_API_KEY || env.OPENAI_API_KEY;
 if (!apiKey) { console.error(`✖ OPENAI_API_KEY が無い（環境変数か ${envPath}）`); process.exit(1); }
-const model = opts.model || env.OPENAI_IMAGE_MODEL || 'gpt-image-1';
+const model = opts.model || env.OPENAI_IMAGE_MODEL || 'gpt-image-2';   // ほせもやん指定：gpt-image-2。--model で変更可
 const quality = opts.quality || env.OPENAI_IMAGE_QUALITY || 'high';
 const size = opts.size || '1024x1536';   // 縦長。source のサイズとは違っていてよい（合成時に戻す）
 
@@ -95,6 +96,7 @@ for (const name of wanted) {
     if (!res.ok) {
       const text = (await res.text()).slice(0, 300);
       console.log(`✖ HTTP ${res.status} ${text}`);
+      if (/model|size|quality/i.test(text)) console.log(`   ヒント: このキーで ${model} / ${size} / ${quality} が使えない可能性。--model gpt-image-1 や --size 1024x1536 --quality high を試す`);
       failed.push(name);
       if (res.status === 401 || res.status === 429) break;
       continue;

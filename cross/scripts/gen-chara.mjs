@@ -27,7 +27,7 @@ if (existsSync(envPath)) {
   }
 }
 const apiKey = process.env.OPENAI_API_KEY || env.OPENAI_API_KEY;
-const model = process.env.OPENAI_IMAGE_MODEL || env.OPENAI_IMAGE_MODEL || "gpt-image-1";
+const model = process.env.OPENAI_IMAGE_MODEL || env.OPENAI_IMAGE_MODEL || "gpt-image-2";
 const size = env.OPENAI_IMAGE_SIZE || "1024x1536"; // 縦長（4:5 相当に近い）
 const quality = env.OPENAI_IMAGE_QUALITY || "medium"; // low / medium / high
 
